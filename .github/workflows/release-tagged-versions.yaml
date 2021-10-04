@@ -16,7 +16,7 @@ jobs:
 
       - name: Make executable
       # Adding in directory listings here to aid with debugging build issues in the future
-        run: cd evo-luvi && ./make.bat && dir && mv build/Release/luvi.exe ../luvi.exe && cd .. && dir
+        run: cd evo-luvi && ./make.bat && dir && mv build/Release/luvi.exe ../evo-luvi.exe && cd .. && dir
 
       # We don't want to deploy a faulty release, so this should fail if the executable is broken
       - name: Verify the build
@@ -25,6 +25,6 @@ jobs:
       - name: Publish new release
         uses: softprops/action-gh-release@v1
         with:
-          files: luvi.exe
+          files: evo-luvi.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
