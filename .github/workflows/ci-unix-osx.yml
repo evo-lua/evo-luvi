@@ -1,4 +1,4 @@
-name: Continuous Integration (Unix/OSX)
+name: Build and Release (Unix/OSX)
 
 on: [push, pull_request]
 
