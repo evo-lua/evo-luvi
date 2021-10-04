@@ -1,9 +1,10 @@
-name: CI
+name: Continuous Integration (Unix/OSX)
 
 on: [push, pull_request]
 
 jobs:
   build:
+    name: Build for Linux and Mac
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -76,6 +77,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+      # TBD: The source should probably be released separately, not as part of the OSX build workflow?
         files: |
           evo-luvi-source-code-with-dependencies-*.tar.gz
           evo-luvi-Darwin_x86_64
