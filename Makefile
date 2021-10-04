@@ -115,7 +115,7 @@ luvi-src.tar.gz:
 
 travis-publish:	reset luvi-src.tar.gz travis-tiny travis-regular-asm
 	$(MAKE)
-	mv luvi-src.tar.gz luvi-src-${LUVI_TAG}.tar.gz
+	mv luvi-src.tar.gz evo-luvi-source-code-with-dependencies-${LUVI_TAG}.tar.gz
 
 travis-tiny: reset tiny
 	$(MAKE)

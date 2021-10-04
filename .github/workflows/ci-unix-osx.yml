@@ -1,9 +1,10 @@
-name: CI
+name: Build and Release (Unix/OSX)
 
 on: [push, pull_request]
 
 jobs:
   build:
+    name: Build for Linux and Mac
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -41,7 +42,7 @@ jobs:
       run: git fetch --unshallow --no-recurse-submodules
 
     - name: Build
-      run: make linux-build
+      run: make linux-build && cp luvi-regular-Linux_x86_64 evo-luvi-linux-amd64
 
     - name: Github Release
       id: create_release
@@ -50,10 +51,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: |
-          luvi-regular-Linux_x86_64
-          luvi-tiny-Linux_x86_64
-          luvi-regular-Linux_i686
-          luvi-tiny-Linux_i686
+          evo-luvi-linux-amd64
         draft: false
         prerelease: false
 
@@ -70,7 +68,7 @@ jobs:
       run: git fetch --unshallow --no-recurse-submodules
 
     - name: Build
-      run: make travis-publish
+      run: make travis-publish && cp luvi-regular-Darwin_x86_64 evo-luvi-darwin-amd64
 
     - name: Github Release
       id: create_release
@@ -78,9 +76,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+      # TBD: The source should probably be released separately, not as part of the OSX build workflow?
         files: |
-          luvi-regular-Darwin_x86_64
-          luvi-tiny-Darwin_x86_64
-          luvi-src-*.tar.gz
+          evo-luvi-source-code-with-dependencies-*.tar.gz
+          evo-luvi-darwin-amd64
         draft: false
         prerelease: false
