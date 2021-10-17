@@ -1,5 +1,6 @@
 -- Nonstandard extensions (custom additions)
 local primitives = require("primitives")
+local extensionLoaders = require("extensions")
 
 -- Luvi extensions (unchanged)
 local uv = require('uv')
@@ -344,6 +345,11 @@ local function commonBundle(bundlePaths, mainPath, args)
   -- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
   for name, primitive in pairs(primitives) do
 	package.preload[name] = primitive
+  end
+
+  -- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
+  for name, extensionLoader in pairs(extensionLoaders) do
+	_G[name] = extensionLoader()
   end
 
   if not args then
