@@ -1,3 +1,8 @@
+-- Nonstandard extensions (custom additions)
+local primitives = require("primitives")
+local extensionLoaders = require("extensions")
+
+-- Luvi extensions (unchanged)
 local uv = require('uv')
 local miniz = require('miniz')
 local luvi = require('luvi')
@@ -335,6 +340,16 @@ local function commonBundle(bundlePaths, mainPath, args)
   -- Auto-setup global p and libuv version of print
   if mainRequire and (bundle.stat("deps/pretty-print") or bundle.stat("deps/pretty-print.lua")) then
     _G.p = mainRequire('pretty-print').prettyPrint
+  end
+
+  -- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
+  for name, primitive in pairs(primitives) do
+	package.preload[name] = primitive
+  end
+
+  -- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
+  for name, extensionLoader in pairs(extensionLoaders) do
+	_G[name] = extensionLoader()
   end
 
   if not args then

@@ -9,15 +9,20 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        run: git clone --recursive https://github.com/evo-lua/evo-luvi.git
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Make executable
       # Adding in directory listings here to aid with debugging build issues in the future
-        run: cd evo-luvi && ./make.bat && dir && cp build/Release/luvi.exe ../evo-luvi.exe && cd .. && dir
+        run: ./make.bat && dir && cp build/Release/luvi.exe evo-luvi.exe && dir
 
       # We don't want to deploy a faulty release, so this should fail if the executable is broken
       - name: Verify the build
-        run: cd evo-luvi && ./make.bat test
+        run: ./make.bat test
+
+      - name: Test Extensions and Primitives
+        run: ./luvi.exe test
 
       - name: Publish new release
         # Truly "continuous" releases may be overkill here, so better only release tagged versions
