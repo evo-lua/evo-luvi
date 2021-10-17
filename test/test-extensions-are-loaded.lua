@@ -1,0 +1,1 @@
+assertStrictEqual(type(_G.path), "table", "The global path library should be loaded")
