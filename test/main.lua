@@ -8,5 +8,6 @@ dofile("test/primitives/test-v8-string-lastindexof.lua")
 _G.currentNamespace = "extensions"
 dofile("test/test-extensions-are-loaded.lua")
 dofile("test/extensions/test-path.lua")
+dofile("test/extensions/test-dump.lua")
 
 print(string.format("OK\tAll tests completed\t%d assertions", _G.numAssertions))
