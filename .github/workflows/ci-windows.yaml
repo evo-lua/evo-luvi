@@ -19,6 +19,9 @@ jobs:
       - name: Verify the build
         run: cd evo-luvi && ./make.bat test
 
+      - name: Test Extensions and Primitives
+        run: cd evo-luvi && evo-luvi.exe test
+
       - name: Publish new release
         # Truly "continuous" releases may be overkill here, so better only release tagged versions
         if: startsWith(github.ref, 'refs/tags/')

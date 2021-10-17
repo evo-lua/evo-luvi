@@ -29,6 +29,9 @@ jobs:
     - name: Test
       run: make test
 
+    - name: Test Extensions and Primitives
+      run: luvi test
+
   deploy-linux:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [build]
