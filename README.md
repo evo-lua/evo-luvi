@@ -1,4 +1,23 @@
-# luvi
+# About this Project
+
+This is a modified version of the [Luvi](https://github.com/luvit/luvi) Lua runtime, primarily with the goal of iterating on various ideas and seeing how it will turn out.
+
+If you aren't familiar: Luvi provides a Lua environment based on the [LuaJIT](luajit.org/) compiler, with builtin C libraries like [libuv](https://libuv.org), [OpenSSL](https://openssl.org/) and [miniz](https://github.com/richgel999/miniz).
+
+It also includes facilities to create self-contained executables from your Lua scripts and serves as a foundation for the [luvit](https://github.com/luvit/luvit) runtime.
+
+Experimental changes living in this fork:
+
+* Streamlined builds (regular-amd64 luvi for WIN/OSX/UNIX)
+* Added standardized interface for Lua extensions (and primitives required by them)
+* Added builtin path resolution (ported code from [V8](https://v8.dev/) & [NodeJS](https://nodejs.org/))
+* Added test suite for primitives and extensions (as a Luvi bundle)
+
+Whether these are good ideas, only time will tell :)
+
+---
+
+## Original Luvi README (unchanged)
 
 [![Linux Build Status](https://github.com/luvit/luvi/actions/workflows/ci.yml/badge.svg)](https://github.com/luvit/luvi/actions/workflows/ci.yml)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/h643wg5hkwsnu0wd/branch/master?svg=true)](https://ci.appveyor.com/project/racker-buildbot/luvi/branch/master)
