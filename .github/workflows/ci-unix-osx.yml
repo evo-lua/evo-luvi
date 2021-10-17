@@ -9,8 +9,8 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        build_type: [tiny, regular-asm]
-        lua_engine: [LuaJIT, Lua]
+        build_type: [regular-asm]
+        lua_engine: [LuaJIT]
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
       WITH_LUA_ENGINE: ${{ matrix.lua_engine }}
