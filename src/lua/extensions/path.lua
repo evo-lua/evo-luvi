@@ -986,20 +986,22 @@ function posix.basename(path, ext)
 					start = i + 1
 					break
 				end
-			elseif (firstNonSlashEnd == -1) then
+			else
+				if (firstNonSlashEnd == -1) then
 				-- We saw the first non-path separator, remember this index in case
 				-- we need it if the extension ends up not matching
 				matchedSlash = false
 				firstNonSlashEnd = i + 1
-			end
-			if (extIdx >= 0) then
-				-- Try to match the explicit extension
-				if (code == StringPrototypeCharCodeAt(ext, extIdx)) then
-					extIdx = extIdx - 1
-					if (extIdx == -1) then
-						-- We matched the extension, so mark this as the end of our path
-						-- component
-						endIndex = i
+				end
+				if (extIdx >= 0) then
+					-- Try to match the explicit extension
+					if (code == StringPrototypeCharCodeAt(ext, extIdx)) then
+						extIdx = extIdx - 1
+						if (extIdx == -1) then
+							-- We matched the extension, so mark this as the end of our path
+							-- component
+							endIndex = i
+						end
 					else
 						-- Extension does not match, so our result is the entire path
 						-- component
