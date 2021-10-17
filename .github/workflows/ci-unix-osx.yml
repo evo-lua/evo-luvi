@@ -24,13 +24,13 @@ jobs:
       run: WITHOUT_AMALG=1 make ${BUILD_TYPE} WITH_LUA_ENGINE=${WITH_LUA_ENGINE}
 
     - name: Build
-      run: make
+      run: make && cd build && cp luvi ../luvi
 
     - name: Test
       run: make test
 
     - name: Test Extensions and Primitives
-      run: luvi test
+      run: ./luvi test
 
   deploy-linux:
     if: startsWith(github.ref, 'refs/tags/')
