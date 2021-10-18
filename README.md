@@ -11,6 +11,7 @@ Experimental changes living in this fork:
 * Streamlined builds (regular-amd64 luvi for WIN/OSX/UNIX)
 * Added standardized interface for Lua extensions (and primitives required by them)
 * Added builtin path resolution (ported code from [V8](https://v8.dev/) & [NodeJS](https://nodejs.org/))
+* Integrated [inspect.lua](https://github.com/kikito/inspect.lua) as a builtin extension to aid debugging
 * Added test suite for primitives and extensions (as a Luvi bundle)
 
 Whether these are good ideas, only time will tell :)
