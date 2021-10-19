@@ -15,6 +15,7 @@ assertStrictEqual(type(assertStrictEqual), "function")
 -- TODO Add CI workflow for this test
 
 local import = _G.import
+_G.currentNamespace = "import"
 
 -- A module in the same folder can be loaded as-is
 local bundledModule = import("bundled-module.lua")
