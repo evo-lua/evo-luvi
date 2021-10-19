@@ -25,9 +25,6 @@ jobs:
 
       # We don't want to deploy a faulty release, so this should fail if the executable is broken
       - name: Verify the build
-        run: ./make.bat test
-
-      - name: Test Extensions and Primitives
         run: ./recompile-and-run-all-tests.cmd # Won't actually recompile in this case since there were no changes
 
       - name: Publish new release
