@@ -169,8 +169,10 @@ lua_add_executable(luvi
   src/lua/luvibundle.lua
   src/lua/primitives.lua
   src/lua/primitives/v8_string_helpers.lua
+  src/lua/primitives/virtual_file_system.lua
   src/lua/extensions.lua
   src/lua/extensions/dump.lua
+  src/lua/extensions/import.lua
   src/lua/extensions/path.lua
   ${lpeg_re_lua}
 )

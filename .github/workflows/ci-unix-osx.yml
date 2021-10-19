@@ -32,11 +32,8 @@ jobs:
     - name: Build
       run: make && cd build && cp luvi ../luvi
 
-    - name: Test
-      run: make test
-
-    - name: Test Extensions and Primitives
-      run: ./luvi test
+    - name: Verify the build
+      run: ./recompile-and-run-all-tests.sh # Won't actually recompile in this case since there were no changes
 
   deploy-linux:
     if: startsWith(github.ref, 'refs/tags/')

@@ -157,7 +157,7 @@ local function zipBundle(base, zip)
 end
 
 local whitelistedHiddenFiles = {
-	[".epo"] = true, -- Always include epo packages in compiled bundles or import won't work
+	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
 
 local function buildBundle(target, bundle)
@@ -323,6 +323,22 @@ local function commonBundle(bundlePaths, mainPath, args)
     return ret
   end
 
+
+local function exportScriptGlobals()
+	local cwd = uv.cwd()
+
+	_G.DEFAULT_USER_SCRIPT_ENTRY_POINT = "main.lua"
+	local scriptFile = args[1] or _G.DEFAULT_USER_SCRIPT_ENTRY_POINT
+
+	local scriptPath = path.resolve(path.join(cwd, scriptFile))
+	local scriptRoot = path.dirname(scriptPath)
+
+	-- These will never change over the course of a single invocation, so it's safe to simply export them once
+	_G.USER_SCRIPT_FILE  = scriptFile
+	_G.USER_SCRIPT_PATH  = scriptPath
+	_G.USER_SCRIPT_ROOT = scriptRoot
+end
+
   function bundle.register(name, path)
     if not path then path = name + ".lua" end
     package.preload[name] = function (...)
@@ -347,8 +363,8 @@ local function commonBundle(bundlePaths, mainPath, args)
   end
 
   -- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
-  for name, primitive in pairs(primitives) do
-	package.preload[name] = primitive
+  for name, primitiveLoader in pairs(primitives) do
+	package.preload[name] = primitiveLoader()
   end
 
   -- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
@@ -365,6 +381,8 @@ local function commonBundle(bundlePaths, mainPath, args)
     local main = bundle.readfile(mainPath)
     if not main then error("Missing " .. mainPath .. " in " .. bundle.base) end
     local fn = assert(loadstring(main, "bundle:" .. mainPath))
+
+	exportScriptGlobals()
     return fn(unpack(args))
   end
 end
