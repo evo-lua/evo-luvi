@@ -6,6 +6,7 @@ local extensionLoaders = {
 	dump = function() return require("dump") end,
 	-- Nonstandard libraries
 	path = function() return require("path") end,
+	import = function() return require("import") end,
 }
 
 return extensionLoaders
