@@ -6,6 +6,9 @@ REM This should set up the build environment for standard builds the first time 
 CALL make.bat regular
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
+CALL make.bat
+IF %ERRORLEVEL% NEQ 0 EXIT /B 1
+
 CALL make.bat test
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
