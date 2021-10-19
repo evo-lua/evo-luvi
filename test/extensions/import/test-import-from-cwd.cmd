@@ -1,2 +1,2 @@
-evo-luvi .
-evo-luvi . -- main.lua
+"../../../luvi.exe" .
+"../../../luvi.exe" . -- main.lua

@@ -1,2 +1,2 @@
-cd .. && evo-luvi import -- import/main.lua
-cd import/subfolder && evo-luvi .. -- ../main.lua
+cd .. && "../../luvi.exe" import -- import/main.lua
+cd import/subfolder && "../../../../luvi.exe" .. -- ../main.lua && cd ..
