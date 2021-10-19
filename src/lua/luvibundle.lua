@@ -157,7 +157,7 @@ local function zipBundle(base, zip)
 end
 
 local whitelistedHiddenFiles = {
-	[".epo"] = true, -- Always include epo packages in compiled bundles or import won't work
+	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
 
 local function buildBundle(target, bundle)

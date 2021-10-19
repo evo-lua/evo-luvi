@@ -8,7 +8,7 @@ local vfs = require("virtual_file_system")
 local moduleCache = {}
 local prefixStack = {}
 
-local EPO_PACKAGE_DIRECTORY = ".epo"
+local EVO_PACKAGE_DIRECTORY = ".evo"
 
 _G.rootDirectory = uv.cwd() -- tbd: find a better way to do this? OR just embrace it and introduce a global SCRIPT_ROOT or sth?
 
@@ -24,7 +24,7 @@ local function import(modulePath)
 	if string.sub(modulePath, 1, 1) == "@" then
 		print("Detected epo package notation identifier (@)")
 		local strippedModulePath = string.sub(modulePath, 2)
-		modulePath = path.join(EPO_PACKAGE_DIRECTORY, strippedModulePath)
+		modulePath = path.join(EVO_PACKAGE_DIRECTORY, strippedModulePath)
 		print("Module path is now: " .. modulePath)
 		isEpoPackage = true
 	end
@@ -85,8 +85,8 @@ local function import(modulePath)
 	if vfs.hasFile(modulePath) then
 		print("Loading from the bundle's virtual file system (file): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath), path.resolve(path.join(cwd, modulePath)), parentModule
-	elseif vfs.hasFolder(path.join(EPO_PACKAGE_DIRECTORY, modulePath)) then
-		modulePath = path.join(EPO_PACKAGE_DIRECTORY, modulePath, "main.lua")
+	elseif vfs.hasFolder(path.join(EVO_PACKAGE_DIRECTORY, modulePath)) then
+		modulePath = path.join(EVO_PACKAGE_DIRECTORY, modulePath, "main.lua")
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath), path.resolve(path.join(cwd, modulePath)), parentModule
 	else
