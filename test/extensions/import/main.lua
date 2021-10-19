@@ -7,7 +7,7 @@ local vfs = require("virtual_file_system")
 local type = type
 
 -- Load assertion helpers into the global environment so that assertions are counted
-import("../../assertions.lua")
+import("assertions.lua") -- copy/paste job since there's no better way to add them currently
 
 -- If import itself is broken this may fail, too, so let's make sure we notice right away
 assertStrictEqual(type(assertStrictEqual), "function")
