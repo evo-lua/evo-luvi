@@ -347,8 +347,8 @@ local function commonBundle(bundlePaths, mainPath, args)
   end
 
   -- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
-  for name, primitive in pairs(primitives) do
-	package.preload[name] = primitive
+  for name, primitiveLoader in pairs(primitives) do
+	package.preload[name] = primitiveLoader()
   end
 
   -- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
