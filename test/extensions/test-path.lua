@@ -31,9 +31,9 @@ local invalidTypeValues = {true, false, 7, nil, {}, 42.0}
 local function assertFailure(func, ...)
     local result, errorMessage = func(...)
     -- invalid types should return nil and error (Lua style), not errors (JavaScript style)
-    assertStrictEqual(result, nil, "result is not nil")
-    assertStrictEqual(type(errorMessage), "string", "message must be a string: " .. tostring(errorMessage))
-    assertStrictEqual(errorMessage:find("Usage: "), 1, "message must be 'Usage: ..., actual: " .. tostring(errorMessage) .. "'")
+    assertStrictEqual(result, nil, "Should return nil if invalid parameters are passed")
+    assertStrictEqual(type(errorMessage), "string", "Should return an error message if invalid parameters are passed")
+    assertStrictEqual(errorMessage:find("Usage: "), 1, "Should return an error message of the form 'Usage: ...' when invalid parameters are passed")
 end
 
 local functionsToTest = {
