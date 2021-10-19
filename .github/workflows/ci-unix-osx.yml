@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
     - main
+  create:
+    # Any branch or tag
 
 jobs:
   build:
