@@ -1,73 +1,90 @@
 
+-- Imports
 local uv = require("uv")
 local vfs = require("virtual_file_system")
 
--- TODO Move test to evo-luvi and use the existing assertion utilities
--- TODO Add CI workflow for this test
+-- Exports
+_G.EVO_PACKAGE_DIRECTORY = ".evo"
+_G.ENABLE_IMPORT_DEBUGGING = false -- Can just enable it globally to debug imports, in lieu of better logging capabilities...
 
+-- Upvalues
+local dofile = dofile
+local type = type
+local string_sub = string.sub
+local table_remove = table.remove
+-- Can't cache them yet, but we do want to speed up access so we add them to the closure
+local path_join
+local path_resolve
+local path_dirname
+local path_extname
+
+local function cachePathModule()
+	print("Caching path library to speed up future lookups... This should only happen once!")
+
+	-- If this breaks, all bets are off... so I guess adding a more specific error message might help troubleshooting?
+	assert(type(path) == "table", "The required path module is not available (this should never happen")
+
+	path_join = path.join
+	path_resolve = path.resolve
+	path_dirname = path.dirname
+	path_extname = path.extname
+end
+
+-- Locals
 local moduleCache = {}
 local prefixStack = {}
 
-local EVO_PACKAGE_DIRECTORY = ".evo"
-
-_G.rootDirectory = uv.cwd() -- tbd: find a better way to do this? OR just embrace it and introduce a global SCRIPT_ROOT or sth?
+-- Needs a proper logging framework, but for now it'll do...
+local print = function(...)
+	if not _G.ENABLE_IMPORT_DEBUGGING then return end
+	print(...)
+end
 
 local function import(modulePath)
-	-- print("Dumping prefix stack...")
-	-- dump(prefixStack)
+
+	-- Caching for future lookups isn't possible at initialization, as the path module may not be loaded yet
+	if not path_join then
+		cachePathModule()
+	end
 
 	if type(modulePath) ~= "string" or modulePath == "" or modulePath == "@" then
 		return nil, "Usage: import(modulePath)"
 	end
 
-	local isEpoPackage = false
-	if string.sub(modulePath, 1, 1) == "@" then
-		print("Detected epo package notation identifier (@)")
-		local strippedModulePath = string.sub(modulePath, 2)
-		modulePath = path.join(EVO_PACKAGE_DIRECTORY, strippedModulePath)
+	local isEvoPackage = false
+	if string_sub(modulePath, 1, 1) == "@" then
+		print("Detected evo package notation identifier (@)")
+		local strippedModulePath = string_sub(modulePath, 2)
+		modulePath = path_join(EVO_PACKAGE_DIRECTORY, strippedModulePath)
 		print("Module path is now: " .. modulePath)
-		isEpoPackage = true
+		isEvoPackage = true
 	end
 
-	if path.extname(modulePath) ~= ".lua" then
+	if path_extname(modulePath) ~= ".lua" then
 		print("Attempted to import module path without extension; assuming .lua")
-		if isEpoPackage then
-			-- Assume entry point is main.lua, if none was given
-			print("No epo module entry point was given, assuming main.lua")
-			modulePath = path.join(modulePath, "main.lua")
+		if isEvoPackage then
+			-- Assume entry point is the default one, if none was given
+			print("No evo module entry point was given, assuming default of " .. _G.DEFAULT_USER_SCRIPT_ENTRY_POINT)
+			modulePath = path_join(modulePath, _G.DEFAULT_USER_SCRIPT_ENTRY_POINT)
 		else
 			modulePath = modulePath .. ".lua"
 		end
 		print("Module path is now: " .. modulePath)
 	end
 
-	local cwd = uv.cwd()
-	local scriptFile = args[1] or "main.lua" -- Will include the .. operator if it isn't the bundle's root file (on disk)
-	local scriptPath = path.resolve(path.join(cwd, scriptFile)) -- Remove the operators if they're present
-
-	-- print("Source: " .. source)
-	print("Script file: " .. scriptFile)
-	print("Script path: " .. scriptPath)
-
 	-- If no parent chain existed, use the main entry point instead
-	local entryPoint = path.resolve(path.join(cwd, scriptFile)) -- TBD: Why is it the same as scriptPath?
-	print("Detected entry point: " .. entryPoint)
-	local parentModule = (#prefixStack == 0) and entryPoint or prefixStack[#prefixStack] -- It must be the entry point (top-level module)
-	_G.rootDirectory = path.dirname(entryPoint) -- Only needed for the assertion below, so this is somewhat awkward
+	local parentModule = (#prefixStack == 0) and USER_SCRIPT_PATH or prefixStack[#prefixStack]
 
-	local parentDirectory = path.dirname(parentModule)
-	local absolutePath = path.resolve(path.join(parentDirectory, modulePath))
+	local parentDirectory = path_dirname(parentModule)
+	local unresolvedModulePath = path_join(parentDirectory, modulePath)
+	local absolutePath = path_resolve(unresolvedModulePath)
 
-	print("Importing from path: " .. path.join(parentDirectory, modulePath))
+	print("Importing from path: " .. unresolvedModulePath)
 	print("Resolved to: " .. absolutePath)
-
+	print("Parent module: " .. parentModule)
 	print("Parent directory for this import: " .. parentDirectory)
 
 	-- The bundle VFS always takes priority, so check it first
-	print("Parent module: " .. parentModule)
-	local relativeModulePath = path.relative(scriptPath, modulePath)
-	print("Relative path (used for bundle lookups): " .. relativeModulePath)
-
 	local cachedModule = moduleCache[absolutePath]
 	if cachedModule then
 		-- Nested imports can't happen here, so we don't need to update the prefix stack
@@ -75,28 +92,25 @@ local function import(modulePath)
 		return cachedModule, absolutePath, parentModule
 	end
 
-	-- By always pushing the latest prefix before loading, the context can be reconstructed from inside the nested import call
+	-- By always pushing the latest prefix before loading, the context can be reconstructed from inside nested import calls
 	prefixStack[#prefixStack+1] = absolutePath
 
-	-- print("Dumping prefix stack...")
-	-- dump(prefixStack)
-
-	local loadedModule = {}
+	local loadedModule
 	if vfs.hasFile(modulePath) then
 		print("Loading from the bundle's virtual file system (file): " .. modulePath)
-		loadedModule = vfs.loadFile(modulePath), path.resolve(path.join(cwd, modulePath)), parentModule
-	elseif vfs.hasFolder(path.join(EVO_PACKAGE_DIRECTORY, modulePath)) then
-		modulePath = path.join(EVO_PACKAGE_DIRECTORY, modulePath, "main.lua")
+		loadedModule = vfs.loadFile(modulePath)
+	elseif vfs.hasFolder(path_join(EVO_PACKAGE_DIRECTORY, modulePath)) then
+		modulePath = path_join(EVO_PACKAGE_DIRECTORY, modulePath, "main.lua")
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
-		loadedModule = vfs.loadFile(modulePath), path.resolve(path.join(cwd, modulePath)), parentModule
+		loadedModule = vfs.loadFile(modulePath)
 	else
-		print("Loading from disk...")
+		print("Loading from disk:" .. absolutePath)
 		loadedModule = dofile(absolutePath)
 	end
 
 	if (#prefixStack > 0) then
 		-- This must be a nested call, so we want to clear out the parent hierarchy before exiting
-		local removedParent = table.remove(prefixStack)
+		local removedParent = table_remove(prefixStack)
 		print("Removed parent element from prefix stack: " .. removedParent)
 	end
 

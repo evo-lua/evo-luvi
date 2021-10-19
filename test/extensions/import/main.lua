@@ -1,7 +1,5 @@
 
-
-print("This is the bundle's entry point")
-
+-- Upvalues
 local uv = require("uv")
 local vfs = require("virtual_file_system")
 local type = type
@@ -11,8 +9,6 @@ import("assertions.lua") -- copy/paste job since there's no better way to add th
 
 -- If import itself is broken this may fail, too, so let's make sure we notice right away
 assertStrictEqual(type(assertStrictEqual), "function")
-
--- TODO Add CI workflow for this test
 
 local import = _G.import
 _G.currentNamespace = "import"
@@ -30,16 +26,11 @@ assertStrictEqual(reimportedModule, bundledModule, "Should retrieve loaded modul
 assertStrictEqual(reimportedModule.isLoaded, true, "Should persist the internal state of cached modules")
 
 -- The path should be resolved directly from the entry point
-local expectedAbsolutePath = path.join(_G.rootDirectory, "bundled-module.lua")
+local expectedAbsolutePath = path.join(_G.USER_SCRIPT_ROOT, "bundled-module.lua")
 assertStrictEqual(absolutePath, expectedAbsolutePath)
 
 -- The parent should be the module that imported it, i.e. the main/entry point
-assertStrictEqual(parentModule, path.join(_G.rootDirectory, "main.lua"), "Should return the parent module after importing")
-
-
--- The main module has no parent module (since it's not imported anywhere else, hopefully)
-
--- When a module is loaded from another file, its parent is set to the module that imported it
+assertStrictEqual(parentModule, path.join(_G.USER_SCRIPT_ROOT, "main.lua"), "Should return the parent module after importing")
 
 -- If no or invalid parameters are passed, we expect a nil return value and an error message (Lua style)
 local returnValueShouldBeNil, errorMessage = import()
@@ -57,10 +48,10 @@ assertStrictEqual(import("./bundled-module.lua"),  bundledModule, "Should load m
 -- Import modules from file in local evo cache
 -- No entry point given (modulePath is a folder): Use main.lua in that same folder
 -- This requires special handling, because if .lua is blindly appended it can't work in this case
-local epoModule = import("@test/example-package")
-assertStrictEqual(type(epoModule), "table", "@-notation: Should load successfully even if no entry point was given")
-assertStrictEqual(epoModule.identifier, 123456789, "@-notation: Should succeed loading module contents using the default entry point")
-assertStrictEqual(epoModule, import("@test/example-package/main.lua"), "@-notation: Should use main.lua as default entry point")
+local someModule = import("@test/example-package")
+assertStrictEqual(type(someModule), "table", "@-notation: Should load successfully even if no entry point was given")
+assertStrictEqual(someModule.identifier, 123456789, "@-notation: Should succeed loading module contents using the default entry point")
+assertStrictEqual(someModule, import("@test/example-package/main.lua"), "@-notation: Should use main.lua as default entry point")
 
 -- Entry point given (modulePath is a file): Load that one instead
 local epoModule2 = import("@foo/bar/nonstandard-entrypoint.lua")
