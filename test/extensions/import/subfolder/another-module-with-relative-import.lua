@@ -3,6 +3,6 @@ local moduleWithParent = {
 }
 
 local importedModule = import("../module-relative-import-target-subfolder.lua")
-assert(importedModule.someField == 1337, "Importing with relative path from subfolder seems to have failed?")
+assertStrictEqual(importedModule.someField, 1337, "Should be able to load modules with relative path from subfolder")
 
 return moduleWithParent

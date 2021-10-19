@@ -3,6 +3,6 @@ local module = {
 }
 
 local importedWithRelativePath = import("./module-relative-import-target.lua")
-assert(importedWithRelativePath.someField == 567, "Relative import seems to have failed?")
+assertStrictEqual(importedWithRelativePath.someField, 567, "Should be able to load modules using relative paths")
 
 return module
