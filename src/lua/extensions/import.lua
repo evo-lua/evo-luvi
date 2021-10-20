@@ -18,6 +18,16 @@ local path_resolve
 local path_dirname
 local path_extname
 
+-- Locals
+local moduleCache = {}
+local prefixStack = {}
+
+-- Needs a proper logging framework, but for now it'll do...
+local print = function(...)
+	if not _G.ENABLE_IMPORT_DEBUGGING then return end
+	print(...)
+end
+
 local function cachePathModule()
 	print("Caching path library to speed up future lookups... This should only happen once!")
 
@@ -28,16 +38,6 @@ local function cachePathModule()
 	path_resolve = path.resolve
 	path_dirname = path.dirname
 	path_extname = path.extname
-end
-
--- Locals
-local moduleCache = {}
-local prefixStack = {}
-
--- Needs a proper logging framework, but for now it'll do...
-local print = function(...)
-	if not _G.ENABLE_IMPORT_DEBUGGING then return end
-	print(...)
 end
 
 local function import(modulePath)
