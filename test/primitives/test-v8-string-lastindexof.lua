@@ -1,4 +1,4 @@
-local V8 = require("v8_string_helpers")
+local V8 = require("v8_string")
 local StringPrototypeLastIndexOf = V8.StringPrototypeLastIndexOf
 
 

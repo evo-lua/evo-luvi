@@ -25,7 +25,7 @@ local ffi = require("ffi")
 local uv = require("uv")
 
 -- This works because the package.path is adjusted in evo's main to always search the Libs folder
-local V8 = require("v8_string_helpers")
+local V8 = require("v8_string")
 
 -- Upvalues
 local StringPrototypeLastIndexOf = V8.StringPrototypeLastIndexOf
