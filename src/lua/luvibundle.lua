@@ -334,7 +334,7 @@ local function exportScriptGlobals()
 	local scriptRoot = path.dirname(scriptPath)
 
 	-- These will never change over the course of a single invocation, so it's safe to simply export them once
-	_G.USER_SCRIPT_FILE  = scriptFile
+	_G.USER_SCRIPT_FILE  = path.basename(scriptFile)
 	_G.USER_SCRIPT_PATH  = scriptPath
 	_G.USER_SCRIPT_ROOT = scriptRoot
 end
