@@ -11,4 +11,12 @@ cd test/extensions/import
 ./test-import-from-cwd.sh
 ./test-import-from-another-dir.sh
 ./test-import-from-compiled-bundle.sh
+
 cd ../../..
+
+# Regression tests for -v and -h flags (to fail the CI)
+./luvi -v
+./luvi --version
+./luvi -h
+./luvi --help
+
