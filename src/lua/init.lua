@@ -25,6 +25,8 @@ local commonBundle = luviBundle.commonBundle
 local makeBundle = luviBundle.makeBundle
 local buildBundle = luviBundle.buildBundle
 
+local EXIT_SUCCESS = 0
+
 local function generateOptionsString()
   local s = {}
   for k, v in pairs(luvi.options) do
@@ -153,7 +155,9 @@ return function(args)
   end
 
   -- Don't run app when printing version or help
-  if options.version or options.help then return -1 end
+  if options.version or options.help then
+	return EXIT_SUCCESS
+end
 
   -- Build the app if output is given
   if options.output then
