@@ -78,7 +78,7 @@ local function import(modulePath)
 	-- If no parent chain existed, use the main entry point instead
 	local parentModule = (#prefixStack == 0) and USER_SCRIPT_PATH or prefixStack[#prefixStack]
 
-	local parentDirectory = path_dirname(parentModule)
+	local parentDirectory = isEvoPackage and USER_SCRIPT_ROOT or path_dirname(parentModule)
 	local unresolvedModulePath = path_join(parentDirectory, modulePath)
 	local absolutePath = path_resolve(unresolvedModulePath)
 
