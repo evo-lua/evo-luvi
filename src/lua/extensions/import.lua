@@ -107,7 +107,7 @@ local function import(modulePath)
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	else
-		print("Loading from disk:" .. absolutePath)
+		print("Loading from disk: " .. absolutePath)
 		loadedModule = dofile(absolutePath)
 	end
 
