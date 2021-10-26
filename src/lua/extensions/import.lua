@@ -41,6 +41,9 @@ local function cachePathModule()
 end
 
 local function import(modulePath)
+	print("USER_SCRIPT_ROOT: " .. USER_SCRIPT_ROOT)
+	print("USER_SCRIPT_FILE: " .. USER_SCRIPT_FILE)
+	print("USER_SCRIPT_PATH: " .. USER_SCRIPT_PATH)
 
 	-- Caching for future lookups isn't possible at initialization, as the path module may not be loaded yet
 	if not path_join then

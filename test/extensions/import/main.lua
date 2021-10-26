@@ -13,10 +13,17 @@ assertStrictEqual(type(assertStrictEqual), "function")
 local import = _G.import
 _G.currentNamespace = "import"
 
+assertStrictEqual(type(_G.EVO_IMPORT_CACHE), "table", "Should expose the internal import cache")
+assertStrictEqual(type(_G.EVO_IMPORT_STACK), "table", "Should expose the internal import stack")
+assertStrictEqual(#_G.EVO_IMPORT_CACHE, 0, "The import cache should be empty before any modules have been imported")
+
 -- A module in the same folder can be loaded as-is
 local bundledModule = import("bundled-module.lua")
 assertStrictEqual(type(bundledModule), "table")
 assertStrictEqual(bundledModule.someField, 42)
+
+local expectedModulePath = path.join(_G.USER_SCRIPT_ROOT, "bundled-module.lua") -- Should always point to the imported module
+assertStrictEqual(_G.EVO_IMPORT_CACHE[expectedModulePath], bundledModule, "The import cache should cache modules after importing them")
 
 -- After a module has been loaded, it is cached and won't be reloaded from disk
 bundledModule.isLoaded = true
