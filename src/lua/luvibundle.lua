@@ -156,7 +156,7 @@ local function zipBundle(base, zip)
   return bundle
 end
 
-local whitelistedHiddenFiles = {
+local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
 
@@ -188,7 +188,7 @@ local function buildBundle(target, bundle)
     if not files then return end
     for i = 1, #files do
       local name = files[i]
-      if string.sub(name, 1, 1) ~= "." or whitelistedHiddenFiles[name] then
+      if string.sub(name, 1, 1) ~= "." or hiddenFilesAllowList[name] then
         local child = pathJoin(path, name)
         local stat = bundle.stat(child)
         if stat.type == "directory" then
