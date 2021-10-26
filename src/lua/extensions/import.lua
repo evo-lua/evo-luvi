@@ -40,6 +40,9 @@ local function cachePathModule()
 	path_extname = path.extname
 end
 
+-- Expose internals for easier debugging
+_G.EVO_IMPORT_CACHE = moduleCache
+_G.EVO_IMPORT_STACK = prefixStack
 local function import(modulePath)
 
 	-- Caching for future lookups isn't possible at initialization, as the path module may not be loaded yet
