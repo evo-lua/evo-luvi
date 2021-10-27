@@ -58,7 +58,7 @@ local function import(modulePath)
 	if string_sub(modulePath, 1, 1) == "@" then
 		print("Detected evo package notation identifier (@)")
 		local strippedModulePath = string_sub(modulePath, 2)
-		modulePath = path_join(EVO_PACKAGE_DIRECTORY, strippedModulePath)
+		modulePath = path_join(_G.EVO_PACKAGE_DIRECTORY, strippedModulePath)
 		print("Module path is now: " .. modulePath)
 		isEvoPackage = true
 	end
@@ -76,7 +76,7 @@ local function import(modulePath)
 	end
 
 	-- If no parent chain existed, use the main entry point instead
-	local parentModule = (#prefixStack == 0) and USER_SCRIPT_PATH or prefixStack[#prefixStack]
+	local parentModule = (#prefixStack == 0) and _G.USER_SCRIPT_PATH or prefixStack[#prefixStack]
 
 	local parentDirectory = path_dirname(parentModule)
 	local unresolvedModulePath = path_join(parentDirectory, modulePath)
@@ -102,8 +102,8 @@ local function import(modulePath)
 	if vfs.hasFile(modulePath) then
 		print("Loading from the bundle's virtual file system (file): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
-	elseif vfs.hasFolder(path_join(EVO_PACKAGE_DIRECTORY, modulePath)) then
-		modulePath = path_join(EVO_PACKAGE_DIRECTORY, modulePath, "main.lua")
+	elseif vfs.hasFolder(path_join(_G.EVO_PACKAGE_DIRECTORY, modulePath)) then
+		modulePath = path_join(_G.EVO_PACKAGE_DIRECTORY, modulePath, "main.lua")
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	else
