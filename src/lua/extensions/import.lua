@@ -113,8 +113,9 @@ local function import(modulePath)
 		-- C-call boundary" error since we're still in C land. As a workaround, we finish loading in C and then we're back
 		-- to Lua, where executing the chunk causes yields to hand control back to THIS function (in Lua land) instead
 		-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
-		loadedModule = loadfile(absolutePath)
-		loadedModule = loadedModule()
+		-- loadedModule = loadfile(absolutePath)
+		-- loadedModule = loadedModule()
+		loadedModule = dofile(absolutePath)
 	end
 
 	if (#prefixStack > 0) then

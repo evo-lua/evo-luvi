@@ -69,3 +69,9 @@ assertStrictEqual(epoModule2.identifier, 987654321, "@-notation: Should load non
 local returnValueShouldBeNilAlso, anotherErrorMessage = import("@")
 assertStrictEqual(returnValueShouldBeNilAlso, nil, "@-notation: Should return nil if no owner/package is given")
 assertStrictEqual(type(anotherErrorMessage), "string", "@-notation: Should return an error message if no owner/package is given")
+
+local fauxUserScript = function()
+	dofile("coroutine-yields-inside-module.lua")
+end
+local userThread = coroutine.create(fauxUserScript)
+coroutine.resume(userThread)
