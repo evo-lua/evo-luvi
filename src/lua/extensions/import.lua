@@ -108,7 +108,13 @@ local function import(modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	else
 		print("Loading from disk: " .. absolutePath)
-		loadedModule = dofile(absolutePath)
+		-- We want to call dofile here, but we can't because in doing so the chunk is loaded AND executed in one C call
+		-- If the imported module calls coroutine.yield (e.g., async fs library) it will cause an "attempt to yield across
+		-- C-call boundary" error since we're still in C land. As a workaround, we finish loading in C and then we're back
+		-- to Lua, where executing the chunk causes yields to hand control back to THIS function (in Lua land) instead
+		-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
+		loadedModule = loadfile(absolutePath)
+		loadedModule = loadedModule()
 	end
 
 	if (#prefixStack > 0) then
