@@ -98,8 +98,15 @@ local function import(modulePath)
 	-- By always pushing the latest prefix before loading, the context can be reconstructed from inside nested import calls
 	prefixStack[#prefixStack+1] = absolutePath
 
-	local loadedModule
-	if vfs.hasFile(modulePath) then
+	-- We want to call dofile here, but we can't because in doing so the chunk is loaded AND executed in one C call
+	-- If the imported module calls coroutine.yield (e.g., async fs library) it will cause an "attempt to yield across
+	-- C-call boundary" error since we're still in C land. As a workaround, we finish loading in C and then we're back
+	-- to Lua, where executing the chunk causes yields to hand control back to THIS function (in Lua land) instead
+	-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
+	print("Loading from disk: " .. absolutePath)
+	local loadedModule = loadfile(absolutePath)
+	if loadedModule then loadedModule = loadedModule()
+	elseif vfs.hasFile(modulePath) then
 		print("Loading from the bundle's virtual file system (file): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	elseif vfs.hasFolder(path_join(_G.EVO_PACKAGE_DIRECTORY, modulePath)) then
@@ -107,15 +114,7 @@ local function import(modulePath)
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	else
-		print("Loading from disk: " .. absolutePath)
-		-- We want to call dofile here, but we can't because in doing so the chunk is loaded AND executed in one C call
-		-- If the imported module calls coroutine.yield (e.g., async fs library) it will cause an "attempt to yield across
-		-- C-call boundary" error since we're still in C land. As a workaround, we finish loading in C and then we're back
-		-- to Lua, where executing the chunk causes yields to hand control back to THIS function (in Lua land) instead
-		-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
-		loadedModule = loadfile(absolutePath)
 		assert(loadedModule, string.format("\n\tFailed to import module from %s\n\tPlease ensure this file exists and returns its exports.", absolutePath))
-		loadedModule = loadedModule()
 	end
 
 	if (#prefixStack > 0) then
