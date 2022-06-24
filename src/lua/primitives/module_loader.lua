@@ -33,7 +33,7 @@ ModuleLoader.EVO_PACKAGE_DIRECTORY = ".evo"
 local vfs = require("virtual_file_system")
 
 -- Exports
-_G.ENABLE_IMPORT_DEBUGGING = false -- Can just enable it globally to debug imports, in lieu of better logging capabilities...
+_G.ENABLE_IMPORT_DEBUGGING = true -- Can just enable it globally to debug imports, in lieu of better logging capabilities...
 
 -- Upvalues
 local type = type
@@ -69,7 +69,7 @@ ModuleLoader.moduleCache = {}
 ModuleLoader.prefixStack = {}
 function ModuleLoader:ImportModule(modulePath)
 
-	-- Caching for future lookups isn't possible at initialization, as the path module may not be loaded yet
+	-- Caching for future lookups isn't possible at initialization, as the path module won't be loaded yet
 	if not path_join then
 		cachePathModule()
 	end
