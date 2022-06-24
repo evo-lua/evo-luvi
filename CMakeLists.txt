@@ -168,6 +168,7 @@ lua_add_executable(luvi
   src/lua/luvipath.lua
   src/lua/luvibundle.lua
   src/lua/primitives.lua
+  src/lua/primitives/module_loader.lua
   src/lua/primitives/v8_string.lua
   src/lua/primitives/virtual_file_system.lua
   src/lua/extensions.lua

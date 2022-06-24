@@ -7,6 +7,7 @@ local primitives = {
 	-- @deprecated: Use v8_string in new code
 	["v8_string_helpers"] = function() return require("v8_string") end,
 	["virtual_file_system"] = function() return require("virtual_file_system") end,
+	["module_loader"] = function() return require("module_loader") end,
 }
 
 return primitives
