@@ -353,7 +353,7 @@ end
 
   _G.args = args
 
-  -- Auto-register the require system if present
+  -- Auto-register the require system if present [deprecated: remove in favor of import extension]
   local mainRequire
   local stat = bundle.stat("deps/require.lua")
   if stat and stat.type == "file" then
@@ -361,7 +361,7 @@ end
     mainRequire = require('require')("bundle:main.lua")
   end
 
-  -- Auto-setup global p and libuv version of print
+  -- Auto-setup global p and libuv version of print [deprecated: remove in favor of dump extension]
   if mainRequire and (bundle.stat("deps/pretty-print") or bundle.stat("deps/pretty-print.lua")) then
     _G.p = mainRequire('pretty-print').prettyPrint
   end
