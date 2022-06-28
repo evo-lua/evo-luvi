@@ -1,0 +1,33 @@
+name: Standalone Unit Tests
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  create:
+    # Any branch or tag
+
+jobs:
+  build:
+    name: Unit Testing
+    runs-on: windows-latest # Doesn't matter, since we only test Lua modules here
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Fetch latest evo version tag
+        # This seems like a hacky way of getting the tag, but I haven't found a better one that "just works"
+        run: curl --location --silent --head --output curl.log -w %{url_effective} https://github.com/evo-lua/evo/releases/latest | grep --only-matching tag/.* | cut -f2- -d/ | tee LATEST_EVO_VERSION && cat curl.log # Print everything, for easier debugging
+        shell: bash
+
+      - name: Download evo release # Could use any other Lua runtime, but we want the builtin testing primitives to make testing easier
+        run: curl --location --silent --fail --output evo.exe https://github.com/evo-lua/evo/releases/download/$(cat LATEST_EVO_VERSION)/evo.exe && ls && ./evo.exe # Output version to allow troubleshooting issues more easily if it's wrong
+        shell: bash
+
+      - name: Run unit tests
+        run: evo test.lua
+        shell: cmd
