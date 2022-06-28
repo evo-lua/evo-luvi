@@ -297,6 +297,10 @@ end
 
 local function commonBundle(bundlePaths, mainPath, args)
 
+  if type(bundlePaths) ~= "table" then
+	return error("Usage: commonBundle( bundlePaths : table[, mainPath : string, args : table)")
+  end
+
   mainPath = mainPath or "main.lua"
 
   local bundle = assert(makeBundle(bundlePaths))
