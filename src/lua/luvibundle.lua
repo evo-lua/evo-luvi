@@ -399,11 +399,11 @@ end
 luvi.makeBundle = makeBundle
 
 return {
-  folderBundle = folderBundle,
-  chrootBundle = chrootBundle,
-  zipBundle = zipBundle,
+  folderBundle = folderBundle, -- internal
+  chrootBundle = chrootBundle, -- internal
+  zipBundle = zipBundle, -- internal
   buildBundle = buildBundle,
-  combinedBundle = combinedBundle,
+  combinedBundle = combinedBundle, -- internal
   makeBundle = makeBundle,
   commonBundle = commonBundle,
 }
