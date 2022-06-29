@@ -90,81 +90,108 @@ Examples:
   print((string.gsub(usage, "%$%(LUVI%)", args[0])))
 end
 
-return function(args)
+local Luvi = {}
 
-  -- First check for a bundled zip file appended to the executable
-  local path = uv.exepath()
-  local zip = miniz.new_reader(path)
-  if zip then
-    return commonBundle({path}, nil, args)
-  end
+function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 
-  -- Parse the arguments
-  local bundles = { }
-  local options = {}
-  local appArgs = { [0] = args[0] }
+	local executablePath = uv.exepath()
+	if self:IsZipApp(executablePath) then
+		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
+	end
 
-  local key
-  for i = 1, #args do
-    local arg = args[i]
-    if arg == "--" then
-      if #bundles == 0 then
-        i = i + 1
-        bundles[1] = args[i]
-      end
-      for j = i + 1, #args do
-        appArgs[#appArgs + 1] = args[j]
-      end
-      break
-    elseif key then
-      options[key] = arg
-      key = nil
-    else
-      local command = commands[arg]
-      if options[command] then
-        error("Duplicate flags: " .. command)
-      end
-      if command == "output" or command == "main" then
-        key = command
-      elseif command then
-        options[command] = true
-      else
-        if arg:sub(1, 1) == "-" then
-          error("Unknown flag: " .. arg)
-        end
-        bundles[#bundles + 1] = arg
-      end
-    end
-  end
+	self:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
+	self:DisplayVersionStrings()
+	self:DisplayHelpText()
 
-  if key then
-    error("Missing value for option: " .. key)
-  end
+	-- Don't run app when printing version or help
+	if self.options.version or self.options.help then
+		return EXIT_SUCCESS
+	end
 
-  -- Show help and version by default
-  if #bundles == 0 and not options.version and not options.help then
-    options.version = true
-    options.help = true
-  end
+	-- Build the app if output is given
+	if self.options.output then
+		return buildBundle(self.options.output, makeBundle(self.bundles))
+	end
 
-  if options.version then
-    version(args)
-  end
-  if options.help then
-    help(args)
-  end
-
-  -- Don't run app when printing version or help
-  if options.version or options.help then
-	return EXIT_SUCCESS
+	-- Run the luvi app with the extra args
+	return commonBundle(self.bundles, self.options.main, self.appArgs)
 end
 
-  -- Build the app if output is given
-  if options.output then
-    return buildBundle(options.output, makeBundle(bundles))
-  end
+function Luvi:IsZipApp(filePath)
+	local zip = miniz.new_reader(filePath)
+	return zip ~= nil
+end
 
-  -- Run the luvi app with the extra args
-  return commonBundle(bundles, options.main, appArgs)
+function Luvi:RunLuviApp(appPath, commandLineArguments)
+	return commonBundle({appPath}, nil, commandLineArguments)
+end
 
+function Luvi:ParseCommandLineArguments(args)
+	local bundles = { }
+	local options = {}
+	local appArgs = { [0] = args[0] }
+
+	local key
+	for i = 1, #args do
+	  local arg = args[i]
+	  if arg == "--" then
+		if #bundles == 0 then
+		  i = i + 1
+		  bundles[1] = args[i]
+		end
+		for j = i + 1, #args do
+		  appArgs[#appArgs + 1] = args[j]
+		end
+		break
+	  elseif key then
+		options[key] = arg
+		key = nil
+	  else
+		local command = commands[arg]
+		if options[command] then
+		  error("Duplicate flags: " .. command)
+		end
+		if command == "output" or command == "main" then
+		  key = command
+		elseif command then
+		  options[command] = true
+		else
+		  if arg:sub(1, 1) == "-" then
+			error("Unknown flag: " .. arg)
+		  end
+		  bundles[#bundles + 1] = arg
+		end
+	  end
+	end
+
+	if key then
+	  error("Missing value for option: " .. key)
+	end
+
+	-- Show help and version by default
+	if #bundles == 0 and not options.version and not options.help then
+		options.version = true
+		options.help = true
+	  end
+
+	self.bundles = bundles
+	self.options = options
+	self.args = args
+	self.appArgs = appArgs
+end
+
+function Luvi:DisplayVersionStrings()
+	if not self.options.version then return end
+
+	version(self.args)
+end
+
+function Luvi:DisplayHelpText()
+	if not self.options.help then return end
+
+	help(self.args)
+end
+
+return function(args)
+	Luvi:LuaMain(args)
 end
