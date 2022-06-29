@@ -408,8 +408,8 @@ function LuviAppBundle.CreateMergedBundle(appPaths)
 	return makeBundle(appPaths)
 end
 
-function LuviAppBundle.ExportAsZipFile(base, zip)
-	return buildBundle(base, zip)
+function LuviAppBundle.ExportAsZipFile(targetFilePath, bundle)
+	return buildBundle(targetFilePath, bundle)
 end
 
 return LuviAppBundle
