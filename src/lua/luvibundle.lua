@@ -307,12 +307,12 @@ local function commonBundle(bundlePaths, mainPath, args)
   mainPath = mainPath or "main.lua"
 
   local bundle = assert(makeBundle(bundlePaths))
-  luvi.bundle = bundle -- untested
+  luvi.bundle = bundle -- DNT (untested)
 
   bundle.paths = bundlePaths
   bundle.mainPath = mainPath
 
-  function bundle.action(path, action, ...) -- untested
+  function bundle.action(path, action, ...) -- DNT (untested)
     -- If it's a real path, run it directly.
     if uv.fs_access(path, "r") then return action(path) end
     -- Otherwise, copy to a temporary folder and run from there
@@ -331,7 +331,7 @@ local function commonBundle(bundlePaths, mainPath, args)
   end
 
 
-local function exportScriptGlobals() -- untested
+local function exportScriptGlobals() -- DNT (untested)
 	local cwd = uv.cwd()
 
 	_G.DEFAULT_USER_SCRIPT_ENTRY_POINT = "main.lua"
@@ -346,7 +346,7 @@ local function exportScriptGlobals() -- untested
 	_G.USER_SCRIPT_ROOT = scriptRoot
 end
 
-  function bundle.register(name, path) -- untested
+  function bundle.register(name, path) -- DNT (untested)
     if not path then path = name + ".lua" end
     package.preload[name] = function (...)
       local lua = assert(bundle.readfile(path))
@@ -385,7 +385,7 @@ end
   if mainRequire then
     return mainRequire("./" .. mainPath)
   else
-	-- untested
+	-- DNT (untested)
     local main = bundle.readfile(mainPath)
     if not main then error("Missing " .. mainPath .. " in " .. bundle.base) end
     local fn = assert(loadstring(main, "bundle:" .. mainPath))
