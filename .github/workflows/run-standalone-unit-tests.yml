@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Unit Testing
+    name: Test Lua modules
     runs-on: windows-latest # Doesn't matter, since we only test Lua modules here
 
     steps:
