@@ -193,5 +193,5 @@ function Luvi:DisplayHelpText()
 end
 
 return function(args)
-	Luvi:LuaMain(args)
+	return Luvi:LuaMain(args)
 end
