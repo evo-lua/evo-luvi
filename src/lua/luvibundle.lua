@@ -398,12 +398,19 @@ end
 -- Legacy export for makeBundle
 luvi.makeBundle = makeBundle
 
-return {
-  folderBundle = folderBundle, -- internal [LuviBundle_CreateFromDirectory]
-  chrootBundle = chrootBundle, -- internal [LuviBundle_InsertPrefix]
-  zipBundle = zipBundle, -- internal [LuviBundle_CreateFromZipFile]
-  buildBundle = buildBundle, -- [LuviBundle_ExportAsZipFile]
-  combinedBundle = combinedBundle, -- internal [LuviBundle_MergeContainedApps]
-  makeBundle = makeBundle, -- [LuviBundle_CreateMergedBundle]
-  commonBundle = commonBundle, -- [LuviBundle_RunContainedApp]
-}
+local LuviAppBundle = {}
+
+function LuviAppBundle.RunContainedApp(appPaths, entryPoint, commandLineArguments)
+	return commonBundle(appPaths, entryPoint, commandLineArguments)
+end
+
+function LuviAppBundle.CreateMergedBundle(appPaths)
+	return makeBundle(appPaths)
+end
+
+function LuviAppBundle.ExportAsZipFile(base, zip)
+	return buildBundle(base, zip)
+end
+
+return LuviAppBundle
+

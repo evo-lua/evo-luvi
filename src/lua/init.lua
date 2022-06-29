@@ -25,6 +25,8 @@ local commonBundle = luviBundle.commonBundle
 local makeBundle = luviBundle.makeBundle
 local buildBundle = luviBundle.buildBundle
 
+local LuviAppBundle = require("luvibundle")
+
 local EXIT_SUCCESS = 0
 
 local function generateOptionsString()
@@ -110,11 +112,11 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 
 	-- Build the app if output is given
 	if self.options.output then
-		return buildBundle(self.options.output, makeBundle(self.bundles))
+		return LuviAppBundle.ExportAsZipFile(self.options.output, LuviAppBundle.CreateMergedBundle(self.bundles))
 	end
 
 	-- Run the luvi app with the extra args
-	return commonBundle(self.bundles, self.options.main, self.appArgs)
+	return LuviAppBundle.RunContainedApp(self.bundles, self.options.main, self.appArgs)
 end
 
 function Luvi:IsZipApp(filePath)
@@ -123,7 +125,7 @@ function Luvi:IsZipApp(filePath)
 end
 
 function Luvi:RunLuviApp(appPath, commandLineArguments)
-	return commonBundle({appPath}, nil, commandLineArguments)
+	return LuviAppBundle.RunContainedApp({appPath}, nil, commandLineArguments)
 end
 
 function Luvi:ParseCommandLineArguments(args)
