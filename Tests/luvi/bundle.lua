@@ -76,7 +76,7 @@ describe("luvi", function()
 				assertEquals(_G.import, nil)
 
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				local bundle = luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
+				local bundle = luvibundle.commonBundle({ "src/lua/"}, "init.lua")
 
 				assertEquals(type(_G.dump), "function")
 				assertEquals(type(_G.import), "function")
