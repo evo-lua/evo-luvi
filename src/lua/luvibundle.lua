@@ -160,6 +160,7 @@ local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
 
+-- Create a self-executing zip app (compiled Luvi app bundle) from the given Luvi app
 local function buildBundle(target, bundle)
   target = pathJoin(uv.cwd(), target)
   print("Creating new binary: " .. target)
@@ -271,6 +272,7 @@ local function combinedBundle(bundles)
   return bundle
 end
 
+-- Combines multiple zip files or directories (containing a Luvi app each) into a single Luvi app bundle
 local function makeBundle(bundlePaths)
   local parts = {}
   for n = 1, #bundlePaths do
@@ -295,6 +297,7 @@ local function makeBundle(bundlePaths)
   return combinedBundle(parts)
 end
 
+-- Executes one or several Luvi app bundles with the given arguments and entry point (script file to run)
 local function commonBundle(bundlePaths, mainPath, args)
 
   if type(bundlePaths) ~= "table" then
