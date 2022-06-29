@@ -47,7 +47,7 @@ describe("luvi", function()
 
 				local cliArguments = { "something" }
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				local bundle = luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
+				luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
 				assertEquals(_G.args, cliArguments)
 			end)
 
@@ -60,7 +60,7 @@ describe("luvi", function()
 				assertEquals(package.preload.v8_string, nil)
 				assertEquals(package.preload.virtual_file_system, nil)
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				local bundle = luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
+				luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
 
 				assertEquals(type(package.preload.v8_string), "table")
 				assertEquals(type(package.preload.virtual_file_system), "table")
@@ -76,7 +76,7 @@ describe("luvi", function()
 				assertEquals(_G.import, nil)
 
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				local bundle = luvibundle.commonBundle({ "src/lua/"}, "init.lua")
+				luvibundle.commonBundle({ "src/lua/"}, "init.lua")
 
 				assertEquals(type(_G.dump), "function")
 				assertEquals(type(_G.import), "function")
