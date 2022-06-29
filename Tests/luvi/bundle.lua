@@ -11,15 +11,9 @@ describe("luvi", function()
 
 	describe("bundle", function()
 
-		describe("folderBundle", function()
-
-		end)
-
-		describe("chrootBundle", function() end)
-		describe("zipBundle", function() end)
 		describe("buildBundle", function() end)
-		describe("combinedBundle", function() end)
 		describe("makeBundle", function() end)
+
 		describe("commonBundle", function()
 
 			it("should use the default entry point if none was passed", function()
