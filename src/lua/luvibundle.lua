@@ -399,11 +399,11 @@ end
 luvi.makeBundle = makeBundle
 
 return {
-  folderBundle = folderBundle, -- internal
-  chrootBundle = chrootBundle, -- internal
-  zipBundle = zipBundle, -- internal
-  buildBundle = buildBundle,
-  combinedBundle = combinedBundle, -- internal
-  makeBundle = makeBundle,
-  commonBundle = commonBundle,
+  folderBundle = folderBundle, -- internal [LuviBundle_CreateFromDirectory]
+  chrootBundle = chrootBundle, -- internal [LuviBundle_InsertPrefix]
+  zipBundle = zipBundle, -- internal [LuviBundle_CreateFromZipFile]
+  buildBundle = buildBundle, -- [LuviBundle_ExportAsZipFile]
+  combinedBundle = combinedBundle, -- internal [LuviBundle_MergeContainedApps]
+  makeBundle = makeBundle, -- [LuviBundle_CreateMergedBundle]
+  commonBundle = commonBundle, -- [LuviBundle_RunContainedApp]
 }
