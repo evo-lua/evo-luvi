@@ -401,6 +401,9 @@ luvi.makeBundle = makeBundle
 local LuviAppBundle = {}
 
 function LuviAppBundle.RunContainedApp(appPaths, entryPoint, commandLineArguments)
+
+	-- local appBundle = makeBundle(), error handling -> LuviAppBundle:
+	-- move to init script: LuviAppBundle(appPaths) -- constructor
 	return commonBundle(appPaths, entryPoint, commandLineArguments)
 end
 
@@ -414,3 +417,9 @@ end
 
 return LuviAppBundle
 
+-- return {
+--   folderBundle = folderBundle, -- internal [LuviBundle_CreateFromDirectory]
+--   chrootBundle = chrootBundle, -- internal [LuviBundle_InsertPrefix]
+--   zipBundle = zipBundle, -- internal [LuviBundle_CreateFromZipFile]
+--   combinedBundle = combinedBundle, -- internal [LuviBundle_MergeContainedApps]
+-- }
