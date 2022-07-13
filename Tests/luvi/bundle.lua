@@ -25,7 +25,7 @@ describe("luvi", function()
 			it("should raise an error if no bundle paths were passed", function()
 				local success, errorMessage = pcall(luvibundle.commonBundle)
 				assertFalse(success)
-				assertEquals(errorMessage, "Usage: commonBundle( bundlePaths : table[, mainPath : string, args : table)")
+				assertEquals(errorMessage, "Usage: commonBundle (bundlePaths : table, mainPath : string?, args : table?)")
 			end)
 
 			it("should store the passed file paths", function()
