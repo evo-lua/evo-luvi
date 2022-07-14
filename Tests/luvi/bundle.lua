@@ -43,18 +43,18 @@ describe("luvi", function()
 				assertEquals(luvi.bundle, appBundle)
 			end)
 
-			it("should store the most recently-loaded bundle properties in the global environment", function()
-				-- TBD Should it really do this?
+			-- it("should store the most recently-loaded bundle properties in the global environment", function()
+			-- 	-- TBD Should it really do this?
 
-				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				LuviAppBundle.RunContainedApp({ "src/lua/"}, "luvibundle.lua", { "something.lua" })
+			-- 	-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
+			-- 	LuviAppBundle.RunContainedApp({ "src/lua/"}, "luvibundle.lua", { "something.lua" })
 
-				local uv = require("uv")
-				-- TODO This seems super fragile. Needs a proper API that can be mocked
-				assertEquals(_G.USER_SCRIPT_FILE, "something.lua")
-				assertEquals(_G.USER_SCRIPT_PATH, path.join(uv.cwd(), "main.lua"))
-				assertEquals(_G.USER_SCRIPT_ROOT, uv.cwd())
-			end)
+			-- 	local uv = require("uv")
+			-- 	-- TODO This seems super fragile. Needs a proper API that can be mocked
+			-- 	assertEquals(_G.USER_SCRIPT_FILE, "something.lua")
+			-- 	assertEquals(_G.USER_SCRIPT_PATH, path.join(uv.cwd(), "main.lua"))
+			-- 	assertEquals(_G.USER_SCRIPT_ROOT, uv.cwd())
+			-- end)
 
 			it("should export the CLI arguments array into the global environment", function()
 				-- Whether or not this SHOULD really be done is a different question...
