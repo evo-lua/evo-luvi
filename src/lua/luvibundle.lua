@@ -368,19 +368,16 @@ end
   end
 
   if not args then
-    return bundle, mainRequire
+    return bundle
   end
-  if mainRequire then
-    return mainRequire("./" .. mainPath)
-  else
-	-- DNT (untested)
-    local main = bundle.readfile(mainPath)
-    if not main then error("Missing " .. mainPath .. " in " .. bundle.base) end
-    local fn = assert(loadstring(main, "bundle:" .. mainPath))
 
-	exportScriptGlobals()
-    return fn(unpack(args))
-  end
+  -- DNT (untested)
+  local main = bundle.readfile(mainPath)
+  if not main then error("Missing " .. mainPath .. " in " .. bundle.base) end
+  local fn = assert(loadstring(main, "bundle:" .. mainPath))
+
+  exportScriptGlobals()
+  return fn(unpack(args))
 end
 
 -- Legacy export for makeBundle
