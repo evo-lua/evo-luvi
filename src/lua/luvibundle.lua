@@ -357,11 +357,6 @@ end
 
   _G.args = args
 
-  -- Auto-setup global p and libuv version of print [deprecated: remove in favor of dump extension]
-  if mainRequire and (bundle.stat("deps/pretty-print") or bundle.stat("deps/pretty-print.lua")) then
-    _G.p = mainRequire('pretty-print').prettyPrint
-  end
-
   -- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
   for name, primitiveLoader in pairs(primitives) do
 	package.preload[name] = primitiveLoader()
