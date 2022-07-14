@@ -275,25 +275,33 @@ end
 -- Combines multiple zip files or directories (containing a Luvi app each) into a single Luvi app bundle
 local function makeBundle(bundlePaths)
   local parts = {}
-  for n = 1, #bundlePaths do
+  for n = 1, #bundlePaths do -- for each passed bundle path
+
+	-- Resolve to abs paths
     local path = pathJoin(uv.cwd(), bundlePaths[n])
     bundlePaths[n] = path
+
     local bundle
     local zip = miniz.new_reader(path)
+	-- if it's a zip bundle, load from zip
     if zip then
       bundle = zipBundle(path, zip)
     else
+		-- must be app bundle, load from disk
       local stat = uv.fs_stat(path)
       if not stat or stat.type ~= "directory" then
         error("ERROR: " .. path .. " is not a zip file or a folder")
       end
       bundle = folderBundle(path)
     end
+
     parts[n] = bundle
   end
   if #parts == 1 then
     return parts[1]
   end
+
+  -- combine bundles (why??)
   return combinedBundle(parts)
 end
 
