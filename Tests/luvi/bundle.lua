@@ -5,7 +5,9 @@ local import = _G.import
 local assertEquals = _G.assertEquals
 local assertFalse = _G.assertFalse
 
+local luvi = require("luvi")
 local LuviAppBundle = import("../../src/lua/luvibundle.lua")
+
 
 describe("luvi", function()
 
@@ -33,6 +35,12 @@ describe("luvi", function()
 				local files = {} -- Can't add files here or it will attempt to load them from disk...
 				local bundle = LuviAppBundle.RunContainedApp(files)
 				assertEquals(tostring(bundle.paths), tostring(files)) -- stringify to always check the table reference, not contents
+			end)
+
+			-- TBD: Can this be streamlined? Seems like a pretty strong side effect
+			it("should store the most-recently loaded bundle in the luvi module", function()
+				local appBundle = LuviAppBundle.RunContainedApp({ }, "something.lua")
+				assertEquals(luvi.bundle, appBundle)
 			end)
 
 			it("should export the CLI arguments array into the global environment", function()

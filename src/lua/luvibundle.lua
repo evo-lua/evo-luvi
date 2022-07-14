@@ -298,7 +298,8 @@ local function makeBundle(bundlePaths)
 end
 
 -- Executes one or several Luvi app bundles with the given arguments and entry point (script file to run)
-local function commonBundle(bundlePaths, mainPath, args) -- TODO Rename/integrate with RunContainedApp
+-- TODO Rename/integrate with RunContainedApp
+local function commonBundle(bundlePaths, mainPath, args)
 
   if type(bundlePaths) ~= "table" then
 	return error("Usage: RunContainedApp(bundlePaths : table, mainPath : string?, args : table?)")
@@ -307,7 +308,7 @@ local function commonBundle(bundlePaths, mainPath, args) -- TODO Rename/integrat
   mainPath = mainPath or "main.lua"
 
   local bundle = assert(makeBundle(bundlePaths))
-  luvi.bundle = bundle -- DNT (untested)
+  luvi.bundle = bundle -- TBD: Why?
 
   bundle.paths = bundlePaths
   bundle.mainPath = mainPath
