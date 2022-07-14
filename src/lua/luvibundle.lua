@@ -389,7 +389,7 @@ end
 end
 
 -- Legacy export for makeBundle
-luvi.makeBundle = makeBundle
+-- luvi.makeBundle = makeBundle
 
 local LuviAppBundle = {}
 
