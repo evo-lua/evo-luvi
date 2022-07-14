@@ -298,10 +298,10 @@ local function makeBundle(bundlePaths)
 end
 
 -- Executes one or several Luvi app bundles with the given arguments and entry point (script file to run)
-local function commonBundle(bundlePaths, mainPath, args)
+local function commonBundle(bundlePaths, mainPath, args) -- TODO Rename/integrate with RunContainedApp
 
   if type(bundlePaths) ~= "table" then
-	return error("Usage: commonBundle( bundlePaths : table[, mainPath : string, args : table)")
+	return error("Usage: RunContainedApp(bundlePaths : table, mainPath : string?, args : table?)")
   end
 
   mainPath = mainPath or "main.lua"
@@ -401,7 +401,6 @@ luvi.makeBundle = makeBundle
 local LuviAppBundle = {}
 
 function LuviAppBundle.RunContainedApp(appPaths, entryPoint, commandLineArguments)
-
 	-- local appBundle = makeBundle(), error handling -> LuviAppBundle:
 	-- move to init script: LuviAppBundle(appPaths) -- constructor
 	return commonBundle(appPaths, entryPoint, commandLineArguments)

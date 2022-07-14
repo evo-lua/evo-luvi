@@ -5,33 +5,33 @@ local import = _G.import
 local assertEquals = _G.assertEquals
 local assertFalse = _G.assertFalse
 
-local luvibundle = import("../../src/lua/luvibundle.lua")
+local LuviAppBundle = import("../../src/lua/luvibundle.lua")
 
 describe("luvi", function()
 
-	describe("bundle", function()
+	describe("LuviAppBundle", function()
 
 		describe("buildBundle", function() end)
 		describe("makeBundle", function() end)
 
-		describe("commonBundle", function()
+		describe("RunContainedApp", function()
 
 			it("should use the default entry point if none was passed", function()
 				local expectedDefaultEntryPoint = _G.DEFAULT_USER_SCRIPT_ENTRY_POINT
-				local bundle = luvibundle.commonBundle({})
+				local bundle = LuviAppBundle.RunContainedApp({})
 				assertEquals(bundle.mainPath, expectedDefaultEntryPoint)
 			end)
 
 			it("should raise an error if no bundle paths were passed", function()
-				local success, errorMessage = pcall(luvibundle.commonBundle)
+				local success, errorMessage = pcall(LuviAppBundle.RunContainedApp)
 				assertFalse(success)
-				assertEquals(errorMessage, "Usage: commonBundle (bundlePaths : table, mainPath : string?, args : table?)")
+				assertEquals(errorMessage, "Usage: RunContainedApp(bundlePaths : table, mainPath : string?, args : table?)")
 			end)
 
 			it("should store the passed file paths", function()
 				-- Not sure WHY they need to be stored, but oh well...
 				local files = {} -- Can't add files here or it will attempt to load them from disk...
-				local bundle = luvibundle.commonBundle(files)
+				local bundle = LuviAppBundle.RunContainedApp(files)
 				assertEquals(tostring(bundle.paths), tostring(files)) -- stringify to always check the table reference, not contents
 			end)
 
@@ -41,7 +41,7 @@ describe("luvi", function()
 
 				local cliArguments = { "something" }
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
+				LuviAppBundle.RunContainedApp({ "src/lua/"}, "init.lua", cliArguments)
 				assertEquals(_G.args, cliArguments)
 			end)
 
@@ -54,7 +54,7 @@ describe("luvi", function()
 				assertEquals(package.preload.v8_string, nil)
 				assertEquals(package.preload.virtual_file_system, nil)
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				luvibundle.commonBundle({ "src/lua/"}, "init.lua", cliArguments)
+				LuviAppBundle.RunContainedApp({ "src/lua/"}, "init.lua", cliArguments)
 
 				assertEquals(type(package.preload.v8_string), "table")
 				assertEquals(type(package.preload.virtual_file_system), "table")
@@ -70,7 +70,7 @@ describe("luvi", function()
 				assertEquals(_G.import, nil)
 
 				-- Important: The file needs to actually exist (for now... needs refactoring to allow easier testing)
-				luvibundle.commonBundle({ "src/lua/"}, "init.lua")
+				LuviAppBundle.RunContainedApp({ "src/lua/"}, "init.lua")
 
 				assertEquals(type(_G.dump), "function")
 				assertEquals(type(_G.import), "function")

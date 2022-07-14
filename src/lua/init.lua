@@ -20,11 +20,6 @@ local uv = require('uv')
 local luvi = require('luvi')
 local miniz = require('miniz')
 
-local luviBundle = require('luvibundle')
-local commonBundle = luviBundle.commonBundle
-local makeBundle = luviBundle.makeBundle
-local buildBundle = luviBundle.buildBundle
-
 local LuviAppBundle = require("luvibundle")
 
 local EXIT_SUCCESS = 0
