@@ -19,3 +19,5 @@ cd test/extensions/import
 ./test-import-from-compiled-bundle.sh
 
 cd ../../..
+
+mv luvi evo-luvi
