@@ -40,3 +40,5 @@ IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
 REM This is just added for convenience when repeatedly calling the script via CLI
 cd ../../..
+
+move luvi.exe evo-luvi.exe
