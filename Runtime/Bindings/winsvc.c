@@ -15,7 +15,7 @@
 *
 */
 #define LUA_LIB
-#include "luvi.h"
+#include "../luvi.h"
 
 #include <windows.h>
 #include <winsvc.h>

@@ -139,14 +139,14 @@ endif (WithZLIB)
 add_definitions( -DLUVI_VERSION="${LUVI_VERSION}" )
 
 if(WIN32)
-  set(winsvc src/winsvc.h src/winsvcaux.h src/winsvc.c src/winsvcaux.c)
+  set(winsvc Runtime/Bindings/winsvc.h Runtime/Bindings/winsvcaux.h Runtime/Bindings/winsvc.c Runtime/Bindings/winsvcaux.c)
   if(WithSharedLibluv)
     add_definitions( -DLUA_BUILD_AS_DLL -DBUILDING_UV_SHARED )
   endif()
   add_definitions( -DWITH_WINSVC )
   add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS )
 
-  add_library (luvi_renamed src/luvi_renamed.c)
+  add_library (luvi_renamed Runtime/luvi_renamed.c)
 endif()
 
 if(UNIX)
@@ -162,18 +162,18 @@ if(LPEGLIB_DIR)
 endif()
 lua_add_executable(luvi
   ${winsvc}
-  src/main.c
-  src/luvi_compat.c
-  src/lua/init.lua
-  src/lua/luvipath.lua
-  src/lua/luvibundle.lua
-  src/lua/primitives.lua
-  src/lua/primitives/v8_string.lua
-  src/lua/primitives/virtual_file_system.lua
-  src/lua/extensions.lua
-  src/lua/extensions/dump.lua
-  src/lua/extensions/import.lua
-  src/lua/extensions/path.lua
+  Runtime/main.c
+  Runtime/luvi_compat.c
+  Runtime/LuaEnvironment/init.lua
+  Runtime/LuaEnvironment/luvipath.lua
+  Runtime/LuaEnvironment/luvibundle.lua
+  Runtime/LuaEnvironment/primitives.lua
+  Runtime/LuaEnvironment/primitives/v8_string.lua
+  Runtime/LuaEnvironment/primitives/virtual_file_system.lua
+  Runtime/LuaEnvironment/extensions.lua
+  Runtime/LuaEnvironment/extensions/dump.lua
+  Runtime/LuaEnvironment/extensions/import.lua
+  Runtime/LuaEnvironment/extensions/path.lua
   ${lpeg_re_lua}
 )
 

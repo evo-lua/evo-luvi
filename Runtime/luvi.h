@@ -48,8 +48,8 @@
 LUALIB_API int luaopen_zlib(lua_State * const L);
 #endif
 #ifdef WITH_WINSVC
-#include "winsvc.h"
-#include "winsvcaux.h"
+#include "Bindings/winsvc.h"
+#include "Bindings/winsvcaux.h"
 #endif
 #ifdef WITH_LPEG
 int luaopen_lpeg(lua_State* L);
@@ -57,4 +57,3 @@ int luaopen_lpeg(lua_State* L);
 
 void luvi_openlibs(lua_State *L);
 #endif
-

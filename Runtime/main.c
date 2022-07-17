@@ -18,13 +18,13 @@
 #define LUA_LIB
 #include "luvi.h"
 #include "luv.h"
-#include "lenv.c"
+#include "Bindings/lenv.c"
 #include "luvi.c"
 #ifndef MINIZ_NO_STDIO
 #define MINIZ_NO_STDIO
 #endif
-#include "lminiz.c"
-#include "snapshot.c"
+#include "Bindings/lminiz.c"
+#include "Bindings/snapshot.c"
 #ifdef WITH_PCRE
 int luaopen_rex_pcre(lua_State* L);
 #endif
@@ -73,7 +73,7 @@ static lua_State* vm_acquire(){
   lua_pushcfunction(L, luaopen_luv);
   lua_call(L, 0, 1);
   lua_setfield(L, -2, "uv");
-  
+
   // remove package.loaded
   lua_remove(L, -1);
 

@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // Adapted from https://github.com/cloudwu/lua-snapshot
 
-#include "./luvi.h"
+#include "../luvi.h"
 
 #if (LUA_VERSION_NUM > 501)
 #define	lua_getfenv lua_getuservalue
