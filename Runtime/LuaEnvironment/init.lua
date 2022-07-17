@@ -50,8 +50,10 @@ local commands = {
   ["--help"] = "help",
 }
 
-local function version(args)
-  print(string.format("%s %s", args[1], luvi.version))
+local LUVI_EXECUTABLE_NAME = "evo-luvi"
+
+local function version()
+  print(string.format("%s %s", LUVI_EXECUTABLE_NAME, luvi.version))
   print(generateOptionsString())
 end
 
@@ -87,7 +89,7 @@ Examples:
   # Run unit tests for a luvi app using custom main
   $(LUVI) path/to/app -m tests/run.lua
 ]]
-  print((string.gsub(usage, "%$%(LUVI%)", args[1])))
+  print((string.gsub(usage, "%$%(LUVI%)", LUVI_EXECUTABLE_NAME)))
 end
 
 local Luvi = {}
