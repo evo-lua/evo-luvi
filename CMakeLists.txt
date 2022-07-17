@@ -164,16 +164,16 @@ lua_add_executable(luvi
   ${winsvc}
   Runtime/main.c
   Runtime/luvi_compat.c
-  src/lua/init.lua
-  src/lua/luvipath.lua
-  src/lua/luvibundle.lua
-  src/lua/primitives.lua
-  src/lua/primitives/v8_string.lua
-  src/lua/primitives/virtual_file_system.lua
-  src/lua/extensions.lua
-  src/lua/extensions/dump.lua
-  src/lua/extensions/import.lua
-  src/lua/extensions/path.lua
+  Runtime/LuaEnvironment/init.lua
+  Runtime/LuaEnvironment/luvipath.lua
+  Runtime/LuaEnvironment/luvibundle.lua
+  Runtime/LuaEnvironment/primitives.lua
+  Runtime/LuaEnvironment/primitives/v8_string.lua
+  Runtime/LuaEnvironment/primitives/virtual_file_system.lua
+  Runtime/LuaEnvironment/extensions.lua
+  Runtime/LuaEnvironment/extensions/dump.lua
+  Runtime/LuaEnvironment/extensions/import.lua
+  Runtime/LuaEnvironment/extensions/path.lua
   ${lpeg_re_lua}
 )
 
