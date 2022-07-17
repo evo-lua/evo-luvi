@@ -51,7 +51,7 @@ local commands = {
 }
 
 local function version(args)
-  print(string.format("%s %s", args[0], luvi.version))
+  print(string.format("%s %s", args[1], luvi.version))
   print(generateOptionsString())
 end
 
@@ -87,7 +87,7 @@ Examples:
   # Run unit tests for a luvi app using custom main
   $(LUVI) path/to/app -m tests/run.lua
 ]]
-  print((string.gsub(usage, "%$%(LUVI%)", args[0])))
+  print((string.gsub(usage, "%$%(LUVI%)", args[1])))
 end
 
 local Luvi = {}
@@ -129,7 +129,7 @@ end
 function Luvi:ParseCommandLineArguments(args)
 	local bundles = { }
 	local options = {}
-	local appArgs = { [0] = args[0] }
+	local appArgs = {}
 
 	local key
 	for i = 1, #args do
