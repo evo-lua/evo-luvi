@@ -182,7 +182,7 @@ int main(int argc, char* argv[] ) {
 
   // Pass the command-line arguments to init as a zero-indexed table
   lua_createtable (L, argc, 0);
-  for (index = 0; index < argc; index++) {
+  for (index = 1; index < argc + 1; index++) {
     lua_pushstring(L, argv[index]);
     lua_rawseti(L, -2, index);
   }
