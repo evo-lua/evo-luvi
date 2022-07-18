@@ -28,60 +28,7 @@ local makeBundle = luviBundle.makeBundle
 local buildBundle = luviBundle.buildBundle
 
 local EXIT_SUCCESS = 0
-
-local function generateOptionsString()
-  local s = {}
-  for k, v in pairs(luvi.options) do
-    if type(v) == 'boolean' then
-      table.insert(s, k)
-    else
-      table.insert(s, string.format("%s: %s", k, v))
-    end
-  end
-  return table.concat(s, "\n")
-end
-
 local LUVI_EXECUTABLE_NAME = "evo-luvi"
-
-local function version()
-  print(string.format("%s %s", LUVI_EXECUTABLE_NAME, luvi.version))
-  print(generateOptionsString())
-end
-
-local function help(args)
-
-  local usage = [[
-Usage: $(LUVI) bundle+ [options] [-- extra args]
-
-  bundle            Path to directory or zip file containing bundle source.
-                    `bundle` can be specified multiple times to layer bundles
-                    on top of each other.
-  --version         Show luvi version and compiled in options.
-  --output target   Build a luvi app by zipping the bundle and inserting luvi.
-  --main path       Specify a custom main bundle path (normally main.lua)
-  --help            Show this help file.
-  --                All args after this go to the luvi app itself.
-
-Examples:
-
-  # Run an app from disk, but pass in arguments
-  $(LUVI) path/to/app -- app args
-
-  # Run from a app zip
-  $(LUVI) path/to/app.zip
-
-  # Run an app that layers on top of luvit
-  $(LUVI) path/to/app path/to/luvit
-
-  # Bundle an app with luvi to create standalone
-  $(LUVI) path/to/app -o target
-  ./target some args
-
-  # Run unit tests for a luvi app using custom main
-  $(LUVI) path/to/app -m tests/run.lua
-]]
-  print((string.gsub(usage, "%$%(LUVI%)", LUVI_EXECUTABLE_NAME)))
-end
 
 local Luvi = {}
 
@@ -91,8 +38,6 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	if self:IsZipApp(executablePath) then
 		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
 	end
-
-	self.args = commandLineArgumentsPassedFromC
 
 	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
 	self:DisplayVersionStrings(commandInfo)
@@ -124,13 +69,58 @@ end
 function Luvi:DisplayVersionStrings(commandInfo)
 	if not commandInfo.options.version then return end
 
-	version(self.args)
+	print(string.format("%s %s", LUVI_EXECUTABLE_NAME, luvi.version))
+	print(self:GenerateOptionsString())
+end
+
+function Luvi:GenerateOptionsString()
+	local optionsStringTokens = {}
+
+	for key, value in pairs(luvi.options) do
+		if type(value) == 'boolean' then
+			table.insert(optionsStringTokens, key)
+		else
+			table.insert(optionsStringTokens, string.format("%s: %s", key, value))
+		end
+	end
+
+	return table.concat(optionsStringTokens, "\n")
 end
 
 function Luvi:DisplayHelpText(commandInfo)
 	if not commandInfo.options.help then return end
 
-	help(self.args)
+	local usage = [[
+		Usage: $(LUVI) bundle+ [options] [-- extra args]
+
+		  bundle            Path to directory or zip file containing bundle source.
+							`bundle` can be specified multiple times to layer bundles
+							on top of each other.
+		  --version         Show luvi version and compiled in options.
+		  --output target   Build a luvi app by zipping the bundle and inserting luvi.
+		  --main path       Specify a custom main bundle path (normally main.lua)
+		  --help            Show this help file.
+		  --                All args after this go to the luvi app itself.
+
+		Examples:
+
+		  # Run an app from disk, but pass in arguments
+		  $(LUVI) path/to/app -- app args
+
+		  # Run from a app zip
+		  $(LUVI) path/to/app.zip
+
+		  # Run an app that layers on top of luvit
+		  $(LUVI) path/to/app path/to/luvit
+
+		  # Bundle an app with luvi to create standalone
+		  $(LUVI) path/to/app -o target
+		  ./target some args
+
+		  # Run unit tests for a luvi app using custom main
+		  $(LUVI) path/to/app -m tests/run.lua
+	]]
+	print((string.gsub(usage, "%$%(LUVI%)", LUVI_EXECUTABLE_NAME)))
 end
 
 return function(args)
