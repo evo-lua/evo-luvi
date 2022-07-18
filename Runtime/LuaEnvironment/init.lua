@@ -20,6 +20,8 @@ local uv = require('uv')
 local luvi = require('luvi')
 local miniz = require('miniz')
 
+local CLI = require("CLI")
+
 local luviBundle = require('luvibundle')
 local commonBundle = luviBundle.commonBundle
 local makeBundle = luviBundle.makeBundle
@@ -101,22 +103,24 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
 	end
 
-	self:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
-	self:DisplayVersionStrings()
-	self:DisplayHelpText()
+	self.args = commandLineArgumentsPassedFromC
+
+	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
+	self:DisplayVersionStrings(commandInfo)
+	self:DisplayHelpText(commandInfo)
 
 	-- Don't run app when printing version or help
-	if self.options.version or self.options.help then
+	if commandInfo.options.version or commandInfo.options.help then
 		return EXIT_SUCCESS
 	end
 
 	-- Build the app if output is given
-	if self.options.output then
-		return buildBundle(self.options.output, makeBundle(self.bundles))
+	if commandInfo.options.output then
+		return buildBundle(commandInfo.options.output, makeBundle(commandInfo.bundles))
 	end
 
 	-- Run the luvi app with the extra args
-	return commonBundle(self.bundles, self.options.main, self.appArgs)
+	return commonBundle(commandInfo.bundles, commandInfo.options.main, commandInfo.appArgs)
 end
 
 function Luvi:IsZipApp(filePath)
@@ -178,18 +182,17 @@ function Luvi:ParseCommandLineArguments(args)
 
 	self.bundles = bundles
 	self.options = options
-	self.args = args
 	self.appArgs = appArgs
 end
 
-function Luvi:DisplayVersionStrings()
-	if not self.options.version then return end
+function Luvi:DisplayVersionStrings(commandInfo)
+	if not commandInfo.options.version then return end
 
 	version(self.args)
 end
 
-function Luvi:DisplayHelpText()
-	if not self.options.help then return end
+function Luvi:DisplayHelpText(commandInfo)
+	if not commandInfo.options.help then return end
 
 	help(self.args)
 end
