@@ -164,6 +164,7 @@ lua_add_executable(luvi
   ${winsvc}
   Runtime/main.c
   Runtime/luvi_compat.c
+  Runtime/LuaEnvironment/CLI.lua
   Runtime/LuaEnvironment/init.lua
   Runtime/LuaEnvironment/luvipath.lua
   Runtime/LuaEnvironment/luvibundle.lua
