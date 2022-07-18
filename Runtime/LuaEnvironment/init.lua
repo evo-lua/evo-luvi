@@ -50,11 +50,11 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 
 	-- Build the app if output is given
 	if commandInfo.options.output then
-		return buildBundle(commandInfo.options.output, makeBundle(commandInfo.bundles))
+		return buildBundle(commandInfo.options.output, makeBundle({ commandInfo.appPath }))
 	end
 
 	-- Run the luvi app with the extra args
-	return commonBundle(commandInfo.bundles, commandInfo.options.main, commandInfo.appArgs)
+	return commonBundle({ commandInfo.appPath }, commandInfo.options.main, commandInfo.appArgs)
 end
 
 function Luvi:IsZipApp(filePath)
