@@ -1,4 +1,7 @@
-local CLI = {}
+local CLI = {
+	COMBINED_BUNDLES_ERROR = "Merging multiple bundles is no longer supported; " ..
+	"please restructure your application to use a single entry point instead"
+}
 
 function CLI:ParseCommandLineArguments(argumentsVector)
     if type(argumentsVector) ~= "table" then
@@ -41,6 +44,9 @@ function CLI:ParseCommandLineArguments(argumentsVector)
         end
     end
 
+    if #bundles > 1 then
+		error(self.COMBINED_BUNDLES_ERROR, 0)
+	end
     if key then error("Missing value for option: " .. key, 0) end
 
     -- Show help and version by default
