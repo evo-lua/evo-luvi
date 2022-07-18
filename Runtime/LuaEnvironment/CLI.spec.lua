@@ -17,7 +17,7 @@ describe("ParseCommandLineArguments", function()
 				help = true,
 				version = true,
 			},
-			bundles = {},
+			appPath = "",
 			appArgs = {},
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -63,7 +63,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				version = true,
 			},
-			bundles = {},
+			appPath = "",
 			appArgs = {},
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -75,7 +75,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				version = true,
 			},
-			bundles = {},
+			appPath = "",
 			appArgs = {},
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -87,7 +87,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				help = true,
 			},
-			bundles = {},
+			appPath = "",
 			appArgs = {},
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -99,7 +99,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				help = true,
 			},
-			bundles = {},
+			appPath = "",
 			appArgs = {},
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -117,7 +117,7 @@ describe("ParseCommandLineArguments", function()
 		local expectedCommandInfo = {
 			options = {
 			},
-			bundles = { "wtf.lua" },
+			appPath = "wtf.lua",
 			appArgs = { "something", "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -128,7 +128,7 @@ describe("ParseCommandLineArguments", function()
 		local expectedCommandInfo = {
 			options = {
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "something", "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -139,7 +139,7 @@ describe("ParseCommandLineArguments", function()
 		local expectedCommandInfo = {
 			options = {
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "something", "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -151,7 +151,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				output = "something.exe",
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -163,7 +163,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				output = "something.exe",
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -176,7 +176,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				main = "something.lua",
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)
@@ -188,7 +188,7 @@ describe("ParseCommandLineArguments", function()
 			options = {
 				main = "something.lua",
 			},
-			bundles = { "file1.lua" },
+			appPath = "file1.lua",
 			appArgs = { "42" },
 		}
 		assert.same(expectedCommandInfo, commandInfo)

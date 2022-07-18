@@ -55,7 +55,7 @@ function CLI:ParseCommandLineArguments(argumentsVector)
         options.help = true
     end
 
-    return {bundles = bundles, options = options, appArgs = appArgs}
+    return {appPath = bundles[1] or "", options = options, appArgs = appArgs}
 
 end
 
