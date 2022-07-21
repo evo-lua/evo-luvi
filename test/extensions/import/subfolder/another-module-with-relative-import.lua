@@ -1,5 +1,5 @@
 local moduleWithParent = {
-	someField = 666
+	someField = 666,
 }
 
 local importedModule = import("../module-relative-import-target-subfolder.lua")

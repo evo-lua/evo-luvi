@@ -17,36 +17,37 @@
 
 #include "./luvi.h"
 
-LUALIB_API int luaopen_luvi(lua_State *L) {
+LUALIB_API int luaopen_luvi(lua_State* L)
+{
 #if defined(WITH_OPENSSL) || defined(WITH_PCRE)
-  char buffer[1024];
+	char buffer[1024];
 #endif
-  lua_newtable(L);
+	lua_newtable(L);
 #ifdef LUVI_VERSION
-  lua_pushstring(L, ""LUVI_VERSION"");
-  lua_setfield(L, -2, "version");
+	lua_pushstring(L, "" LUVI_VERSION "");
+	lua_setfield(L, -2, "version");
 #endif
-  lua_newtable(L);
+	lua_newtable(L);
 #ifdef WITH_OPENSSL
-  snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
-    SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
-  lua_pushstring(L, buffer);
-  lua_setfield(L, -2, "ssl");
+	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
+		SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
+	lua_pushstring(L, buffer);
+	lua_setfield(L, -2, "ssl");
 #endif
 #ifdef WITH_PCRE
-  lua_pushstring(L, pcre_version());
-  lua_setfield(L, -2, "rex");
+	lua_pushstring(L, pcre_version());
+	lua_setfield(L, -2, "rex");
 #endif
 #ifdef WITH_ZLIB
-  lua_pushstring(L, zlibVersion());
-  lua_setfield(L, -2, "zlib");
+	lua_pushstring(L, zlibVersion());
+	lua_setfield(L, -2, "zlib");
 #endif
 #ifdef WITH_WINSVC
-  lua_pushstring(L, WINSVC_VERSION);
-  lua_setfield(L, -2, "winsvc");
+	lua_pushstring(L, WINSVC_VERSION);
+	lua_setfield(L, -2, "winsvc");
 #endif
-  lua_pushstring(L, uv_version_string());
-  lua_setfield(L, -2, "libuv");
-  lua_setfield(L, -2, "options");
-  return 1;
+	lua_pushstring(L, uv_version_string());
+	lua_setfield(L, -2, "libuv");
+	lua_setfield(L, -2, "options");
+	return 1;
 }

@@ -1,4 +1,3 @@
-
 -- Imports
 local uv = require("uv")
 local vfs = require("virtual_file_system")
@@ -24,7 +23,9 @@ local prefixStack = {}
 
 -- Needs a proper logging framework, but for now it'll do...
 local print = function(...)
-	if not _G.ENABLE_IMPORT_DEBUGGING then return end
+	if not _G.ENABLE_IMPORT_DEBUGGING then
+		return
+	end
 	print(...)
 end
 
@@ -44,7 +45,6 @@ end
 _G.EVO_IMPORT_CACHE = moduleCache
 _G.EVO_IMPORT_STACK = prefixStack
 local function import(modulePath)
-
 	-- Caching for future lookups isn't possible at initialization, as the path module may not be loaded yet
 	if not path_join then
 		cachePathModule()
@@ -96,7 +96,7 @@ local function import(modulePath)
 	end
 
 	-- By always pushing the latest prefix before loading, the context can be reconstructed from inside nested import calls
-	prefixStack[#prefixStack+1] = absolutePath
+	prefixStack[#prefixStack + 1] = absolutePath
 
 	-- We want to call dofile here, but we can't because in doing so the chunk is loaded AND executed in one C call
 	-- If the imported module calls coroutine.yield (e.g., async fs library) it will cause an "attempt to yield across
@@ -105,7 +105,8 @@ local function import(modulePath)
 	-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
 	print("Loading from disk: " .. absolutePath)
 	local loadedModule = loadfile(absolutePath)
-	if loadedModule then loadedModule = loadedModule()
+	if loadedModule then
+		loadedModule = loadedModule()
 	elseif vfs.hasFile(modulePath) then
 		print("Loading from the bundle's virtual file system (file): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
@@ -114,10 +115,16 @@ local function import(modulePath)
 		print("Loading from the bundle's virtual file system (folder): " .. modulePath)
 		loadedModule = vfs.loadFile(modulePath)
 	else
-		assert(loadedModule, string.format("\n\tFailed to import module from %s\n\tPlease ensure this file exists and returns its exports.", absolutePath))
+		assert(
+			loadedModule,
+			string.format(
+				"\n\tFailed to import module from %s\n\tPlease ensure this file exists and returns its exports.",
+				absolutePath
+			)
+		)
 	end
 
-	if (#prefixStack > 0) then
+	if #prefixStack > 0 then
 		-- This must be a nested call, so we want to clear out the parent hierarchy before exiting
 		local removedParent = table_remove(prefixStack)
 		print("Removed parent element from prefix stack: " .. removedParent)

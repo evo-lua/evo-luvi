@@ -1,4 +1,3 @@
-return function (a, b)
-  return a + b
+return function(a, b)
+	return a + b
 end
-

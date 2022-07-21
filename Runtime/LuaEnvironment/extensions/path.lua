@@ -55,13 +55,13 @@ local CHAR_QUESTION_MARK = 63
 local win32 = {
 	separator = "\\",
 	delimiter = ";",
-	convention = "Windows"
+	convention = "Windows",
 }
 
 local posix = {
 	separator = "/",
 	delimiter = ":",
-	convention = "POSIX"
+	convention = "POSIX",
 }
 
 local function StringCharAt(str, index)
@@ -100,8 +100,8 @@ function isPosixPathSeparator(code)
 end
 
 function isWindowsDeviceRoot(code)
-	return (code >= CHAR_UPPERCASE_A and code <= CHAR_UPPERCASE_Z) or
-		(code >= CHAR_LOWERCASE_A and code <= CHAR_LOWERCASE_Z)
+	return (code >= CHAR_UPPERCASE_A and code <= CHAR_UPPERCASE_Z)
+		or (code >= CHAR_LOWERCASE_A and code <= CHAR_LOWERCASE_Z)
 end
 
 -- Resolves . and .. elements in a path with directory names
@@ -114,25 +114,27 @@ function normalizeString(path, allowAboveRoot, separator, isPathSeparator)
 
 	for i = 0, #path, 1 do
 		local continue = false
-		if (i < #path) then
+		if i < #path then
 			code = StringPrototypeCharCodeAt(path, i)
-		elseif (isPathSeparator(code)) then
+		elseif isPathSeparator(code) then
 			break
 		else
 			code = CHAR_FORWARD_SLASH
 		end
 
-		if (isPathSeparator(code)) then
-			if (lastSlash == i - 1 or dots == 1) then
+		if isPathSeparator(code) then
+			if lastSlash == i - 1 or dots == 1 then
 				-- NOOP
 			elseif dots == 2 then
 				if
-					(#res < 2 or lastSegmentLength ~= 2 or StringPrototypeCharCodeAt(res, #res - 1) ~= CHAR_DOT or
-						StringPrototypeCharCodeAt(res, #res - 2) ~= CHAR_DOT)
-				 then
+					#res < 2
+					or lastSegmentLength ~= 2
+					or StringPrototypeCharCodeAt(res, #res - 1) ~= CHAR_DOT
+					or StringPrototypeCharCodeAt(res, #res - 2) ~= CHAR_DOT
+				then
 					if #res > 2 then
 						local lastSlashIndex = StringPrototypeLastIndexOf(res, separator)
-						if (lastSlashIndex == -1) then
+						if lastSlashIndex == -1 then
 							res = ""
 							lastSegmentLength = 0
 						else
@@ -152,7 +154,7 @@ function normalizeString(path, allowAboveRoot, separator, isPathSeparator)
 				end
 
 				if not continue then
-					if (allowAboveRoot) then
+					if allowAboveRoot then
 						res = res .. (#res > 0 and (separator .. "..") or "..")
 						lastSegmentLength = 2
 					end
@@ -182,7 +184,7 @@ function normalizeString(path, allowAboveRoot, separator, isPathSeparator)
 end
 
 function win32.resolve(...)
-	local args = {...}
+	local args = { ... }
 
 	local resolvedDevice = ""
 	local resolvedTail = ""
@@ -209,7 +211,7 @@ function win32.resolve(...)
 			end
 
 			-- Skip empty entries
-			if (#path == 0) then
+			if #path == 0 then
 				continue = true
 			end
 		elseif #resolvedDevice == 0 then
@@ -229,10 +231,13 @@ function win32.resolve(...)
 			-- Verify that a cwd was found and that it actually points
 			-- to our drive. If not, default to the drive's root.
 			if
-				(path == nil or
-					(StringPrototypeToLowerCase(StringPrototypeSlice(path, 0, 2)) ~= StringPrototypeToLowerCase(resolvedDevice) and
-						StringPrototypeCharCodeAt(path, 2) == CHAR_BACKWARD_SLASH))
-			 then
+				path == nil
+				or (
+					StringPrototypeToLowerCase(StringPrototypeSlice(path, 0, 2))
+						~= StringPrototypeToLowerCase(resolvedDevice)
+					and StringPrototypeCharCodeAt(path, 2) == CHAR_BACKWARD_SLASH
+				)
+			then
 				path = resolvedDevice .. "\\"
 			end
 		end
@@ -245,42 +250,42 @@ function win32.resolve(...)
 			local code = StringPrototypeCharCodeAt(path, 0)
 
 			-- Try to match a root
-			if (len == 1) then
-				if (isPathSeparator(code)) then
+			if len == 1 then
+				if isPathSeparator(code) then
 					-- `path` contains just a path separator
 					rootEnd = 1
 					isAbsolute = true
 				end
-			elseif (isPathSeparator(code)) then
+			elseif isPathSeparator(code) then
 				-- Possible UNC root
 				-- If we started with a separator, we know we at least have an
 				-- absolute path of some kind (UNC or otherwise)
 				isAbsolute = true
 
-				if (isPathSeparator(StringPrototypeCharCodeAt(path, 1))) then
+				if isPathSeparator(StringPrototypeCharCodeAt(path, 1)) then
 					-- Matched double path separator at beginning
 					local j = 2
 					local last = j
 					-- Match 1 or more non-path separators
-					while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+					while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 						j = j + 1
 					end
-					if (j < len and j ~= last) then
+					if j < len and j ~= last then
 						local firstPart = StringPrototypeSlice(path, last, j)
 						-- Matched!
 						last = j
 						-- Match 1 or more path separators
-						while (j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+						while j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 							j = j + 1
 						end
-						if (j < len and j ~= last) then
+						if j < len and j ~= last then
 							-- Matched!
 							last = j
 							-- Match 1 or more non-path separators
-							while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+							while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 								j = j + 1
 							end
-							if (j == len or j ~= last) then
+							if j == len or j ~= last then
 								-- We matched a UNC root
 								device = "\\\\" .. firstPart .. "\\" .. StringPrototypeSlice(path, last, j)
 								rootEnd = j
@@ -290,11 +295,11 @@ function win32.resolve(...)
 				else
 					rootEnd = 1
 				end
-			elseif (isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON) then
+			elseif isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON then
 				-- Possible device root
 				device = StringPrototypeSlice(path, 0, 2)
 				rootEnd = 2
-				if (len > 2 and isPathSeparator(StringPrototypeCharCodeAt(path, 2))) then
+				if len > 2 and isPathSeparator(StringPrototypeCharCodeAt(path, 2)) then
 					-- Treat separator following drive name as an absolute path
 					-- indicator
 					isAbsolute = true
@@ -302,9 +307,9 @@ function win32.resolve(...)
 				end
 			end
 
-			if (#device > 0) then
-				if (#resolvedDevice > 0) then
-					if (StringPrototypeToLowerCase(device) ~= StringPrototypeToLowerCase(resolvedDevice)) then
+			if #device > 0 then
+				if #resolvedDevice > 0 then
+					if StringPrototypeToLowerCase(device) ~= StringPrototypeToLowerCase(resolvedDevice) then
 						-- This path points to another device so it is not applicable
 						continue = true
 					end
@@ -314,14 +319,14 @@ function win32.resolve(...)
 			end
 
 			if not continue then
-				if (resolvedAbsolute) then
-					if (#resolvedDevice > 0) then
+				if resolvedAbsolute then
+					if #resolvedDevice > 0 then
 						break
 					end
 				else
 					resolvedTail = StringPrototypeSlice(path, rootEnd) .. "\\" .. resolvedTail
 					resolvedAbsolute = isAbsolute
-					if (isAbsolute and #resolvedDevice > 0) then
+					if isAbsolute and #resolvedDevice > 0 then
 						break
 					end
 				end
@@ -346,7 +351,7 @@ function win32.normalize(path)
 	end
 
 	local len = #path
-	if (len == 0) then
+	if len == 0 then
 		return "."
 	end
 	local rootEnd = 0
@@ -355,48 +360,48 @@ function win32.normalize(path)
 	local code = StringPrototypeCharCodeAt(path, 0)
 
 	-- Try to match a root
-	if (len == 1) then
+	if len == 1 then
 		-- `path` contains just a single char, exit early to avoid
 		-- unnecessary work
 		return isPosixPathSeparator(code) and "\\" or path
 	end
-	if (isPathSeparator(code)) then
+	if isPathSeparator(code) then
 		-- Possible UNC root
 
 		-- If we started with a separator, we know we at least have an absolute
 		-- path of some kind (UNC or otherwise)
 		isAbsolute = true
 
-		if (isPathSeparator(StringPrototypeCharCodeAt(path, 1))) then
+		if isPathSeparator(StringPrototypeCharCodeAt(path, 1)) then
 			-- Matched double path separator at beginning
 			local j = 2
 			local last = j
 			-- Match 1 or more non-path separators
-			while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+			while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 				j = j + 1
 			end
-			if (j < len and j ~= last) then
+			if j < len and j ~= last then
 				local firstPart = StringPrototypeSlice(path, last, j)
 				-- Matchednot
 				last = j
 				-- Match 1 or more path separators
-				while (j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+				while j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 					j = j + 1
 				end
-				if (j < len and j ~= last) then
+				if j < len and j ~= last then
 					-- Matchednot
 					last = j
 					-- Match 1 or more non-path separators
-					while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+					while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 						j = j + 1
 					end
-					if (j == len) then
+					if j == len then
 						-- We matched a UNC root only
 						-- Return the normalized version of the UNC root since there
 						-- is nothing left to process
 						return format("\\\\%s\\%s\\", firstPart, StringPrototypeSlice(path, last))
 					end
-					if (j ~= last) then
+					if j ~= last then
 						-- We matched a UNC root with leftovers
 						device = format("\\\\%s\\%s", firstPart, StringPrototypeSlice(path, last, j))
 						rootEnd = j
@@ -406,11 +411,11 @@ function win32.normalize(path)
 		else
 			rootEnd = 1
 		end
-	elseif (isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON) then
+	elseif isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON then
 		-- Possible device root
 		device = StringPrototypeSlice(path, 0, 2)
 		rootEnd = 2
-		if (len > 2 and isPathSeparator(StringPrototypeCharCodeAt(path, 2))) then
+		if len > 2 and isPathSeparator(StringPrototypeCharCodeAt(path, 2)) then
 			-- Treat separator following drive name as an absolute path
 			-- indicator
 			isAbsolute = true
@@ -418,41 +423,45 @@ function win32.normalize(path)
 		end
 	end
 
-	local tail =
-		(rootEnd < len) and normalizeString(StringPrototypeSlice(path, rootEnd), not isAbsolute, "\\", isPathSeparator) or ""
-	if (#tail == 0 and not isAbsolute) then
+	local tail = (rootEnd < len)
+			and normalizeString(StringPrototypeSlice(path, rootEnd), not isAbsolute, "\\", isPathSeparator)
+		or ""
+	if #tail == 0 and not isAbsolute then
 		tail = "."
 	end
-	if (#tail > 0 and isPathSeparator(StringPrototypeCharCodeAt(path, len - 1))) then
+	if #tail > 0 and isPathSeparator(StringPrototypeCharCodeAt(path, len - 1)) then
 		tail = tail .. "\\"
 	end
-	if (device == nil) then
+	if device == nil then
 		return isAbsolute and format("\\%s", tail) or tail
 	end
 	return isAbsolute and format("%s\\%s", device, tail) or format("%s%s", device, tail)
 end
 
 function win32.isAbsolute(path)
-
 	if type(path) ~= "string" then
 		return nil, "Usage: isAbsolute(path)"
 	end
 
 	local len = #path
-	if (len == 0) then
+	if len == 0 then
 		return false
 	end
 	local code = StringPrototypeCharCodeAt(path, 0)
-	return isPathSeparator(code) or
+	return isPathSeparator(code)
 		-- Possible device root
-		(len > 2 and isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON and
-			isPathSeparator(StringPrototypeCharCodeAt(path, 2)))
+		or (
+			len > 2
+			and isWindowsDeviceRoot(code)
+			and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON
+			and isPathSeparator(StringPrototypeCharCodeAt(path, 2))
+		)
 end
 
 function win32.join(...)
-	local args = {...}
+	local args = { ... }
 
-	if (#args == 0) then
+	if #args == 0 then
 		return "."
 	end
 
@@ -466,8 +475,8 @@ function win32.join(...)
 			return nil, "Usage: path.join(path)"
 		end
 
-		if (#arg > 0) then
-			if (joined == nil) then
+		if #arg > 0 then
+			if joined == nil then
 				joined = arg
 				firstPart = arg
 			else
@@ -476,7 +485,7 @@ function win32.join(...)
 		end
 	end
 
-	if (joined == nil) then
+	if joined == nil then
 		return "."
 	end
 	-- Make sure that the joined path doesn't start with two slashes, because
@@ -494,13 +503,13 @@ function win32.join(...)
 	--   path.join('//server', 'share') -> '\\\\server\\share\\')
 	local needsReplace = true
 	local slashCount = 0
-	if (isPathSeparator(StringPrototypeCharCodeAt(firstPart, 0))) then
+	if isPathSeparator(StringPrototypeCharCodeAt(firstPart, 0)) then
 		slashCount = slashCount + 1
 		local firstLen = #firstPart
-		if (firstLen > 1 and isPathSeparator(StringPrototypeCharCodeAt(firstPart, 1))) then
+		if firstLen > 1 and isPathSeparator(StringPrototypeCharCodeAt(firstPart, 1)) then
 			slashCount = slashCount + 1
-			if (firstLen > 2) then
-				if (isPathSeparator(StringPrototypeCharCodeAt(firstPart, 2))) then
+			if firstLen > 2 then
+				if isPathSeparator(StringPrototypeCharCodeAt(firstPart, 2)) then
 					slashCount = slashCount + 1
 				else
 					-- We matched a UNC path in the first part
@@ -510,14 +519,14 @@ function win32.join(...)
 		end
 	end
 
-	if (needsReplace) then
+	if needsReplace then
 		-- Find any more consecutive slashes we need to replace
-		while (slashCount < #joined and isPathSeparator(StringPrototypeCharCodeAt(joined, slashCount))) do
+		while slashCount < #joined and isPathSeparator(StringPrototypeCharCodeAt(joined, slashCount)) do
 			slashCount = slashCount + 1
 		end
 
 		-- Replace the slashes if needed
-		if (slashCount >= 2) then
+		if slashCount >= 2 then
 			joined = "\\" .. StringPrototypeSlice(joined, slashCount)
 		end
 	end
@@ -533,51 +542,51 @@ function win32.relative(from, to)
 		return nil, "Usage: convert(from, to)"
 	end
 
-	if (from == to) then
+	if from == to then
 		return ""
 	end
 
 	local fromOrig = win32.resolve(from)
 	local toOrig = win32.resolve(to)
 
-	if (fromOrig == toOrig) then
+	if fromOrig == toOrig then
 		return ""
 	end
 
 	from = StringPrototypeToLowerCase(fromOrig)
 	to = StringPrototypeToLowerCase(toOrig)
 
-	if (from == to) then
+	if from == to then
 		return ""
 	end
 
 	-- Trim any leading backslashes
 	local fromStart = 0
-	while (fromStart < #from and StringPrototypeCharCodeAt(from, fromStart) == CHAR_BACKWARD_SLASH) do
+	while fromStart < #from and StringPrototypeCharCodeAt(from, fromStart) == CHAR_BACKWARD_SLASH do
 		fromStart = fromStart + 1
 	end
 	-- Trim trailing backslashes (applicable to UNC paths only)
 	local fromEnd = #from
-	while (fromEnd - 1 > fromStart and StringPrototypeCharCodeAt(from, fromEnd - 1) == CHAR_BACKWARD_SLASH) do
+	while fromEnd - 1 > fromStart and StringPrototypeCharCodeAt(from, fromEnd - 1) == CHAR_BACKWARD_SLASH do
 		fromEnd = fromEnd - 1
 	end
 	local fromLen = fromEnd - fromStart
 
 	-- Trim any leading backslashes
 	local toStart = 0
-	while (toStart < #to and StringPrototypeCharCodeAt(to, toStart) == CHAR_BACKWARD_SLASH) do
+	while toStart < #to and StringPrototypeCharCodeAt(to, toStart) == CHAR_BACKWARD_SLASH do
 		toStart = toStart + 1
 	end
 	-- Trim trailing backslashes (applicable to UNC paths only)
 	local toEnd = #to
-	while (toEnd - 1 > toStart and StringPrototypeCharCodeAt(to, toEnd - 1) == CHAR_BACKWARD_SLASH) do
+	while toEnd - 1 > toStart and StringPrototypeCharCodeAt(to, toEnd - 1) == CHAR_BACKWARD_SLASH do
 		toEnd = toEnd - 1
 	end
 	local toLen = toEnd - toStart
 
 	-- Compare paths to find the longest common path from root
 	local length
-	if (fromLen < toLen) then
+	if fromLen < toLen then
 		length = fromLen
 	else
 		length = toLen
@@ -588,44 +597,44 @@ function win32.relative(from, to)
 	for l = 0, length, 1 do
 		i = l
 		local fromCode = StringPrototypeCharCodeAt(from, fromStart + l)
-		if (fromCode ~= StringPrototypeCharCodeAt(to, toStart + l)) then
+		if fromCode ~= StringPrototypeCharCodeAt(to, toStart + l) then
 			break
-		elseif (fromCode == CHAR_BACKWARD_SLASH) then
+		elseif fromCode == CHAR_BACKWARD_SLASH then
 			lastCommonSep = l
 		end
 	end
 
 	-- We found a mismatch before the first common path separator was seen, so
 	-- return the original `to`.
-	if (i ~= length) then
-		if (lastCommonSep == -1) then
+	if i ~= length then
+		if lastCommonSep == -1 then
 			return toOrig
 		end
 	else
-		if (toLen > length) then
-			if (StringPrototypeCharCodeAt(to, toStart + i) == CHAR_BACKWARD_SLASH) then
+		if toLen > length then
+			if StringPrototypeCharCodeAt(to, toStart + i) == CHAR_BACKWARD_SLASH then
 				-- We get here if `from` is the exact base path for `to`.
 				-- For example: from='C:\\foo\\bar' to='C:\\foo\\bar\\baz'
 				return StringPrototypeSlice(toOrig, toStart + i + 1)
 			end
-			if (i == 2) then
+			if i == 2 then
 				-- We get here if `from` is the device root.
 				-- For example: from='C:\\' to='C:\\foo'
 				return StringPrototypeSlice(toOrig, toStart + i)
 			end
 		end
-		if (fromLen > length) then
-			if (StringPrototypeCharCodeAt(from, fromStart + i) == CHAR_BACKWARD_SLASH) then
+		if fromLen > length then
+			if StringPrototypeCharCodeAt(from, fromStart + i) == CHAR_BACKWARD_SLASH then
 				-- We get here if `to` is the exact base path for `from`.
 				-- For example: from='C:\\foo\\bar' to='C:\\foo'
 				lastCommonSep = i
-			elseif (i == 2) then
+			elseif i == 2 then
 				-- We get here if `to` is the device root.
 				-- For example: from='C:\\foo\\bar' to='C:\\'
 				lastCommonSep = 3
 			end
 		end
-		if (lastCommonSep == -1) then
+		if lastCommonSep == -1 then
 			lastCommonSep = 0
 		end
 	end
@@ -635,7 +644,7 @@ function win32.relative(from, to)
 	-- `from`
 	-- lastCommonSep should be 7, but is 2...?
 	for i = fromStart + lastCommonSep + 1, fromEnd, 1 do
-		if (i == fromEnd or StringPrototypeCharCodeAt(from, i) == CHAR_BACKWARD_SLASH) then
+		if i == fromEnd or StringPrototypeCharCodeAt(from, i) == CHAR_BACKWARD_SLASH then
 			out = out .. ((#out == 0) and ".." or "\\..")
 		end
 	end
@@ -644,23 +653,22 @@ function win32.relative(from, to)
 
 	-- Lastly, append the rest of the destination (`to`) path that comes after
 	-- the common path parts
-	if (#out > 0) then
+	if #out > 0 then
 		return out .. StringPrototypeSlice(toOrig, toStart, toEnd)
 	end
 
-	if (StringPrototypeCharCodeAt(toOrig, toStart) == CHAR_BACKWARD_SLASH) then
+	if StringPrototypeCharCodeAt(toOrig, toStart) == CHAR_BACKWARD_SLASH then
 		toStart = toStart + 1
 	end
 	return StringPrototypeSlice(toOrig, toStart, toEnd)
 end
 
 function win32.dirname(path)
-
 	if type(path) ~= "string" then
 		return nil, "Usage: dirname(path)"
 	end
 	local len = #path
-	if (len == 0) then
+	if len == 0 then
 		return "."
 	end
 
@@ -668,47 +676,47 @@ function win32.dirname(path)
 	local offset = 0
 	local code = StringPrototypeCharCodeAt(path, 0)
 
-	if (len == 1) then
+	if len == 1 then
 		-- `path` contains just a path separator, exit early to avoid
 		-- unnecessary work or a dot.
 		return isPathSeparator(code) and path or "."
 	end
 
 	-- Try to match a root
-	if (isPathSeparator(code)) then
+	if isPathSeparator(code) then
 		-- Possible device root
 		-- Possible UNC root
 
 		rootEnd = 1
 		offset = 1
 
-		if (isPathSeparator(StringPrototypeCharCodeAt(path, 1))) then
+		if isPathSeparator(StringPrototypeCharCodeAt(path, 1)) then
 			-- Matched double path separator at beginning
 			local j = 2
 			local last = j
 			-- Match 1 or more non-path separators
-			while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+			while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 				j = j + 1
 			end
-			if (j < len and j ~= last) then
+			if j < len and j ~= last then
 				-- Matchednot
 				last = j
 				-- Match 1 or more path separators
-				while (j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+				while j < len and isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 					j = j + 1
 				end
-				if (j < len and j ~= last) then
+				if j < len and j ~= last then
 					-- Matchednot
 					last = j
 					-- Match 1 or more non-path separators
-					while (j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j))) do
+					while j < len and not isPathSeparator(StringPrototypeCharCodeAt(path, j)) do
 						j = j + 1
 					end
-					if (j == len) then
+					if j == len then
 						-- We matched a UNC root only
 						return path
 					end
-					if (j ~= last) then
+					if j ~= last then
 						-- We matched a UNC root with leftovers
 
 						-- Offset by 1 to include the separator after the UNC root to
@@ -719,7 +727,7 @@ function win32.dirname(path)
 				end
 			end
 		end
-	elseif (isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON) then
+	elseif isWindowsDeviceRoot(code) and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON then
 		rootEnd = (len > 2 and isPathSeparator(StringPrototypeCharCodeAt(path, 2))) and 3 or 2
 		offset = rootEnd
 	end
@@ -727,8 +735,8 @@ function win32.dirname(path)
 	local endIndex = -1
 	local matchedSlash = true
 	for i = len - 1, offset, -1 do
-		if (isPathSeparator(StringPrototypeCharCodeAt(path, i))) then
-			if (not matchedSlash) then
+		if isPathSeparator(StringPrototypeCharCodeAt(path, i)) then
+			if not matchedSlash then
 				endIndex = i
 				break
 			end
@@ -738,8 +746,8 @@ function win32.dirname(path)
 		end
 	end
 
-	if (endIndex == -1) then
-		if (rootEnd == -1) then
+	if endIndex == -1 then
+		if rootEnd == -1 then
 			return "."
 		end
 		endIndex = rootEnd
@@ -748,7 +756,7 @@ function win32.dirname(path)
 end
 
 function win32.basename(path, ext)
-	if (ext ~= nil) then
+	if ext ~= nil then
 		if type(path) ~= "string" then
 			return nil, "Usage: basename(path, ext)"
 		end
@@ -766,16 +774,17 @@ function win32.basename(path, ext)
 	-- path separator as an extra separator at the end of the path that can be
 	-- disregarded
 	if
-		(#path >= 2 and isWindowsDeviceRoot(StringPrototypeCharCodeAt(path, 0)) and
-			StringPrototypeCharCodeAt(path, 1) == CHAR_COLON)
-	 then
+		#path >= 2
+		and isWindowsDeviceRoot(StringPrototypeCharCodeAt(path, 0))
+		and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON
+	then
 		-- skip the device root letter (if present)
 		start = 2
 	end
 
-	if (ext ~= nil and #ext > 0 and #ext <= #path) then
+	if ext ~= nil and #ext > 0 and #ext <= #path then
 		-- strip the extension (if one was given)
-		if (ext == path) then
+		if ext == path then
 			return ""
 		end
 
@@ -783,25 +792,25 @@ function win32.basename(path, ext)
 		local firstNonSlashEnd = -1
 		for i = #path - 1, start, -1 do
 			local code = StringPrototypeCharCodeAt(path, i)
-			if (isPathSeparator(code)) then
+			if isPathSeparator(code) then
 				-- If we reached a path separator that was not part of a set of path
 				-- separators at the end of the string, stop now
-				if (not matchedSlash) then
+				if not matchedSlash then
 					start = i + 1
 					break
 				end
 			else
-				if (firstNonSlashEnd == -1) then
+				if firstNonSlashEnd == -1 then
 					-- We saw the first non-path separator, remember this index in case
 					-- we need it if the extension ends up not matching
 					matchedSlash = false
 					firstNonSlashEnd = i + 1
 				end
-				if (extIdx >= 0) then
+				if extIdx >= 0 then
 					-- Try to match the explicit extension
-					if (code == StringPrototypeCharCodeAt(ext, extIdx)) then
+					if code == StringPrototypeCharCodeAt(ext, extIdx) then
 						extIdx = extIdx - 1
-						if (extIdx == -1) then
+						if extIdx == -1 then
 							-- We matched the extension, so mark this as the end of our path
 							-- component
 							endIndex = i
@@ -816,23 +825,23 @@ function win32.basename(path, ext)
 			end
 		end
 
-		if (start == endIndex) then
+		if start == endIndex then
 			endIndex = firstNonSlashEnd
-		elseif (endIndex == -1) then
+		elseif endIndex == -1 then
 			endIndex = #path
 		end
 		return StringPrototypeSlice(path, start, endIndex)
 	end
 
 	for i = #path - 1, start, -1 do
-		if (isPathSeparator(StringPrototypeCharCodeAt(path, i))) then
+		if isPathSeparator(StringPrototypeCharCodeAt(path, i)) then
 			-- If we reached a path separator that was not part of a set of path
 			-- separators at the end of the string, stop now
-			if (not matchedSlash) then
+			if not matchedSlash then
 				start = i + 1
 				break
 			end
-		elseif (endIndex == -1) then
+		elseif endIndex == -1 then
 			-- We saw the first non-path separator, mark this as the end of our
 			-- path component
 			matchedSlash = false
@@ -840,7 +849,7 @@ function win32.basename(path, ext)
 		end
 	end
 
-	if (endIndex == -1) then
+	if endIndex == -1 then
 		return ""
 	end
 
@@ -865,9 +874,10 @@ function win32.extname(path)
 	-- path separator as an extra separator at the end of the path that can be
 	-- disregarded
 	if
-		(#path >= 2 and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON and
-			isWindowsDeviceRoot(StringPrototypeCharCodeAt(path, 0)))
-	 then
+		#path >= 2
+		and StringPrototypeCharCodeAt(path, 1) == CHAR_COLON
+		and isWindowsDeviceRoot(StringPrototypeCharCodeAt(path, 0))
+	then
 		start = 2
 		startPart = 2
 	end
@@ -876,10 +886,10 @@ function win32.extname(path)
 	for i = #path - 1, start, -1 do
 		local code = StringPrototypeCharCodeAt(path, i)
 
-		if (isPathSeparator(code)) then
+		if isPathSeparator(code) then
 			-- If we reached a path separator that was not part of a set of path
 			-- separators at the end of the string, stop now
-			if (not matchedSlash) then
+			if not matchedSlash then
 				startPart = i + 1
 				break
 			end
@@ -887,21 +897,21 @@ function win32.extname(path)
 		end
 
 		if not continue then
-			if (endIndex == -1) then
+			if endIndex == -1 then
 				-- We saw the first non-path separator, mark this as the end of our
 				-- extension
 				matchedSlash = false
 				endIndex = i + 1
 			end
 
-			if (code == CHAR_DOT) then
+			if code == CHAR_DOT then
 				-- If this is our first dot, mark it as the start of our extension
-				if (startDot == -1) then
+				if startDot == -1 then
 					startDot = i
-				elseif (preDotState ~= 1) then
+				elseif preDotState ~= 1 then
 					preDotState = 1
 				end
-			elseif (startDot ~= -1) then
+			elseif startDot ~= -1 then
 				-- We saw a non-dot and non-path separator before our dot, so we should
 				-- have a good chance at having a non-empty extension
 				preDotState = -1
@@ -911,9 +921,11 @@ function win32.extname(path)
 	end
 
 	if
-		(startDot == -1 or endIndex == -1 or preDotState == 0 or -- We saw a non-dot character immediately before the dot
-			(preDotState == 1 and startDot == endIndex - 1 and startDot == startPart + 1))
-	 then -- The (right-most) trimmed path component is exactly '..'
+		startDot == -1
+		or endIndex == -1
+		or preDotState == 0 -- We saw a non-dot character immediately before the dot
+		or (preDotState == 1 and startDot == endIndex - 1 and startDot == startPart + 1)
+	then -- The (right-most) trimmed path component is exactly '..'
 		return ""
 	end
 
@@ -921,12 +933,11 @@ function win32.extname(path)
 end
 
 function posix.dirname(path)
-
 	if type(path) ~= "string" then
 		return nil, "Usage: dirname(path)"
 	end
 
-	if (#path == 0) then
+	if #path == 0 then
 		return "."
 	end
 
@@ -935,7 +946,7 @@ function posix.dirname(path)
 	local matchedSlash = true
 
 	for i = #path - 1, 1, -1 do
-		if (StringPrototypeCharCodeAt(path, i) == CHAR_FORWARD_SLASH) then
+		if StringPrototypeCharCodeAt(path, i) == CHAR_FORWARD_SLASH then
 			if not matchedSlash then
 				endIndex = i
 				break
@@ -946,10 +957,10 @@ function posix.dirname(path)
 		end
 	end
 
-	if (endIndex == -1) then
+	if endIndex == -1 then
 		return hasRoot and "/" or "."
 	end
-	if (hasRoot and endIndex == 1) then
+	if hasRoot and endIndex == 1 then
 		-- index 1 in js = 2nd character, offset by one due to Lua starting at index 1 (not 0)
 		return "//"
 	end
@@ -957,7 +968,7 @@ function posix.dirname(path)
 end
 
 function posix.basename(path, ext)
-	if (ext ~= nil) then
+	if ext ~= nil then
 		if type(ext) ~= "string" then
 			return nil, "Usage: basename(path, ext)"
 		end
@@ -971,33 +982,33 @@ function posix.basename(path, ext)
 	local endIndex = -1
 	local matchedSlash = true
 
-	if (ext ~= nil and #ext > 0 and #ext <= #path) then
-		if (ext == path) then
+	if ext ~= nil and #ext > 0 and #ext <= #path then
+		if ext == path then
 			return ""
 		end
 		local extIdx = #ext - 1
 		local firstNonSlashEnd = -1
 		for i = #path - 1, 0, -1 do
 			local code = StringPrototypeCharCodeAt(path, i)
-			if (code == CHAR_FORWARD_SLASH) then
+			if code == CHAR_FORWARD_SLASH then
 				-- If we reached a path separator that was not part of a set of path
 				-- separators at the end of the string, stop now
-				if (not matchedSlash) then
+				if not matchedSlash then
 					start = i + 1
 					break
 				end
 			else
-				if (firstNonSlashEnd == -1) then
-				-- We saw the first non-path separator, remember this index in case
-				-- we need it if the extension ends up not matching
-				matchedSlash = false
-				firstNonSlashEnd = i + 1
+				if firstNonSlashEnd == -1 then
+					-- We saw the first non-path separator, remember this index in case
+					-- we need it if the extension ends up not matching
+					matchedSlash = false
+					firstNonSlashEnd = i + 1
 				end
-				if (extIdx >= 0) then
+				if extIdx >= 0 then
 					-- Try to match the explicit extension
-					if (code == StringPrototypeCharCodeAt(ext, extIdx)) then
+					if code == StringPrototypeCharCodeAt(ext, extIdx) then
 						extIdx = extIdx - 1
-						if (extIdx == -1) then
+						if extIdx == -1 then
 							-- We matched the extension, so mark this as the end of our path
 							-- component
 							endIndex = i
@@ -1012,22 +1023,22 @@ function posix.basename(path, ext)
 			end
 		end
 
-		if (start == endIndex) then
+		if start == endIndex then
 			endIndex = firstNonSlashEnd
-		elseif (endIndex == -1) then
+		elseif endIndex == -1 then
 			endIndex = #path
 		end
 		return StringPrototypeSlice(path, start, endIndex)
 	end
 	for i = #path - 1, 0, -1 do
-		if (StringPrototypeCharCodeAt(path, i) == CHAR_FORWARD_SLASH) then
+		if StringPrototypeCharCodeAt(path, i) == CHAR_FORWARD_SLASH then
 			-- If we reached a path separator that was not part of a set of path
 			-- separators at the end of the string, stop now
-			if (not matchedSlash) then
+			if not matchedSlash then
 				start = i + 1
 				break
 			end
-		elseif (endIndex == -1) then
+		elseif endIndex == -1 then
 			-- We saw the first non-path separator, mark this as the end of our
 			-- path component
 			matchedSlash = false
@@ -1035,7 +1046,7 @@ function posix.basename(path, ext)
 		end
 	end
 
-	if (endIndex == -1) then
+	if endIndex == -1 then
 		return ""
 	end
 	return StringPrototypeSlice(path, start, endIndex)
@@ -1053,7 +1064,7 @@ function posix.normalize(path)
 		return nil, "Usage: normalize(path)"
 	end
 
-	if (#path == 0) then
+	if #path == 0 then
 		return "."
 	end
 
@@ -1063,13 +1074,13 @@ function posix.normalize(path)
 	-- Normalize the path
 	path = normalizeString(path, not isAbsolute, "/", isPosixPathSeparator)
 
-	if (#path == 0) then
-		if (isAbsolute) then
+	if #path == 0 then
+		if isAbsolute then
 			return "/"
 		end
 		return trailingSeparator and "./" or "."
 	end
-	if (trailingSeparator) then
+	if trailingSeparator then
 		path = path .. "/"
 	end
 
@@ -1092,10 +1103,10 @@ function posix.extname(path)
 	local preDotState = 0
 	for i = #path - 1, 0, -1 do
 		local code = StringPrototypeCharCodeAt(path, i)
-		if (code == CHAR_FORWARD_SLASH) then
+		if code == CHAR_FORWARD_SLASH then
 			-- If we reached a path separator that was not part of a set of path
 			-- separators at the end of the string, stop now
-			if (not matchedSlash) then
+			if not matchedSlash then
 				startPart = i + 1
 				break
 			end
@@ -1104,21 +1115,21 @@ function posix.extname(path)
 		end
 
 		if not continue then
-			if (endIndex == -1) then
+			if endIndex == -1 then
 				-- We saw the first non-path separator, mark this as the end of our
 				-- extension
 				matchedSlash = false
 				endIndex = i + 1
 			end
 
-			if (code == CHAR_DOT) then
+			if code == CHAR_DOT then
 				-- If this is our first dot, mark it as the start of our extension
-				if (startDot == -1) then
+				if startDot == -1 then
 					startDot = i
-				elseif (preDotState ~= 1) then
+				elseif preDotState ~= 1 then
 					preDotState = 1
 				end
-			elseif (startDot ~= -1) then
+			elseif startDot ~= -1 then
 				-- We saw a non-dot and non-path separator before our dot, so we should
 				-- have a good chance at having a non-empty extension
 				preDotState = -1
@@ -1128,16 +1139,19 @@ function posix.extname(path)
 		continue = false
 	end
 
-	if (startDot == -1 or endIndex == -1 or -- We saw a non-dot character immediately before the dot
-			preDotState == 0 or -- The (right-most) trimmed path component is exactly '..'
-			(preDotState == 1 and startDot == endIndex - 1 and startDot == startPart + 1)) then
+	if
+		startDot == -1
+		or endIndex == -1 -- We saw a non-dot character immediately before the dot
+		or preDotState == 0 -- The (right-most) trimmed path component is exactly '..'
+		or (preDotState == 1 and startDot == endIndex - 1 and startDot == startPart + 1)
+	then
 		return ""
 	end
 	return StringPrototypeSlice(path, startDot, endIndex)
 end
 
 local function posixCwd()
-	if (ffi.os == "Windows") then
+	if ffi.os == "Windows" then
 		-- Converts Windows' backslash path separators to POSIX forward slashes
 		-- and truncates any drive indicator
 		local pattern = "\\"
@@ -1151,8 +1165,8 @@ local function posixCwd()
 	return uv.cwd()
 end
 
-function posix.resolve(arg,	...)
-	local args = {arg, ...}
+function posix.resolve(arg, ...)
+	local args = { arg, ... }
 
 	if not arg then
 		return nil, "Usage: resolve(path1, [path2, ..., pathN])"
@@ -1163,9 +1177,9 @@ function posix.resolve(arg,	...)
 
 	local continue = false
 	local i = #args
-	while (i >= 0 and not resolvedAbsolute) do
+	while i >= 0 and not resolvedAbsolute do
 		if args[i] ~= nil and type(args[i]) ~= "string" then
-		--
+			--
 		end
 
 		local path = i >= 0 and args[i] or posixCwd()
@@ -1175,7 +1189,7 @@ function posix.resolve(arg,	...)
 		end
 
 		-- Skip empty entries
-		if (#path == 0) then
+		if #path == 0 then
 			continue = true
 		end
 
@@ -1193,16 +1207,16 @@ function posix.resolve(arg,	...)
 	-- Normalize the path
 	resolvedPath = normalizeString(resolvedPath, not resolvedAbsolute, "/", isPosixPathSeparator)
 
-	if (resolvedAbsolute) then
+	if resolvedAbsolute then
 		return "/" .. resolvedPath
 	end
 	return #resolvedPath > 0 and resolvedPath or "."
 end
 
 function posix.join(...)
-	local args = {...}
+	local args = { ... }
 
-	if (#args == 0) then
+	if #args == 0 then
 		return "."
 	end
 
@@ -1214,15 +1228,15 @@ function posix.join(...)
 			return nil, "Usage: join(path1[, path2, path3, ..., pathN])"
 		end
 
-		if (#arg > 0) then
-			if (joined == nil) then
+		if #arg > 0 then
+			if joined == nil then
 				joined = arg
 			else
 				joined = joined .. "/" .. arg
 			end
 		end
 	end
-	if (joined == nil) then
+	if joined == nil then
 		return "."
 	end
 
@@ -1237,7 +1251,7 @@ function posix.relative(from, to)
 		return nil, "Usage: relative(from, to)"
 	end
 
-	if (from == to) then
+	if from == to then
 		return ""
 	end
 
@@ -1245,7 +1259,7 @@ function posix.relative(from, to)
 	from = posix.resolve(from)
 	to = posix.resolve(to)
 
-	if (from == to) then
+	if from == to then
 		return ""
 	end
 
@@ -1262,31 +1276,31 @@ function posix.relative(from, to)
 	for l = 0, length, 1 do
 		i = l
 		local fromCode = StringPrototypeCharCodeAt(from, fromStart + l)
-		if (fromCode ~= StringPrototypeCharCodeAt(to, toStart + l)) then
+		if fromCode ~= StringPrototypeCharCodeAt(to, toStart + l) then
 			break
-		elseif (fromCode == CHAR_FORWARD_SLASH) then
+		elseif fromCode == CHAR_FORWARD_SLASH then
 			lastCommonSep = l
 		end
 	end
 
-	if (i == length) then
-		if (toLen > length) then
-			if (StringPrototypeCharCodeAt(to, toStart + i) == CHAR_FORWARD_SLASH) then
+	if i == length then
+		if toLen > length then
+			if StringPrototypeCharCodeAt(to, toStart + i) == CHAR_FORWARD_SLASH then
 				-- We get here if `from` is the exact base path for `to`.
 				-- For example: from='/foo/bar' to='/foo/bar/baz'
 				return StringPrototypeSlice(to, toStart + i + 1)
 			end
-			if (i == 0) then
+			if i == 0 then
 				-- We get here if `from` is the root
 				-- For example: from='/' to='/foo'
 				return StringPrototypeSlice(to, toStart + i)
 			end
-		elseif (fromLen > length) then
-			if (StringPrototypeCharCodeAt(from, fromStart + i) == CHAR_FORWARD_SLASH) then
+		elseif fromLen > length then
+			if StringPrototypeCharCodeAt(from, fromStart + i) == CHAR_FORWARD_SLASH then
 				-- We get here if `to` is the exact base path for `from`.
 				-- For example: from='/foo/bar/baz' to='/foo/bar'
 				lastCommonSep = i
-			elseif (i == 0) then
+			elseif i == 0 then
 				-- We get here if `to` is the root.
 				-- For example: from='/foo/bar' to='/'
 				lastCommonSep = 0
@@ -1298,7 +1312,7 @@ function posix.relative(from, to)
 	-- Generate the relative path based on the path difference between `to`
 	-- and `from`.
 	for i = fromStart + lastCommonSep + 1, fromEnd, 1 do
-		if (i == fromEnd or StringPrototypeCharCodeAt(from, i) == CHAR_FORWARD_SLASH) then
+		if i == fromEnd or StringPrototypeCharCodeAt(from, i) == CHAR_FORWARD_SLASH then
 			out = out .. (#out == 0 and ".." or "/..")
 		end
 	end

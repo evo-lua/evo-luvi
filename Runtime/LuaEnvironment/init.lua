@@ -16,13 +16,13 @@ limitations under the License.
 
 --]]
 
-local uv = require('uv')
-local luvi = require('luvi')
-local miniz = require('miniz')
+local uv = require("uv")
+local luvi = require("luvi")
+local miniz = require("miniz")
 
 local CLI = require("CLI")
 
-local luviBundle = require('luvibundle')
+local luviBundle = require("luvibundle")
 local commonBundle = luviBundle.commonBundle
 local makeBundle = luviBundle.makeBundle
 local buildBundle = luviBundle.buildBundle
@@ -33,7 +33,6 @@ local LUVI_EXECUTABLE_NAME = "evo-luvi"
 local Luvi = {}
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
-
 	local executablePath = uv.exepath()
 	if self:IsZipApp(executablePath) then
 		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
@@ -63,11 +62,13 @@ function Luvi:IsZipApp(filePath)
 end
 
 function Luvi:RunLuviApp(appPath, commandLineArguments)
-	return commonBundle({appPath}, nil, commandLineArguments)
+	return commonBundle({ appPath }, nil, commandLineArguments)
 end
 
 function Luvi:DisplayVersionStrings(commandInfo)
-	if not commandInfo.options.version then return end
+	if not commandInfo.options.version then
+		return
+	end
 
 	print(string.format("%s %s", LUVI_EXECUTABLE_NAME, luvi.version))
 	print(self:GenerateOptionsString())
@@ -77,7 +78,7 @@ function Luvi:GenerateOptionsString()
 	local optionsStringTokens = {}
 
 	for key, value in pairs(luvi.options) do
-		if type(value) == 'boolean' then
+		if type(value) == "boolean" then
 			table.insert(optionsStringTokens, key)
 		else
 			table.insert(optionsStringTokens, string.format("%s: %s", key, value))
@@ -88,7 +89,9 @@ function Luvi:GenerateOptionsString()
 end
 
 function Luvi:DisplayHelpText(commandInfo)
-	if not commandInfo.options.help then return end
+	if not commandInfo.options.help then
+		return
+	end
 
 	local usage = [[
 		Usage: $(LUVI) bundle+ [options] [-- extra args]

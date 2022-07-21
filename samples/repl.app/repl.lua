@@ -16,84 +16,83 @@ limitations under the License.
 
 --]]
 
-return function (stdin, stdout, uv, utils, greeting)
+return function(stdin, stdout, uv, utils, greeting)
+	local print = function(...)
+		uv.write(stdout, table.concat({ ... }, "\t") .. "\n")
+	end
 
-  local print = function(...)
-    uv.write(stdout, table.concat({...}, "\t") .. "\n")
-  end
+	if greeting then
+		print(greeting)
+	end
 
-  if greeting then print(greeting) end
+	local c = utils.color
 
-  local c = utils.color
+	local function gatherResults(success, ...)
+		local n = select("#", ...)
+		return success, { n = n, ... }
+	end
 
-  local function gatherResults(success, ...)
-    local n = select('#', ...)
-    return success, { n = n, ... }
-  end
+	local function printResults(results)
+		for i = 1, results.n do
+			results[i] = utils.dump(results[i])
+		end
+		print(table.concat(results, "\t"))
+	end
 
-  local function printResults(results)
-    for i = 1, results.n do
-      results[i] = utils.dump(results[i])
-    end
-    print(table.concat(results, '\t'))
-  end
+	local buffer = ""
 
-  local buffer = ''
+	local function evaluateLine(line)
+		if line == "<3\n" then
+			print("I " .. c("Bred") .. "♥" .. c() .. " you too!")
+			return ">"
+		end
+		local chunk = buffer .. line
+		local f, err = loadstring("return " .. chunk, "REPL") -- first we prefix return
 
-  local function evaluateLine(line)
-    if line == "<3\n" then
-      print("I " .. c("Bred") .. "♥" .. c() .. " you too!")
-      return '>'
-    end
-    local chunk  = buffer .. line
-    local f, err = loadstring('return ' .. chunk, 'REPL') -- first we prefix return
+		if not f then
+			f, err = loadstring(chunk, "REPL") -- try again without return
+		end
 
-    if not f then
-      f, err = loadstring(chunk, 'REPL') -- try again without return
-    end
+		if f then
+			buffer = ""
+			local success, results = gatherResults(xpcall(f, debug.traceback))
 
-    if f then
-      buffer = ''
-      local success, results = gatherResults(xpcall(f, debug.traceback))
+			if success then
+				-- successful call
+				if results.n > 0 then
+					printResults(results)
+				end
+			else
+				-- error
+				print(results[1])
+			end
+		else
+			if err:match("'<eof>'$") then
+				-- Lua expects some more input; stow it away for next time
+				buffer = chunk .. "\n"
+				return ">>"
+			else
+				print(err)
+				buffer = ""
+			end
+		end
 
-      if success then
-        -- successful call
-        if results.n > 0 then
-          printResults(results)
-        end
-      else
-        -- error
-        print(results[1])
-      end
-    else
+		return ">"
+	end
 
-      if err:match "'<eof>'$" then
-        -- Lua expects some more input; stow it away for next time
-        buffer = chunk .. '\n'
-        return '>>'
-      else
-        print(err)
-        buffer = ''
-      end
-    end
+	local function displayPrompt(prompt)
+		uv.write(stdout, prompt .. " ")
+	end
 
-    return '>'
-  end
+	displayPrompt(">")
 
-  local function displayPrompt(prompt)
-    uv.write(stdout, prompt .. ' ')
-  end
-
-  displayPrompt '>'
-
-  uv.read_start(stdin, function (err, line)
-    assert(not err, err)
-    if line then
-      local prompt = evaluateLine(line)
-      displayPrompt(prompt)
-    else
-      uv.close(stdin)
-    end
-  end)
-
+	uv.read_start(stdin, function(err, line)
+		assert(not err, err)
+		if line then
+			local prompt = evaluateLine(line)
+			displayPrompt(prompt)
+		else
+			uv.close(stdin)
+		end
+	end)
 end

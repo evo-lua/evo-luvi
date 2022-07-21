@@ -1,5 +1,5 @@
 local bundledModule = {
-	someField = 42
+	someField = 42,
 }
 
 local uv = require("uv")

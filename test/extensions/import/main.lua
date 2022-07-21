@@ -1,4 +1,3 @@
-
 -- Upvalues
 local uv = require("uv")
 local vfs = require("virtual_file_system")
@@ -23,7 +22,11 @@ assertStrictEqual(type(bundledModule), "table")
 assertStrictEqual(bundledModule.someField, 42)
 
 local expectedModulePath = path.join(_G.USER_SCRIPT_ROOT, "bundled-module.lua") -- Should always point to the imported module
-assertStrictEqual(_G.EVO_IMPORT_CACHE[expectedModulePath], bundledModule, "The import cache should cache modules after importing them")
+assertStrictEqual(
+	_G.EVO_IMPORT_CACHE[expectedModulePath],
+	bundledModule,
+	"The import cache should cache modules after importing them"
+)
 
 -- After a module has been loaded, it is cached and won't be reloaded from disk
 bundledModule.isLoaded = true
@@ -37,28 +40,56 @@ local expectedAbsolutePath = path.join(_G.USER_SCRIPT_ROOT, "bundled-module.lua"
 assertStrictEqual(absolutePath, expectedAbsolutePath)
 
 -- The parent should be the module that imported it, i.e. the main/entry point
-assertStrictEqual(parentModule, path.join(_G.USER_SCRIPT_ROOT, "main.lua"), "Should return the parent module after importing")
+assertStrictEqual(
+	parentModule,
+	path.join(_G.USER_SCRIPT_ROOT, "main.lua"),
+	"Should return the parent module after importing"
+)
 
 -- If no or invalid parameters are passed, we expect a nil return value and an error message (Lua style)
 local returnValueShouldBeNil, errorMessage = import()
 assertStrictEqual(returnValueShouldBeNil, nil, "Should return nil if no parameters were given")
 assertStrictEqual(type(errorMessage), "string", "Should return an error message if no parameters were given")
 assertStrictEqual(import(), import(""), "Should treat empty strings the same as nil")
-assertStrictEqual(import(), import("@"), "@-notation: Evo package notation without parameters should be treated the same as nil")
+assertStrictEqual(
+	import(),
+	import("@"),
+	"@-notation: Evo package notation without parameters should be treated the same as nil"
+)
 
 -- Attempting to load a module without an extension should automatically append .lua (since native modules are loaded via FFI)
 local bundledModuleLoadedWithoutExtension = import("bundled-module")
-assertStrictEqual(bundledModule, bundledModuleLoadedWithoutExtension, "Should append the .lua extension if it was omitted")
-assertStrictEqual(import("./bundled-module"), bundledModuleLoadedWithoutExtension, "Should load module from cwd with dot prefix (no extension")
-assertStrictEqual(import("./bundled-module.lua"),  bundledModule, "Should load module from cwd with dot prefix (with extension")
+assertStrictEqual(
+	bundledModule,
+	bundledModuleLoadedWithoutExtension,
+	"Should append the .lua extension if it was omitted"
+)
+assertStrictEqual(
+	import("./bundled-module"),
+	bundledModuleLoadedWithoutExtension,
+	"Should load module from cwd with dot prefix (no extension"
+)
+assertStrictEqual(
+	import("./bundled-module.lua"),
+	bundledModule,
+	"Should load module from cwd with dot prefix (with extension"
+)
 
 -- Import modules from file in local evo cache
 -- No entry point given (modulePath is a folder): Use main.lua in that same folder
 -- This requires special handling, because if .lua is blindly appended it can't work in this case
 local someModule = import("@test/example-package")
 assertStrictEqual(type(someModule), "table", "@-notation: Should load successfully even if no entry point was given")
-assertStrictEqual(someModule.identifier, 123456789, "@-notation: Should succeed loading module contents using the default entry point")
-assertStrictEqual(someModule, import("@test/example-package/main.lua"), "@-notation: Should use main.lua as default entry point")
+assertStrictEqual(
+	someModule.identifier,
+	123456789,
+	"@-notation: Should succeed loading module contents using the default entry point"
+)
+assertStrictEqual(
+	someModule,
+	import("@test/example-package/main.lua"),
+	"@-notation: Should use main.lua as default entry point"
+)
 
 -- Entry point given (modulePath is a file): Load that one instead
 local epoModule2 = import("@foo/bar/nonstandard-entrypoint.lua")
@@ -68,4 +99,8 @@ assertStrictEqual(epoModule2.identifier, 987654321, "@-notation: Should load non
 -- No owner/packageName given: Return nil and error message
 local returnValueShouldBeNilAlso, anotherErrorMessage = import("@")
 assertStrictEqual(returnValueShouldBeNilAlso, nil, "@-notation: Should return nil if no owner/package is given")
-assertStrictEqual(type(anotherErrorMessage), "string", "@-notation: Should return an error message if no owner/package is given")
+assertStrictEqual(
+	type(anotherErrorMessage),
+	"string",
+	"@-notation: Should return an error message if no owner/package is given"
+)

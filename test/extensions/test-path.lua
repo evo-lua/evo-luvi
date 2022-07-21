@@ -26,14 +26,18 @@ else
 end
 
 -- Type errors: Only strings are valid paths(* excluding optional args)
-local invalidTypeValues = {true, false, 7, nil, {}, 42.0}
+local invalidTypeValues = { true, false, 7, nil, {}, 42.0 }
 
 local function assertFailure(func, ...)
-    local result, errorMessage = func(...)
-    -- invalid types should return nil and error (Lua style), not errors (JavaScript style)
-    assertStrictEqual(result, nil, "Should return nil if invalid parameters are passed")
-    assertStrictEqual(type(errorMessage), "string", "Should return an error message if invalid parameters are passed")
-    assertStrictEqual(errorMessage:find("Usage: "), 1, "Should return an error message of the form 'Usage: ...' when invalid parameters are passed")
+	local result, errorMessage = func(...)
+	-- invalid types should return nil and error (Lua style), not errors (JavaScript style)
+	assertStrictEqual(result, nil, "Should return nil if invalid parameters are passed")
+	assertStrictEqual(type(errorMessage), "string", "Should return an error message if invalid parameters are passed")
+	assertStrictEqual(
+		errorMessage:find("Usage: "),
+		1,
+		"Should return an error message of the form 'Usage: ...' when invalid parameters are passed"
+	)
 end
 
 local functionsToTest = {
@@ -48,25 +52,25 @@ local functionsToTest = {
 }
 
 for key, value in pairs(invalidTypeValues) do
-    for name, namespace in pairs( { win32 = path.win32, posix = path.posix}) do
+	for name, namespace in pairs({ win32 = path.win32, posix = path.posix }) do
 		for index, func in ipairs(functionsToTest) do
 			print("Basic input validation test: " .. name .. "." .. func .. " (input: " .. tostring(value) .. ")")
 			assertFailure(namespace[func], value)
 		end
 
 		-- These don't really fit the pattern, so just add them manually
-		assertFailure(namespace.relative, value, 'foo')
-        assertFailure(namespace.relative, 'foo', value)
+		assertFailure(namespace.relative, value, "foo")
+		assertFailure(namespace.relative, "foo", value)
 
 		print("Completed basic input validation tests for namespace: " .. name)
-    end
+	end
 end
 
 -- Path separators and delimiters should be consistent with the respective OS' convention
-assertStrictEqual(path.win32.separator, '\\', "Windows path separator must be BACKSLASH")
-assertStrictEqual(path.posix.separator, '/', "POSIX path separator must be FORWARD_SLASH")
-assertStrictEqual(path.win32.delimiter, ';', "Windows path delimiter must be SEMICOLON")
-assertStrictEqual(path.posix.delimiter, ':', "POSIX path delimiter must be COLON")
+assertStrictEqual(path.win32.separator, "\\", "Windows path separator must be BACKSLASH")
+assertStrictEqual(path.posix.separator, "/", "POSIX path separator must be FORWARD_SLASH")
+assertStrictEqual(path.win32.delimiter, ";", "Windows path delimiter must be SEMICOLON")
+assertStrictEqual(path.posix.delimiter, ":", "POSIX path delimiter must be COLON")
 
 dofile("test/extensions/path/test-path-dirname.lua")
 dofile("test/extensions/path/test-path-basename.lua")

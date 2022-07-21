@@ -9,10 +9,10 @@ function _G.assertStrictEqual(actual, expected, label)
 	label = label or _G.currentNamespace
 
 	if actual ~= expected then
-		print(format("FAIL\t%s\t%s IS NOT %s (%s)", label, actual, expected,  _G.currentNamespace))
+		print(format("FAIL\t%s\t%s IS NOT %s (%s)", label, actual, expected, _G.currentNamespace))
 		error(format("\nExpected %s, actual: %s", expected, actual) .. "\n" .. debug_traceback())
 	end
-	print(format("PASS\t%s\t%s IS %s (%s)", label, actual, expected,  _G.currentNamespace))
+	print(format("PASS\t%s\t%s IS %s (%s)", label, actual, expected, _G.currentNamespace))
 
 	numAssertions = numAssertions + 1
 end
