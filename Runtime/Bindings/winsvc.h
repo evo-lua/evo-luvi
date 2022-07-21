@@ -19,7 +19,6 @@
 
 #define WINSVC_VERSION "1.0.0"
 
-LUALIB_API int luaopen_winsvc(lua_State *L);
+LUALIB_API int luaopen_winsvc(lua_State* L);
 
 #endif /* __WINSVC_H__ */
-
