@@ -1,4 +1,4 @@
-local luvi = require('luvi')
+local luvi = require("luvi")
 local bundle = luvi.bundle
 
 -- Upvalues
@@ -10,12 +10,16 @@ local vfs = {}
 
 function vfs.hasFile(filePath)
 	local fileStats = bundle.stat(filePath)
-	if fileStats and fileStats.type == "file" then return true end
+	if fileStats and fileStats.type == "file" then
+		return true
+	end
 end
 
 function vfs.hasFolder(filePath)
 	local fileStats = bundle.stat(filePath)
-	if fileStats and fileStats.type == "directory" then return true end
+	if fileStats and fileStats.type == "directory" then
+		return true
+	end
 end
 
 function vfs.loadFile(filePath)

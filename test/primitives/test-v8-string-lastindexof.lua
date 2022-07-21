@@ -1,7 +1,6 @@
 local V8 = require("v8_string")
 local StringPrototypeLastIndexOf = V8.StringPrototypeLastIndexOf
 
-
 -- Upvalues
 local tonumber = tonumber
 local string_len = string.len
@@ -63,68 +62,68 @@ print("OK\tMDN-StringPrototypeLastIndexOf")
 -- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 -- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 -- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-local s = "test test test";
+local s = "test test test"
 
-local MAX_DOUBLE = 1.7976931348623157e+308;
-local MIN_DOUBLE = -MAX_DOUBLE;
-local MAX_SMI = 2^30 - 1
-local MIN_SMI = - 2^30;
+local MAX_DOUBLE = 1.7976931348623157e+308
+local MIN_DOUBLE = -MAX_DOUBLE
+local MAX_SMI = 2 ^ 30 - 1
+local MIN_SMI = -2 ^ 30
 local Infinity = math.huge -- #INF (infinity)
 local NaN = 0 / 0 -- #IND (indefinite)
 
-assertStrictEqual(10, s:lastIndexOf("test", Infinity), "tinf");
-assertStrictEqual(10, s:lastIndexOf("test", MAX_DOUBLE), "tmaxdouble");
-assertStrictEqual(10, s:lastIndexOf("test", MAX_SMI), "tmaxsmi");
-assertStrictEqual(10, s:lastIndexOf("test", #s * 2), "t2length");
-assertStrictEqual(10, s:lastIndexOf("test", 15), "t15");
-assertStrictEqual(10, s:lastIndexOf("test", 14), "t14");
-assertStrictEqual(10, s:lastIndexOf("test", 10), "t10");
-assertStrictEqual(5, s:lastIndexOf("test", 9), "t9");
-assertStrictEqual(5, s:lastIndexOf("test", 6), "t6");
-assertStrictEqual(5, s:lastIndexOf("test", 5), "t5");
-assertStrictEqual(0, s:lastIndexOf("test", 4), "t4");
-assertStrictEqual(0, s:lastIndexOf("test", 0), "t0");
-assertStrictEqual(0, s:lastIndexOf("test", -1), "t-1");
-assertStrictEqual(0, s:lastIndexOf("test", -#s), "t-len");
-assertStrictEqual(0, s:lastIndexOf("test", MIN_SMI), "tminsmi");
-assertStrictEqual(0, s:lastIndexOf("test", MIN_DOUBLE), "tmindouble");
-assertStrictEqual(0, s:lastIndexOf("test", -Infinity), "tneginf");
-assertStrictEqual(10, s:lastIndexOf("test"), "t");
-assertStrictEqual(-1, s:lastIndexOf("notpresent"), "n");
-assertStrictEqual(-1, s:lastIndexOf(), "none");
-assertStrictEqual(10, s:lastIndexOf("test", "not a number"), "nan");
+assertStrictEqual(10, s:lastIndexOf("test", Infinity), "tinf")
+assertStrictEqual(10, s:lastIndexOf("test", MAX_DOUBLE), "tmaxdouble")
+assertStrictEqual(10, s:lastIndexOf("test", MAX_SMI), "tmaxsmi")
+assertStrictEqual(10, s:lastIndexOf("test", #s * 2), "t2length")
+assertStrictEqual(10, s:lastIndexOf("test", 15), "t15")
+assertStrictEqual(10, s:lastIndexOf("test", 14), "t14")
+assertStrictEqual(10, s:lastIndexOf("test", 10), "t10")
+assertStrictEqual(5, s:lastIndexOf("test", 9), "t9")
+assertStrictEqual(5, s:lastIndexOf("test", 6), "t6")
+assertStrictEqual(5, s:lastIndexOf("test", 5), "t5")
+assertStrictEqual(0, s:lastIndexOf("test", 4), "t4")
+assertStrictEqual(0, s:lastIndexOf("test", 0), "t0")
+assertStrictEqual(0, s:lastIndexOf("test", -1), "t-1")
+assertStrictEqual(0, s:lastIndexOf("test", -#s), "t-len")
+assertStrictEqual(0, s:lastIndexOf("test", MIN_SMI), "tminsmi")
+assertStrictEqual(0, s:lastIndexOf("test", MIN_DOUBLE), "tmindouble")
+assertStrictEqual(0, s:lastIndexOf("test", -Infinity), "tneginf")
+assertStrictEqual(10, s:lastIndexOf("test"), "t")
+assertStrictEqual(-1, s:lastIndexOf("notpresent"), "n")
+assertStrictEqual(-1, s:lastIndexOf(), "none")
+assertStrictEqual(10, s:lastIndexOf("test", "not a number"), "nan")
 
-local longNonMatch = "overlong string that doesn't match";
-local longAlmostMatch = "test test test!";
-local longAlmostMatch2 = "!test test test";
+local longNonMatch = "overlong string that doesn't match"
+local longAlmostMatch = "test test test!"
+local longAlmostMatch2 = "!test test test"
 
-assertStrictEqual(-1, s:lastIndexOf(longNonMatch), "long");
-assertStrictEqual(-1, s:lastIndexOf(longNonMatch, 10), "longpos");
-assertStrictEqual(-1, s:lastIndexOf(longNonMatch, NaN), "longnan");
-assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch), "tlong");
-assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch, 10), "tlongpos");
-assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch), "tlongnan");
+assertStrictEqual(-1, s:lastIndexOf(longNonMatch), "long")
+assertStrictEqual(-1, s:lastIndexOf(longNonMatch, 10), "longpos")
+assertStrictEqual(-1, s:lastIndexOf(longNonMatch, NaN), "longnan")
+assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch), "tlong")
+assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch, 10), "tlongpos")
+assertStrictEqual(-1, s:lastIndexOf(longAlmostMatch), "tlongnan")
 
-local nonInitialMatch = "est";
-assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, 0), "noninit");
-assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, -1), "noninitneg");
-assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, MIN_SMI), "noninitminsmi");
-assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, MIN_DOUBLE), "noninitmindbl");
-assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, -Infinity), "noninitneginf");
+local nonInitialMatch = "est"
+assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, 0), "noninit")
+assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, -1), "noninitneg")
+assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, MIN_SMI), "noninitminsmi")
+assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, MIN_DOUBLE), "noninitmindbl")
+assertStrictEqual(-1, s:lastIndexOf(nonInitialMatch, -Infinity), "noninitneginf")
 
-for i = #s + 10, 0,  -1 do
-	local expected = i < #s and i or #s;
-  assertStrictEqual(expected, s:lastIndexOf("", i), "empty" .. i);
+for i = #s + 10, 0, -1 do
+	local expected = i < #s and i or #s
+	assertStrictEqual(expected, s:lastIndexOf("", i), "empty" .. i)
 end
 
-local reString = "asdf[a-z]+(asdf)?";
+local reString = "asdf[a-z]+(asdf)?"
 
-assertStrictEqual(4, reString:lastIndexOf("[a-z]+"), "r4");
-assertStrictEqual(10, reString:lastIndexOf("(asdf)?"), "r10");
+assertStrictEqual(4, reString:lastIndexOf("[a-z]+"), "r4")
+assertStrictEqual(10, reString:lastIndexOf("(asdf)?"), "r10")
 
 -- Should use index of 0 if provided index is negative.
 -- See http://code.google.com/p/v8/issues/detail?id=351
 local str = "test"
-assertStrictEqual(0, str:lastIndexOf("test", -1), "regression");
+assertStrictEqual(0, str:lastIndexOf("test", -1), "regression")
 
 print("OK\tv8-string-lastIndexOf")

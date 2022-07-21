@@ -1,12 +1,12 @@
-local uv = require('uv')
-local bundle = require('luvi').bundle
+local uv = require("uv")
+local bundle = require("luvi").bundle
 
 -- Register two libraries as modules
 bundle.register("utils", "utils.lua")
 bundle.register("repl", "repl.lua")
 
-local utils = require('utils')
-local repl = require('repl')
+local utils = require("utils")
+local repl = require("repl")
 
 local stdin = utils.stdin
 local stdout = utils.stdout
