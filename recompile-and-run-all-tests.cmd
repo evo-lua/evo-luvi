@@ -3,7 +3,7 @@ REM You may need to run this from a Visual Studio prompt if using MSVC (no idea 
 REM Example: x64 Native Tools Command Prompt for VS <version>
 
 REM This should set up the build environment for standard builds the first time it's run
-CALL make.bat regular
+CALL make.bat regular-asm
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
 CALL make.bat
