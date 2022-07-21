@@ -1,5 +1,4 @@
 -- Imports
-local uv = require("uv")
 local vfs = require("virtual_file_system")
 
 -- Exports
@@ -7,7 +6,6 @@ _G.EVO_PACKAGE_DIRECTORY = ".evo"
 _G.ENABLE_IMPORT_DEBUGGING = false -- Can just enable it globally to debug imports, in lieu of better logging capabilities...
 
 -- Upvalues
-local dofile = dofile
 local type = type
 local string_sub = string.sub
 local table_remove = table.remove

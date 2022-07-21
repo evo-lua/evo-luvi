@@ -88,7 +88,7 @@ function V8.StringLastIndexOf(sub, pat, index)
 		return start_index
 	end
 
-	local position = -1
+	local position
 	position = V8.StringMatchBackwards(sub, pat, start_index)
 	return position
 end
