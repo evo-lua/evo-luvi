@@ -227,74 +227,7 @@ local function buildBundle(target, bundle)
 	return
 end
 
--- Given a list of bundles, merge them into a single VFS.  Lower indexed items
--- overshadow later items.
-local function combinedBundle(bundles)
-	local bases = {}
-	for i = 1, #bundles do
-		bases[i] = bundles[i].base
-	end
-	local bundle = { base = table.concat(bases, ";") }
-
-	function bundle.stat(path)
-		local err
-		for i = 1, #bundles do
-			local stat
-			stat, err = bundles[i].stat(path)
-			if stat then
-				return stat
-			end
-		end
-		return nil, err
-	end
-
-	function bundle.readdir(path)
-		local has = {}
-		local files, err
-		for i = 1, #bundles do
-			local list
-			list, err = bundles[i].readdir(path)
-			if list then
-				for j = 1, #list do
-					local name = list[j]
-					if has[name] then
-						print("Warning multiple overlapping versions of " .. name)
-					else
-						has[name] = true
-						if files then
-							files[#files + 1] = name
-						else
-							files = { name }
-						end
-					end
-				end
-			end
-		end
-		if files then
-			return files
-		else
-			return nil, err
-		end
-	end
-
-	function bundle.readfile(path)
-		local err
-		for i = 1, #bundles do
-			local data
-			data, err = bundles[i].readfile(path)
-			if data then
-				return data
-			end
-		end
-		return nil, err
-	end
-
-	return bundle
-end
-
 local function makeBundle(bundlePath)
-	local parts = {}
-
 	local path = pathJoin(uv.cwd(), bundlePath)
 	local bundle
 	local zip = miniz.new_reader(path)
@@ -303,18 +236,14 @@ local function makeBundle(bundlePath)
 	else
 		local stat = uv.fs_stat(path)
 		if not stat then
-			error(string.format("Failed to load %s (No such file exists)", path), 0)
+			error(string.format("Failed to load %s (No such file exists)", path), 0) -- ✓ TESTED
 		elseif stat.type ~= "directory" then
-			error(string.format("Failed to load %s (Unsupported file type)", path), 0)
+			error(string.format("Failed to load %s (Unsupported file type)", path), 0) -- ✓ TESTED
 		end
 		bundle = folderBundle(path)
 	end
-	parts[1] = bundle
 
-	if #parts == 1 then
-		return parts[1]
-	end
-	return combinedBundle(parts)
+	return bundle
 end
 
 local function commonBundle(bundlePath, mainPath, args)
@@ -423,7 +352,6 @@ return {
 	chrootBundle = chrootBundle,
 	zipBundle = zipBundle,
 	buildBundle = buildBundle,
-	combinedBundle = combinedBundle,
 	makeBundle = makeBundle,
 	commonBundle = commonBundle,
 }
