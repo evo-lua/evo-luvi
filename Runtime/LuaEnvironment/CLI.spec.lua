@@ -1,5 +1,7 @@
 require("busted.runner")()
 
+local uv = require("uv")
+
 local CLI = import("CLI.lua")
 
 describe("ParseCommandLineArguments", function()
@@ -193,5 +195,124 @@ describe("ParseCommandLineArguments", function()
 		local success, errorMessage = pcall(CLI.ParseCommandLineArguments, CLI, { "script.lua", "anotherFile.zip" })
 		assert.is_false(success)
 		assert.equals(CLI.COMBINED_BUNDLES_ERROR, errorMessage)
+	end)
+end)
+
+describe("ExecuteCommand", function()
+	local ZIPAPP_EXAMPLE_FOLDER = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp")
+	local ZIPAPP_EXAMPLE_OUTPUT = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip")
+	setup(function()
+		-- This is a roundabout way of calling the CLI, but it should work regardless of where the binary is located (unlike os.exec)
+		local commandInfo = {
+			appArgs = {},
+			appPath = ZIPAPP_EXAMPLE_FOLDER,
+			options = {
+				output = ZIPAPP_EXAMPLE_OUTPUT,
+			},
+		}
+		-- The zip app is platform-specific, so it needs to be created from scratch. Also, we don't want to track zip files via git...
+		CLI:ExecuteCommand(commandInfo)
+	end)
+
+	teardown(function()
+		assert(uv.fs_unlink(ZIPAPP_EXAMPLE_OUTPUT), "Failed to remove temporary file " .. ZIPAPP_EXAMPLE_OUTPUT)
+	end)
+
+	it("should raise an error if no command was passed", function()
+		assert.has_error(function()
+			CLI:ExecuteCommand(nil)
+		end, "No command to execute")
+	end)
+
+	it("should display the version string if the -v or --version flags were passed", function()
+		local commandInfo = {
+			appPath = "",
+			appArgs = {},
+			options = {
+				version = true,
+			},
+		}
+
+		local fauxConsole = C_Testing.CreateFauxConsole()
+		CLI:SetConsole(fauxConsole)
+		CLI:ExecuteCommand(commandInfo)
+		assert.equals(CLI:GetVersionText() .. "\n", fauxConsole:read())
+	end)
+
+	it("should display the help text if the -h or --help flags were passed", function()
+		local commandInfo = {
+			appPath = "",
+			appArgs = {},
+			options = {
+				help = true,
+			},
+		}
+
+		local fauxConsole = C_Testing.CreateFauxConsole()
+		CLI:SetConsole(fauxConsole)
+		CLI:ExecuteCommand(commandInfo)
+		assert.equals(CLI:GetHelpText() .. "\n", fauxConsole:read())
+	end)
+
+	it("should display the help text and version if both the -h and -v flags were passed", function()
+		local commandInfo = {
+			appPath = "",
+			appArgs = {},
+			options = {
+				help = true,
+				version = true,
+			},
+		}
+
+		local fauxConsole = C_Testing.CreateFauxConsole()
+		CLI:SetConsole(fauxConsole)
+		CLI:ExecuteCommand(commandInfo)
+
+		local expectedConsoleOutput = CLI:GetVersionText() .. "\n" .. CLI:GetHelpText() .. "\n"
+		assert.equals(expectedConsoleOutput, fauxConsole:read())
+	end)
+
+	it("should load the default entry point if a folder was passed without the optional -m flag", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assert.equals("HelloWorldApp/main.lua (disk)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the given entry point if a folder was passed with a valid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "entry.lua",
+			},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assert.equals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the default entry point if a zip file was passed without the optional -m flag", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assert.equals("HelloWorldZipApp/main.lua (vfs)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the given entry point if a zip file was passed with a valid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "entry.lua",
+			},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assert.equals("HelloWorldZipApp/entry.lua (vfs)#appArg1#appArg2", moduleReturns)
 	end)
 end)

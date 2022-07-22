@@ -16,8 +16,13 @@ globals = {
 	-- busted (Test runner)
 	"describe",
 	"it",
+	"setup",
+	"teardown",
 
 	-- Nonstandard extensions
 	"import",
 	"path",
+
+	-- evo APIs
+	"C_Testing",
 }
