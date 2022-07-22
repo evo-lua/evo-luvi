@@ -298,10 +298,6 @@ local function commonBundle(bundlePath, mainPath, args)
 
 	_G.args = args
 
-	if not args then
-		return bundle
-	end
-
 	local main = bundle.readfile(mainPath)
 	if not main then
 		error("Missing " .. mainPath .. " in " .. bundle.base)
