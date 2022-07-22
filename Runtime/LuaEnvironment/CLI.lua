@@ -1,4 +1,5 @@
 local CLI = {
+	print = print, -- Only needed for injecting faux consoles (during testing). Not pretty, but alas...
 	COMBINED_BUNDLES_ERROR = "Merging multiple bundles is no longer supported; "
 		.. "please restructure your application to use a single entry point instead",
 }
@@ -60,6 +61,86 @@ function CLI:ParseCommandLineArguments(argumentsVector)
 	return { appPath = bundles[1] or "", options = options, appArgs = appArgs }
 end
 
+local luvibundle = require("luvibundle")
+
+local EXIT_SUCCESS = 0
+
+function CLI:ExecuteCommand(commandInfo)
+	if type(commandInfo) ~= "table" then
+		error("No command to execute")
+	end
+
+	local print = self.print
+
+	if commandInfo.options.version then
+		print(self:GetVersionText())
+	end
+
+	if commandInfo.options.help then
+		print(self:GetHelpText())
+	end
+
+	-- Don't run app when printing version or help
+	if commandInfo.options.version or commandInfo.options.help then
+		return EXIT_SUCCESS
+	end
+
+	-- Build the app if output is given
+	if commandInfo.options.output then
+		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle({ commandInfo.appPath }))
+	end
+
+	-- Run the luvi app with the extra args
+	return luvibundle.commonBundle({ commandInfo.appPath }, commandInfo.options.main, commandInfo.appArgs)
+end
+
+function CLI:SetConsole(console)
+	self.print = console and console.print or print
+end
+
+local luvi = require("luvi")
+local jit = require("jit")
+
+function CLI:GetVersionText()
+	-- Generate options string
+	local optionsStringTokens = {}
+
+	for key, value in pairs(luvi.options) do
+		if type(value) == "boolean" then
+			table.insert(optionsStringTokens, key)
+		else
+			table.insert(optionsStringTokens, string.format("\t%s\t%s", key, value))
+		end
+	end
+	local optionsString = table.concat(optionsStringTokens, "\n")
+
+	return string.format("This is evo-luvi %s (powered by %s)", luvi.version, jit.version)
+		.. "\n\nEmbedded libraries:\n\n"
+		.. optionsString
+		.. "\n"
+end
+
+function CLI:GetHelpText()
+	local helpText = [[Usage: $(LUVI) entryPoint [runtimeOptions] [-- applicationOptions]
+
+	entryPoint		Path to the entry point of your application (lua, zip, or directory)
+
+	runtimeOptions		One or several of the following command line flags:
+
+		--help		Display usage information (this text)
+		--version	Show versioning information in a human-readable format
+		--output path	Create a self-contained zip file that runs your application
+		--main path	Specify a nonstandard entry point (defaults to main.lua)
+
+	--			Indicate the end of runTimeOptions (everything after this will be ignored)
+
+	applicationOptions	Command line flags that are forwarded to your application
+
+For documentation and examples, visit https://evo-lua.github.io/]]
+	helpText = string.gsub(helpText, "%$%(LUVI%)", self.EXECUTABLE_NAME) -- Discard number of matches
+	return helpText
+end
+
 CLI.COMMAND_HANDLERS = {
 	["-o"] = "output",
 	["--output"] = "output",
@@ -70,5 +151,7 @@ CLI.COMMAND_HANDLERS = {
 	["-h"] = "help",
 	["--help"] = "help",
 }
+
+CLI.EXECUTABLE_NAME = "evo-luvi"
 
 return CLI
