@@ -16,6 +16,8 @@ globals = {
 	-- busted (Test runner)
 	"describe",
 	"it",
+	"setup",
+	"teardown",
 
 	-- Nonstandard extensions
 	"import",
