@@ -229,21 +229,20 @@ end
 
 local function makeBundle(bundlePath)
 	local path = pathJoin(uv.cwd(), bundlePath)
-	local bundle
+
 	local zip = miniz.new_reader(path)
 	if zip then
-		bundle = zipBundle(path, zip)
-	else
-		local stat = uv.fs_stat(path)
-		if not stat then
-			error(string.format("Failed to load %s (No such file exists)", path), 0) -- ✓ TESTED
-		elseif stat.type ~= "directory" then
-			error(string.format("Failed to load %s (Unsupported file type)", path), 0) -- ✓ TESTED
-		end
-		bundle = folderBundle(path)
+		return zipBundle(path, zip)
 	end
 
-	return bundle
+	local stat = uv.fs_stat(path)
+	if not stat then
+		error(string.format("Failed to load %s (No such file exists)", path), 0)
+	elseif stat.type ~= "directory" then
+		error(string.format("Failed to load %s (Unsupported file type)", path), 0)
+	end
+
+	return folderBundle(path)
 end
 
 local function commonBundle(bundlePath, mainPath, args)
