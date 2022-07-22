@@ -27,6 +27,8 @@ local commonBundle = luviBundle.commonBundle
 local Luvi = {}
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
+	self:LoadExtensionModules()
+
 	local executablePath = uv.exepath()
 	if self:IsZipApp(executablePath) then
 		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
@@ -35,6 +37,21 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
 
 	return CLI:ExecuteCommand(commandInfo)
+end
+
+function Luvi:LoadExtensionModules()
+	local primitives = require("primitives")
+	local extensionLoaders = require("extensions")
+
+	-- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
+	for name, primitiveLoader in pairs(primitives) do
+		package.preload[name] = primitiveLoader()
+	end
+
+	-- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
+	for name, extensionLoader in pairs(extensionLoaders) do
+		_G[name] = extensionLoader()
+	end
 end
 
 function Luvi:IsZipApp(filePath)
