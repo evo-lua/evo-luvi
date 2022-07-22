@@ -302,8 +302,10 @@ local function makeBundle(bundlePath)
 		bundle = zipBundle(path, zip)
 	else
 		local stat = uv.fs_stat(path)
-		if not stat or stat.type ~= "directory" then
-			error("ERROR: " .. path .. " is not a zip file or a folder")
+		if not stat then
+			error(string.format("Failed to load %s (No such file exists)", path), 0)
+		elseif stat.type ~= "directory" then
+			error(string.format("Failed to load %s (Unsupported file type)", path), 0)
 		end
 		bundle = folderBundle(path)
 	end
