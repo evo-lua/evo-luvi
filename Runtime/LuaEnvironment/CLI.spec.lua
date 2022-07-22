@@ -315,4 +315,33 @@ describe("ExecuteCommand", function()
 		local moduleReturns = CLI:ExecuteCommand(commandInfo)
 		assert.equals("HelloWorldZipApp/entry.lua (vfs)#appArg1#appArg2", moduleReturns)
 	end)
+
+	it("should raise an error if an incompatible file type was passed", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "empty.txt"),
+			appArgs = {},
+			options = {},
+		}
+
+		assert.has_error(function()
+			CLI:ExecuteCommand(commandInfo)
+		end,
+		string.format("Failed to load %s (Unsupported file type)", commandInfo.appPath))
+	end)
+
+	it("should raise an error if an invalid file path was passed", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "does-not-exist.txt"),
+			appArgs = {},
+			options = {},
+		}
+
+		-- Better be safe than sorry...
+		assert(not uv.fs_stat(commandInfo.appPath), commandInfo.appPath .. " should not exist")
+
+		assert.has_error(function()
+			CLI:ExecuteCommand(commandInfo)
+		end,
+		string.format("Failed to load %s (No such file exists)", commandInfo.appPath))
+	end)
 end)
