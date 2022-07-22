@@ -298,34 +298,19 @@ local function commonBundle(bundlePath, mainPath, args)
 
 	_G.args = args
 
-	-- Auto-register the require system if present
-	local mainRequire
-	local stat = bundle.stat("deps/require.lua")
-	if stat and stat.type == "file" then
-		bundle.register("require", "deps/require.lua")
-		mainRequire = require("require")("bundle:main.lua")
-	end
-
-	-- Auto-setup global p and libuv version of print
-	if mainRequire and (bundle.stat("deps/pretty-print") or bundle.stat("deps/pretty-print.lua")) then
-		_G.p = mainRequire("pretty-print").prettyPrint
-	end
-
 	if not args then
-		return bundle, mainRequire
+		return bundle
 	end
-	if mainRequire then
-		return mainRequire("./" .. mainPath)
-	else
-		local main = bundle.readfile(mainPath)
-		if not main then
-			error("Missing " .. mainPath .. " in " .. bundle.base)
-		end
-		local fn = assert(loadstring(main, "bundle:" .. mainPath))
 
-		exportScriptGlobals()
-		return fn(unpack(args))
+	local main = bundle.readfile(mainPath)
+	if not main then
+		error("Missing " .. mainPath .. " in " .. bundle.base)
 	end
+	local fn = assert(loadstring(main, "bundle:" .. mainPath))
+
+	exportScriptGlobals()
+	return fn(unpack(args))
+
 end
 
 -- Legacy export for makeBundle
