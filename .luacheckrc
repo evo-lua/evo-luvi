@@ -20,4 +20,7 @@ globals = {
 	-- Nonstandard extensions
 	"import",
 	"path",
+
+	-- evo APIs
+	"C_Testing",
 }
