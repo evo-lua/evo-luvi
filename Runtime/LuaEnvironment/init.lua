@@ -43,7 +43,7 @@ function Luvi:IsZipApp(filePath)
 end
 
 function Luvi:RunLuviApp(appPath, commandLineArguments)
-	return commonBundle({ appPath }, nil, commandLineArguments)
+	return commonBundle(appPath, nil, commandLineArguments)
 end
 
 return function(args)

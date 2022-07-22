@@ -292,37 +292,36 @@ local function combinedBundle(bundles)
 	return bundle
 end
 
-local function makeBundle(bundlePaths)
+local function makeBundle(bundlePath)
 	local parts = {}
-	for n = 1, #bundlePaths do
-		local path = pathJoin(uv.cwd(), bundlePaths[n])
-		bundlePaths[n] = path
-		local bundle
-		local zip = miniz.new_reader(path)
-		if zip then
-			bundle = zipBundle(path, zip)
-		else
-			local stat = uv.fs_stat(path)
-			if not stat or stat.type ~= "directory" then
-				error("ERROR: " .. path .. " is not a zip file or a folder")
-			end
-			bundle = folderBundle(path)
+
+	local path = pathJoin(uv.cwd(), bundlePath)
+	local bundle
+	local zip = miniz.new_reader(path)
+	if zip then
+		bundle = zipBundle(path, zip)
+	else
+		local stat = uv.fs_stat(path)
+		if not stat or stat.type ~= "directory" then
+			error("ERROR: " .. path .. " is not a zip file or a folder")
 		end
-		parts[n] = bundle
+		bundle = folderBundle(path)
 	end
+	parts[1] = bundle
+
 	if #parts == 1 then
 		return parts[1]
 	end
 	return combinedBundle(parts)
 end
 
-local function commonBundle(bundlePaths, mainPath, args)
+local function commonBundle(bundlePath, mainPath, args)
 	mainPath = mainPath or "main.lua"
 
-	local bundle = assert(makeBundle(bundlePaths))
+	local bundle = assert(makeBundle(bundlePath))
 	luvi.bundle = bundle
 
-	bundle.paths = bundlePaths
+	bundle.paths = bundlePath
 	bundle.mainPath = mainPath
 
 	function bundle.action(path, action, ...)

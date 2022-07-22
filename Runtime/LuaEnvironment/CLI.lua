@@ -87,11 +87,11 @@ function CLI:ExecuteCommand(commandInfo)
 
 	-- Build the app if output is given
 	if commandInfo.options.output then
-		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle({ commandInfo.appPath }))
+		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle(commandInfo.appPath))
 	end
 
 	-- Run the luvi app with the extra args
-	return luvibundle.commonBundle({ commandInfo.appPath }, commandInfo.options.main, commandInfo.appArgs)
+	return luvibundle.commonBundle(commandInfo.appPath, commandInfo.options.main, commandInfo.appArgs)
 end
 
 function CLI:SetConsole(console)
