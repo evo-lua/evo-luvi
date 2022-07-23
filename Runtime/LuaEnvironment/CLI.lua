@@ -68,7 +68,7 @@ local EXIT_SUCCESS = 0
 
 function CLI:ExecuteCommand(commandInfo)
 	if type(commandInfo) ~= "table" then
-		error("No command to execute")
+		error("No command to execute", 0)
 	end
 
 	local print = self.print
