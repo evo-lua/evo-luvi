@@ -7,7 +7,7 @@ local vfs = {}
 
 function vfs.hasFile(filePath)
 	local bundle = vfs.getBundle()
-	local fileStats = bundle.stat(filePath)
+	local fileStats = bundle:stat(filePath)
 	if fileStats and fileStats.type == "file" then
 		return true
 	end
@@ -15,7 +15,7 @@ end
 
 function vfs.hasFolder(filePath)
 	local bundle = vfs.getBundle()
-	local fileStats = bundle.stat(filePath)
+	local fileStats = bundle:stat(filePath)
 	if fileStats and fileStats.type == "directory" then
 		return true
 	end
@@ -23,7 +23,7 @@ end
 
 function vfs.loadFile(filePath)
 	local bundle = vfs.getBundle()
-	local fileContents = bundle.readfile(filePath)
+	local fileContents = bundle:readfile(filePath)
 	local compiledChunk = loadstring(fileContents)()
 	return compiledChunk
 end

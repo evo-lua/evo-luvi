@@ -10,77 +10,19 @@ local unpack = unpack or _G.table.unpack
 
 local tmpBase = luviPath.isWindows and (getenv("TMP") or uv.cwd()) or (getenv("TMPDIR") or "/tmp")
 
--- Bundle from folder on disk
-local function folderBundle(base)
-	local bundle = { base = base }
-
-	function bundle.stat(path)
-		path = pathJoin(base, "./" .. path)
-		local raw, err = uv.fs_stat(path)
-		if not raw then
-			return nil, err
-		end
-		return {
-			type = string.lower(raw.type),
-			size = raw.size,
-			mtime = raw.mtime,
-		}
-	end
-
-	function bundle.readdir(path)
-		path = pathJoin(base, "./" .. path)
-		local req, err = uv.fs_scandir(path)
-		if not req then
-			return nil, err
-		end
-
-		local files = {}
-		repeat
-			local name = uv.fs_scandir_next(req)
-			if name then
-				files[#files + 1] = name
-			end
-		until not name
-		return files
-	end
-
-	function bundle.readfile(path)
-		path = pathJoin(base, "./" .. path)
-		local fd, stat, data, err
-		stat, err = uv.fs_stat(path)
-		if not stat then
-			return nil, err
-		end
-		if stat.type ~= "file" then
-			return
-		end
-		fd, err = uv.fs_open(path, "r", 0644)
-		if not fd then
-			return nil, err
-		end
-		if stat then
-			data, err = uv.fs_read(fd, stat.size, 0)
-		end
-		uv.fs_close(fd)
-		return data, err
-	end
-
-	return bundle
-end
-
 -- Insert a prefix into all bundle calls
 local function chrootBundle(bundle, prefix)
 	local bundleStat = bundle.stat
-	function bundle.stat(path)
-		return bundleStat(prefix .. path)
+	function bundle:stat(path)
+		return bundleStat(bundle, prefix .. path)
 	end
 	local bundleReaddir = bundle.readdir
-	function bundle.readdir(path)
-		return bundleReaddir(prefix .. path)
+	function bundle:readdir(path)
+		return bundleReaddir(bundle, prefix .. path)
 	end
 	local bundleReadfile = bundle.readfile
-	function bundle.readfile(path)
-		return bundleReadfile(prefix .. path)
+	function bundle:readfile(path)
+		return bundleReadfile(bundle, prefix .. path)
 	end
 end
 
@@ -88,7 +30,7 @@ end
 local function zipBundle(base, zip)
 	local bundle = { base = base }
 
-	function bundle.stat(path)
+	function bundle:stat(path)
 		path = pathJoin("./" .. path)
 		if path == "" then
 			return {
@@ -114,7 +56,7 @@ local function zipBundle(base, zip)
 		}
 	end
 
-	function bundle.readdir(path)
+	function bundle:readdir(path)
 		path = pathJoin("./" .. path)
 		local index, err
 		if path == "" then
@@ -148,7 +90,7 @@ local function zipBundle(base, zip)
 		return files
 	end
 
-	function bundle.readfile(path)
+	function bundle:readfile(path)
 		path = pathJoin("./" .. path)
 		local index, err = zip:locate_file(path)
 		if not index then
@@ -158,8 +100,8 @@ local function zipBundle(base, zip)
 	end
 
 	-- Support zips with a single folder inserted at top-level
-	local entries = bundle.readdir("")
-	if #entries == 1 and bundle.stat(entries[1]).type == "directory" then
+	local entries = bundle:readdir("")
+	if #entries == 1 and bundle:stat(entries[1]).type == "directory" then
 		chrootBundle(bundle, entries[1] .. "/")
 	end
 
@@ -194,7 +136,7 @@ local function buildBundle(target, bundle)
 
 	local writer = miniz.new_writer()
 	local function copyFolder(path)
-		local files = bundle.readdir(path)
+		local files = bundle:readdir(path)
 		if not files then
 			return
 		end
@@ -202,13 +144,13 @@ local function buildBundle(target, bundle)
 			local name = files[i]
 			if string.sub(name, 1, 1) ~= "." or hiddenFilesAllowList[name] then
 				local child = pathJoin(path, name)
-				local stat = bundle.stat(child)
+				local stat = bundle:stat(child)
 				if stat.type == "directory" then
 					writer:add(child .. "/", "")
 					copyFolder(child)
 				elseif stat.type == "file" then
 					print("    " .. child)
-					writer:add(child, bundle.readfile(child), 9)
+					writer:add(child, bundle:readfile(child), 9)
 				end
 			end
 		end
@@ -222,12 +164,14 @@ local function buildBundle(target, bundle)
 	return
 end
 
+local PosixFileSystemMixin = require("PosixFileSystemMixin")
+
 local function makeBundle(bundlePath)
 	local path = pathJoin(uv.cwd(), bundlePath)
 
 	local zip = miniz.new_reader(path)
 	if zip then
-		return zipBundle(path, zip)
+		return zipBundle(path, zip) -- mixin(self, ZipFileSystemMixin)
 	end
 
 	local stat = uv.fs_stat(path)
@@ -237,7 +181,9 @@ local function makeBundle(bundlePath)
 		error(string.format("Failed to load %s (Unsupported file type)", path), 0)
 	end
 
-	return folderBundle(path)
+	local folderBundle = { base = path }
+	mixin(folderBundle, PosixFileSystemMixin)
+	return folderBundle
 end
 
 local function commonBundle(bundlePath, mainPath, args)
@@ -249,7 +195,7 @@ local function commonBundle(bundlePath, mainPath, args)
 	bundle.paths = bundlePath
 	bundle.mainPath = mainPath
 
-	function bundle.action(path, action, ...)
+	function bundle:action(path, action, ...)
 		-- If it's a real path, run it directly.
 		if uv.fs_access(path, "r") then
 			return action(path)
@@ -286,7 +232,7 @@ local function commonBundle(bundlePath, mainPath, args)
 		_G.USER_SCRIPT_ROOT = scriptRoot
 	end
 
-	function bundle.register(name, path)
+	function bundle:register(name, path)
 		if not path then
 			path = name + ".lua"
 		end
@@ -296,7 +242,7 @@ local function commonBundle(bundlePath, mainPath, args)
 		end
 	end
 
-	local main = bundle.readfile(mainPath)
+	local main = bundle:readfile(mainPath)
 	if not main then
 		error("Entry point " .. mainPath .. " does not exist in app bundle " .. bundle.base, 0)
 	end
@@ -311,7 +257,6 @@ end
 luvi.makeBundle = makeBundle
 
 return {
-	folderBundle = folderBundle,
 	chrootBundle = chrootBundle,
 	zipBundle = zipBundle,
 	buildBundle = buildBundle,

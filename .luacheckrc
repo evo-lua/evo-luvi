@@ -21,6 +21,9 @@ globals = {
 	"assertFalse",
 	"assertThrows",
 
+	-- Bundle system
+	"PosixFileSystemMixin",
+
 	-- Nonstandard extensions
 	"import",
 	"mixin",
