@@ -77,4 +77,34 @@ function ZipFileSystemMixin:readfile(path)
 	return zip:extract(index)
 end
 
+function ZipFileSystemMixin:hasRootDirectory()
+	-- Support zips with a single folder inserted at top-level (TBD: Why is this required?)
+	local entries = self:readdir("")
+	return #entries == 1 and self:stat(entries[1]).type == "directory"
+end
+
+function ZipFileSystemMixin:getRootDirectory()
+	if not self:hasRootDirectory() then return nil, "No root directory" end
+
+	return self:readdir("")[1]
+end
+
+-- Insert a prefix into all bundle calls
+function ZipFileSystemMixin:chroot(prefix)
+	local bundleStat = self.stat
+	function self.stat(this, path)
+		return bundleStat(this, prefix .. path)
+	end
+
+	local bundleReaddir = self.readdir
+	function self.readdir(this, path)
+		return bundleReaddir(this, prefix .. path)
+	end
+
+	local bundleReadfile = self.readfile
+	function self.readfile(this, path)
+		return bundleReadfile(this, prefix .. path)
+	end
+end
+
 return ZipFileSystemMixin

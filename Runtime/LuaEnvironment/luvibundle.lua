@@ -10,22 +10,6 @@ local unpack = unpack or _G.table.unpack
 
 local tmpBase = luviPath.isWindows and (getenv("TMP") or uv.cwd()) or (getenv("TMPDIR") or "/tmp")
 
--- Insert a prefix into all bundle calls
-local function chrootBundle(bundle, prefix)
-	local bundleStat = bundle.stat
-	function bundle:stat(path)
-		return bundleStat(bundle, prefix .. path)
-	end
-	local bundleReaddir = bundle.readdir
-	function bundle:readdir(path)
-		return bundleReaddir(bundle, prefix .. path)
-	end
-	local bundleReadfile = bundle.readfile
-	function bundle:readfile(path)
-		return bundleReadfile(bundle, prefix .. path)
-	end
-end
-
 local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
@@ -94,12 +78,9 @@ local function makeBundle(bundlePath)
 
 	if appBundle.zipReader then
 		mixin(appBundle, ZipFileSystemMixin)
-
-		-- Support zips with a single folder inserted at top-level
-		local entries = appBundle:readdir("")
-		if #entries == 1 and appBundle:stat(entries[1]).type == "directory" then
-			-- appBundle:Rebase(entries[1] .. "/") -- or chroot(...)
-			chrootBundle(appBundle, entries[1] .. "/")
+		local topLevelDirectory = appBundle:getRootDirectory()
+		if topLevelDirectory then
+			appBundle:chroot(topLevelDirectory .. "/")
 		end
 		return appBundle
 	end
@@ -187,7 +168,6 @@ end
 luvi.makeBundle = makeBundle
 
 return {
-	chrootBundle = chrootBundle,
 	buildBundle = buildBundle,
 	makeBundle = makeBundle,
 	commonBundle = commonBundle,
