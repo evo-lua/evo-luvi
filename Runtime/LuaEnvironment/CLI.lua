@@ -123,18 +123,18 @@ end
 function CLI:GetHelpText()
 	local helpText = [[Usage: $(LUVI) entryPoint [runtimeOptions] [-- applicationOptions]
 
-	entryPoint		Path to the entry point of your application (lua, zip, or directory)
+    entryPoint		Path to the entry point of your application (lua, zip, or directory)
 
-	runtimeOptions		One or several of the following command line flags:
+    runtimeOptions	One or several of the following command line flags:
 
-		--help		Display usage information (this text)
-		--version	Show versioning information in a human-readable format
-		--output path	Create a self-contained zip file that runs your application
-		--main path	Specify a nonstandard entry point (defaults to main.lua)
+        -h, --help		Display usage information (this text)
+        -v, --version		Show versioning information in a human-readable format
+        -o, --output path	Create a self-contained executable that runs your application
+        -m, --main path		Specify a nonstandard entry point (defaults to main.lua)
 
-	--			Indicate the end of runTimeOptions (everything after this will be ignored)
+    --			Indicate the end of runTimeOptions (everything after this will be ignored)
 
-	applicationOptions	Command line flags that are forwarded to your application
+    applicationOptions	Command line flags that are forwarded to your application
 
 For documentation and examples, visit https://evo-lua.github.io/]]
 	helpText = string.gsub(helpText, "%$%(LUVI%)", self.EXECUTABLE_NAME) -- Discard number of matches
