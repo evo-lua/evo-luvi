@@ -199,23 +199,44 @@ end)
 describe("ExecuteCommand", function()
 	local ZIPAPP_EXAMPLE_FOLDER = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp")
 	local ZIPAPP_EXAMPLE_OUTPUT = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip")
+	local REBASED_ZIPAPP_EXAMPLE_FOLDER = path.join(uv.cwd(), "Tests", "Fixtures", "RebasedZipApp")
+	local REBASED_ZIPAPP_EXAMPLE_OUTPUT = path.join(uv.cwd(), "Tests", "Fixtures", "RebasedZipApp.zip")
 	before(function()
-		-- This is a roundabout way of calling the CLI, but it should work regardless of where the binary is located (unlike os.exec)
-		local commandInfo = {
-			appArgs = {},
-			appPath = ZIPAPP_EXAMPLE_FOLDER,
-			options = {
-				output = ZIPAPP_EXAMPLE_OUTPUT,
-			},
-		}
-		-- The zip app is platform-specific, so it needs to be created from scratch. Also, we don't want to track zip files via git...
-		CLI:ExecuteCommand(commandInfo)
+		local function createRegularZipApp()
+			-- This is a roundabout way of calling the CLI, but it should work regardless of where the binary is located (unlike os.exec)
+			local commandInfo = {
+				appArgs = {},
+				appPath = ZIPAPP_EXAMPLE_FOLDER,
+				options = {
+					output = ZIPAPP_EXAMPLE_OUTPUT,
+				},
+			}
+			-- The zip app is platform-specific, so it needs to be created from scratch. Also, we don't want to track zip files via git...
+			CLI:ExecuteCommand(commandInfo)
 
-		assert(uv.fs_stat(ZIPAPP_EXAMPLE_OUTPUT), "Failed to create temporary file: " .. ZIPAPP_EXAMPLE_OUTPUT)
+			assert(uv.fs_stat(ZIPAPP_EXAMPLE_OUTPUT), "Failed to create temporary file: " .. ZIPAPP_EXAMPLE_OUTPUT)
+		end
+
+		local function createRebasedZipApp()
+			local commandInfo = {
+				appArgs = {},
+				appPath = REBASED_ZIPAPP_EXAMPLE_FOLDER,
+				options = {
+					output = REBASED_ZIPAPP_EXAMPLE_OUTPUT,
+				},
+			}
+			CLI:ExecuteCommand(commandInfo)
+
+			assert(uv.fs_stat(REBASED_ZIPAPP_EXAMPLE_OUTPUT), "Failed to create temporary file: " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT)
+		end
+
+		createRegularZipApp()
+		createRebasedZipApp()
 	end)
 
 	after(function()
 		assert(uv.fs_unlink(ZIPAPP_EXAMPLE_OUTPUT), "Failed to remove temporary file " .. ZIPAPP_EXAMPLE_OUTPUT)
+		assert(uv.fs_unlink(REBASED_ZIPAPP_EXAMPLE_OUTPUT), "Failed to remove temporary file " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT)
 	end)
 
 	it("should raise an error if no command was passed", function()
@@ -314,6 +335,28 @@ describe("ExecuteCommand", function()
 		}
 		local moduleReturns = CLI:ExecuteCommand(commandInfo)
 		assertEquals("HelloWorldZipApp/entry.lua (vfs)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the default entry point if a zip file that needs rebasing was passed without the optional -m flag", function()
+		local commandInfo = {
+			appPath = REBASED_ZIPAPP_EXAMPLE_OUTPUT,
+			appArgs = { "appArg1", "appArg2" },
+			options = {},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assertEquals("RebasedZipApp/app/main.lua (vfs)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the given entry point if a zip file that needs rebasing was passed with a valid -m path", function()
+		local commandInfo = {
+			appPath = REBASED_ZIPAPP_EXAMPLE_OUTPUT,
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "entry.lua",
+			},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assertEquals("RebasedZipApp/app/entry.lua (vfs)#appArg1#appArg2", moduleReturns)
 	end)
 
 	it("should raise an error if an incompatible file type was passed", function()
