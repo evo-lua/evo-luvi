@@ -298,7 +298,7 @@ local function commonBundle(bundlePath, mainPath, args)
 
 	local main = bundle.readfile(mainPath)
 	if not main then
-		error("Missing " .. mainPath .. " in " .. bundle.base)
+		error("Entry point " .. mainPath .. " does not exist in app bundle " .. bundle.base, 0)
 	end
 	local fn = assert(loadstring(main, "bundle:" .. mainPath))
 

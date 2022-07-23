@@ -315,6 +315,36 @@ describe("ExecuteCommand", function()
 		assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
 	end)
 
+	it("should raise an error if a folder was passed with in invalid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "invalid.lua",
+			},
+		}
+		local function codeUnderTest()
+			CLI:ExecuteCommand(commandInfo)
+		end
+		local expectedErrorMessage = string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
+		assertThrows(codeUnderTest, expectedErrorMessage)
+	end)
+
+	it("should raise an error if a zip file was passed with in invalid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "invalid.lua",
+			},
+		}
+		local function codeUnderTest()
+			CLI:ExecuteCommand(commandInfo)
+		end
+		local expectedErrorMessage = string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
+		assertThrows(codeUnderTest, expectedErrorMessage)
+	end)
+
 	it("should load the default entry point if a zip file was passed without the optional -m flag", function()
 		local commandInfo = {
 			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip"),
