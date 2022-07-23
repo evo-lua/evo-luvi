@@ -26,88 +26,6 @@ local function chrootBundle(bundle, prefix)
 	end
 end
 
--- Use a zip file as a bundle
-local function zipBundle(base, zip)
-	local bundle = { base = base }
-
-	function bundle:stat(path)
-		path = pathJoin("./" .. path)
-		if path == "" then
-			return {
-				type = "directory",
-				size = 0,
-				mtime = 0,
-			}
-		end
-		local err
-		local index = zip:locate_file(path)
-		if not index then
-			index, err = zip:locate_file(path .. "/")
-			if not index then
-				return nil, err
-			end
-		end
-		local raw = zip:stat(index)
-
-		return {
-			type = raw.filename:sub(-1) == "/" and "directory" or "file",
-			size = raw.uncomp_size,
-			mtime = raw.time,
-		}
-	end
-
-	function bundle:readdir(path)
-		path = pathJoin("./" .. path)
-		local index, err
-		if path == "" then
-			index = 0
-		else
-			path = path .. "/"
-			index, err = zip:locate_file(path)
-			if not index then
-				return nil, err
-			end
-			if not zip:is_directory(index) then
-				return nil, path .. " is not a directory"
-			end
-		end
-		local files = {}
-		for i = index + 1, zip:get_num_files() do
-			local filename = zip:get_filename(i)
-			if string.sub(filename, 1, #path) ~= path then
-				break
-			end
-			filename = filename:sub(#path + 1)
-			local n = string.find(filename, "/")
-			if n == #filename then
-				filename = string.sub(filename, 1, #filename - 1)
-				n = nil
-			end
-			if not n then
-				files[#files + 1] = filename
-			end
-		end
-		return files
-	end
-
-	function bundle:readfile(path)
-		path = pathJoin("./" .. path)
-		local index, err = zip:locate_file(path)
-		if not index then
-			return nil, err
-		end
-		return zip:extract(index)
-	end
-
-	-- Support zips with a single folder inserted at top-level
-	local entries = bundle:readdir("")
-	if #entries == 1 and bundle:stat(entries[1]).type == "directory" then
-		chrootBundle(bundle, entries[1] .. "/")
-	end
-
-	return bundle
-end
-
 local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
@@ -165,13 +83,25 @@ local function buildBundle(target, bundle)
 end
 
 local PosixFileSystemMixin = require("PosixFileSystemMixin")
+local ZipFileSystemMixin = require("ZipFileSystemMixin")
 
 local function makeBundle(bundlePath)
 	local path = pathJoin(uv.cwd(), bundlePath)
+	local appBundle = {
+		base = path,
+		zipReader = miniz.new_reader(path) -- Can be nil for POSIX bundles, but that's working as intended
+	}
 
-	local zip = miniz.new_reader(path)
-	if zip then
-		return zipBundle(path, zip) -- mixin(self, ZipFileSystemMixin)
+	if appBundle.zipReader then
+		mixin(appBundle, ZipFileSystemMixin)
+
+		-- Support zips with a single folder inserted at top-level
+		local entries = appBundle:readdir("")
+		if #entries == 1 and appBundle:stat(entries[1]).type == "directory" then
+			-- appBundle:Rebase(entries[1] .. "/") -- or chroot(...)
+			chrootBundle(appBundle, entries[1] .. "/")
+		end
+		return appBundle
 	end
 
 	local stat = uv.fs_stat(path)
@@ -181,9 +111,9 @@ local function makeBundle(bundlePath)
 		error(string.format("Failed to load %s (Unsupported file type)", path), 0)
 	end
 
-	local folderBundle = { base = path }
-	mixin(folderBundle, PosixFileSystemMixin)
-	return folderBundle
+	mixin(appBundle, PosixFileSystemMixin)
+
+	return appBundle
 end
 
 local function commonBundle(bundlePath, mainPath, args)
@@ -258,7 +188,6 @@ luvi.makeBundle = makeBundle
 
 return {
 	chrootBundle = chrootBundle,
-	zipBundle = zipBundle,
 	buildBundle = buildBundle,
 	makeBundle = makeBundle,
 	commonBundle = commonBundle,

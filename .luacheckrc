@@ -23,6 +23,7 @@ globals = {
 
 	-- Bundle system
 	"PosixFileSystemMixin",
+	"ZipFileSystemMixin",
 
 	-- Nonstandard extensions
 	"import",
