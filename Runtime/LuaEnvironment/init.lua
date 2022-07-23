@@ -21,20 +21,24 @@ local miniz = require("miniz")
 
 local CLI = require("CLI")
 
-local LuviAppBundle = require("LuviAppBundle")
-
-local Luvi = {}
+local Luvi = {
+	executablePath = uv.exepath()
+}
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	self:LoadExtensionModules()
 
-	local executablePath = uv.exepath()
-	if self:IsZipApp(executablePath) then
-		local bundle = LuviAppBundle(executablePath)
-		return bundle:RunContainedApp(commandLineArgumentsPassedFromC)
+	local commandInfo
+	if self:IsZipApp() then
+		-- Since the executable is a luvi-based app, it should be run instead of the default (embedded) luvi engine
+		commandInfo = {
+			appPath = self.executablePath,
+			appArgs = commandLineArgumentsPassedFromC,
+			options = {},
+		}
+	else
+		commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
 	end
-
-	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
 
 	return CLI:ExecuteCommand(commandInfo)
 end
@@ -54,8 +58,8 @@ function Luvi:LoadExtensionModules()
 	end
 end
 
-function Luvi:IsZipApp(filePath)
-	local zip = miniz.new_reader(filePath)
+function Luvi:IsZipApp()
+	local zip = miniz.new_reader(self.executablePath)
 	return zip ~= nil
 end
 

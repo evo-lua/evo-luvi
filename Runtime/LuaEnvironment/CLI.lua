@@ -86,12 +86,11 @@ function CLI:ExecuteCommand(commandInfo)
 		return EXIT_SUCCESS
 	end
 
-	-- Build the app if output is given
+	local bundle = LuviAppBundle(commandInfo.appPath, commandInfo.options.main)
 	if commandInfo.options.output then
-		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle(commandInfo.appPath))
+		return bundle:CreateZipApp(commandInfo.options.output)
 	end
 
-	local bundle = LuviAppBundle(commandInfo.appPath, commandInfo.options.main)
 	return bundle:RunContainedApp(commandInfo.appArgs)
 end
 

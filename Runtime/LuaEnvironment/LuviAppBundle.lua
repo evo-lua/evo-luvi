@@ -23,4 +23,8 @@ function LuviAppBundle:RunContainedApp(commandLineArguments)
 	return luvibundle.commonBundle(self.path, self.entryPoint, commandLineArguments)
 end
 
+function LuviAppBundle:CreateZipApp(outputPath)
+	return luvibundle.buildBundle(outputPath, luvibundle.makeBundle(self.path))
+end
+
 return LuviAppBundle
