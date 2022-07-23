@@ -13,6 +13,9 @@ local extensionLoaders = {
 	import = function()
 		return require("import")
 	end,
+	mixin = function()
+		return require("mixin")
+	end,
 }
 
 return extensionLoaders

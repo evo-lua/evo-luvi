@@ -23,6 +23,7 @@ globals = {
 
 	-- Nonstandard extensions
 	"import",
+	"mixin",
 	"path",
 
 	-- evo APIs
