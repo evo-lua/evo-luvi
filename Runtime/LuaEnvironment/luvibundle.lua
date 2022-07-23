@@ -3,12 +3,9 @@ local miniz = require("miniz")
 local luvi = require("luvi")
 local luviPath = require("luvipath")
 local pathJoin = luviPath.pathJoin
-local getenv = require("os").getenv
 
 local loadstring = loadstring or load
 local unpack = unpack or _G.table.unpack
-
-local tmpBase = luviPath.isWindows and (getenv("TMP") or uv.cwd()) or (getenv("TMPDIR") or "/tmp")
 
 local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
@@ -106,28 +103,6 @@ local function commonBundle(bundlePath, mainPath, args)
 	bundle.paths = bundlePath
 	bundle.mainPath = mainPath
 
-	function bundle:action(path, action, ...)
-		-- If it's a real path, run it directly.
-		if uv.fs_access(path, "r") then
-			return action(path)
-		end
-		-- Otherwise, copy to a temporary folder and run from there
-		local data, err = bundle.readfile(path)
-		if not data then
-			return nil, err
-		end
-		local dir = assert(uv.fs_mkdtemp(pathJoin(tmpBase, "lib-XXXXXX")))
-		path = pathJoin(dir, path:match("[^/\\]+$"))
-		local fd = uv.fs_open(path, "w", 384) -- 0600
-		uv.fs_write(fd, data, 0)
-		uv.fs_close(fd)
-		local success, ret = pcall(action, path, ...)
-		uv.fs_unlink(path)
-		uv.fs_rmdir(dir)
-		assert(success, ret)
-		return ret
-	end
-
 	local function exportScriptGlobals()
 		local cwd = uv.cwd()
 
@@ -141,16 +116,6 @@ local function commonBundle(bundlePath, mainPath, args)
 		_G.USER_SCRIPT_FILE = path.basename(scriptFile)
 		_G.USER_SCRIPT_PATH = scriptPath
 		_G.USER_SCRIPT_ROOT = scriptRoot
-	end
-
-	function bundle:register(name, path)
-		if not path then
-			path = name + ".lua"
-		end
-		package.preload[name] = function(...)
-			local lua = assert(bundle.readfile(path))
-			return assert(loadstring(lua, "bundle:" .. path))(...)
-		end
 	end
 
 	local main = bundle:readfile(mainPath)
