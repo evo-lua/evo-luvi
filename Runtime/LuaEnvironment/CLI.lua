@@ -62,6 +62,7 @@ function CLI:ParseCommandLineArguments(argumentsVector)
 end
 
 local luvibundle = require("luvibundle")
+local LuviAppBundle = require("LuviAppBundle")
 
 local EXIT_SUCCESS = 0
 
@@ -90,8 +91,8 @@ function CLI:ExecuteCommand(commandInfo)
 		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle(commandInfo.appPath))
 	end
 
-	-- Run the luvi app with the extra args
-	return luvibundle.commonBundle(commandInfo.appPath, commandInfo.options.main, commandInfo.appArgs)
+	local bundle = LuviAppBundle(commandInfo.appPath, commandInfo.options.main)
+	return bundle:RunContainedApp(commandInfo.appArgs)
 end
 
 function CLI:SetConsole(console)

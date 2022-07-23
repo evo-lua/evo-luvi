@@ -21,8 +21,7 @@ local miniz = require("miniz")
 
 local CLI = require("CLI")
 
-local luviBundle = require("luvibundle")
-local commonBundle = luviBundle.commonBundle
+local LuviAppBundle = require("LuviAppBundle")
 
 local Luvi = {}
 
@@ -31,7 +30,8 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 
 	local executablePath = uv.exepath()
 	if self:IsZipApp(executablePath) then
-		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
+		local bundle = LuviAppBundle(executablePath)
+		return bundle:RunContainedApp(commandLineArgumentsPassedFromC)
 	end
 
 	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
@@ -57,10 +57,6 @@ end
 function Luvi:IsZipApp(filePath)
 	local zip = miniz.new_reader(filePath)
 	return zip ~= nil
-end
-
-function Luvi:RunLuviApp(appPath, commandLineArguments)
-	return commonBundle(appPath, nil, commandLineArguments)
 end
 
 return function(args)
