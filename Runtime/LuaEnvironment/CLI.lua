@@ -61,7 +61,6 @@ function CLI:ParseCommandLineArguments(argumentsVector)
 	return { appPath = bundles[1] or "", options = options, appArgs = appArgs }
 end
 
-local luvibundle = require("luvibundle")
 local LuviAppBundle = require("LuviAppBundle")
 
 local EXIT_SUCCESS = 0

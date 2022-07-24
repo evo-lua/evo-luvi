@@ -11,6 +11,9 @@ local ZipFileSystemMixin = require("ZipFileSystemMixin")
 
 local LuviAppBundle = {
 	DEFAULT_ENTRY_POINT = "main.lua",
+	hiddenFilesAllowList = {
+		[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
+	}
 }
 
 function LuviAppBundle:Construct(appPath, entryPoint)
@@ -89,7 +92,62 @@ function LuviAppBundle:ExportScriptGlobals(commandLineArguments)
 end
 
 function LuviAppBundle:CreateZipApp(outputPath)
-	return luvibundle.buildBundle(outputPath, self)
+	local bundle = self
+	local target = path_join(uv.cwd(), outputPath)
+
+	print("Creating new binary: " .. target)
+	local fd = assert(uv.fs_open(target, "w", 511)) -- 0777
+
+	local binSize
+	do
+		local source = uv.exepath()
+
+		local reader = miniz.new_reader(source)
+		if reader then
+			-- If contains a zip, find where the zip starts
+			binSize = reader:get_offset()
+		else
+			-- Otherwise just read the file size
+			binSize = uv.fs_stat(source).size
+		end
+		local fd2 = assert(uv.fs_open(source, "r", 384)) -- 0600
+		print("Copying initial " .. binSize .. " bytes from " .. source)
+		uv.fs_sendfile(fd, fd2, 0, binSize)
+		uv.fs_close(fd2)
+	end
+
+	local writer = miniz.new_writer()
+	local function copyFolder(path)
+
+		local files = bundle:readdir(path)
+		if not files then
+			return
+		end
+
+		for i = 1, #files do
+			local name = files[i]
+			if string.sub(name, 1, 1) ~= "." or self.hiddenFilesAllowList[name] then
+				local child = path_join(path, name)
+				local stat = bundle:stat(child)
+				if stat.type == "directory" then
+					writer:add(child .. "/", "")
+					copyFolder(child)
+				elseif stat.type == "file" then
+					print("    " .. child)
+					writer:add(child, bundle:readfile(child), 9)
+				end
+			end
+		end
+	end
+
+	print("Zipping " .. bundle.base)
+	copyFolder("")
+
+	print("Writing zip file")
+	uv.fs_write(fd, writer:finalize(), binSize)
+	uv.fs_close(fd)
+
+	print("Done building " .. target)
 end
 
 return LuviAppBundle
