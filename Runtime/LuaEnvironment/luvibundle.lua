@@ -4,9 +4,6 @@ local luvi = require("luvi")
 local luviPath = require("luvipath")
 local pathJoin = luviPath.pathJoin
 
-local loadstring = loadstring or load
-local unpack = unpack or _G.table.unpack
-
 local hiddenFilesAllowList = {
 	[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
 }
@@ -94,50 +91,10 @@ local function makeBundle(bundlePath)
 	return appBundle
 end
 
-local function commonBundle(bundlePath, mainPath, args)
-	mainPath = mainPath or "main.lua"
-
-	local bundle = assert(makeBundle(bundlePath))
-	luvi.bundle = bundle
-
-	local function exportScriptGlobals()
-		local cwd = uv.cwd()
-
-		_G.DEFAULT_USER_SCRIPT_ENTRY_POINT = "main.lua"
-		local scriptFile = args[1] or _G.DEFAULT_USER_SCRIPT_ENTRY_POINT
-
-		local scriptPath = path.resolve(path.join(cwd, scriptFile))
-		local scriptRoot = path.dirname(scriptPath)
-
-		-- These will never change over the course of a single invocation, so it's safe to simply export them once
-		_G.USER_SCRIPT_FILE = path.basename(scriptFile)
-		_G.USER_SCRIPT_PATH = scriptPath
-		_G.USER_SCRIPT_ROOT = scriptRoot
-	end
-
-	local main = bundle:readfile(mainPath)
-	if not main then
-		error("Entry point " .. mainPath .. " does not exist in app bundle " .. bundle.base, 0)
-	end
-
-	-- It's not helpful to display the app name if we're just executing a script on disk, and would likely be misleading
-	-- But for zip apps, it's less confusing to see the executable name as the files referenced won't even exist on disk
-	-- This is similar to how errors appear in NodeJS, with a node: prefix (which I like better than luvit's generic bundle: prefix)
-	local executableName = path.basename(uv.exepath())
-	local optionalPrefix = bundle.zipReader and (executableName .. ":" ) or ""
-	-- @ option = render error message with <file name>:, not the generic ["string ..."] prefix, which is far less readable
-	local fn = assert(loadstring(main, "@"  .. optionalPrefix .. mainPath))
-
-	exportScriptGlobals()
-	return fn(unpack(args))
-
-end
-
 -- Legacy export for makeBundle
 luvi.makeBundle = makeBundle
 
 return {
 	buildBundle = buildBundle,
 	makeBundle = makeBundle,
-	commonBundle = commonBundle,
 }
