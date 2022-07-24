@@ -100,9 +100,6 @@ local function commonBundle(bundlePath, mainPath, args)
 	local bundle = assert(makeBundle(bundlePath))
 	luvi.bundle = bundle
 
-	bundle.paths = bundlePath
-	bundle.mainPath = mainPath
-
 	local function exportScriptGlobals()
 		local cwd = uv.cwd()
 
