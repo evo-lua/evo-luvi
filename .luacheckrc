@@ -27,6 +27,17 @@ globals = {
 
 	-- Nonstandard primitives
 	"format",
+	"EVENT",
+	"TEST",
+	"DEBUG",
+	"INFO",
+	"NOTICE",
+	"WARNING",
+	"ERROR",
+	"CRITICAL",
+	"ALERT",
+	"EMERGENCY",
+
 	-- Nonstandard extensions
 	"import",
 	"mixin",

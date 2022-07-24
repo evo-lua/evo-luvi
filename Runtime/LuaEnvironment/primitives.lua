@@ -13,6 +13,9 @@ local primitives = {
 	["virtual_file_system"] = function()
 		return require("virtual_file_system")
 	end,
+	["logging"] = function()
+		return require("logging")
+	end,
 	["aliases"] = function()
 		return require("aliases")
 	end,
