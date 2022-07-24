@@ -25,6 +25,8 @@ globals = {
 	"PosixFileSystemMixin",
 	"ZipFileSystemMixin",
 
+	-- Nonstandard primitives
+	"format",
 	-- Nonstandard extensions
 	"import",
 	"mixin",
