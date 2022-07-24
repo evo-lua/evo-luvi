@@ -12,13 +12,13 @@ local LuviAppBundle = {
 	DEFAULT_ENTRY_POINT = "main.lua",
 	hiddenFilesAllowList = {
 		[".evo"] = true, -- Always include evo packages in compiled bundles or import won't work
-	}
+	},
 }
 
 function LuviAppBundle:Construct(appPath, entryPoint)
 	local instance = {
 		path = appPath,
-		entryPoint = entryPoint or LuviAppBundle.DEFAULT_ENTRY_POINT
+		entryPoint = entryPoint or LuviAppBundle.DEFAULT_ENTRY_POINT,
 	}
 
 	setmetatable(instance, { __index = LuviAppBundle })
@@ -51,7 +51,7 @@ function LuviAppBundle:Construct(appPath, entryPoint)
 end
 
 setmetatable(LuviAppBundle, {
-	__call = LuviAppBundle.Construct
+	__call = LuviAppBundle.Construct,
 })
 
 function LuviAppBundle:RunContainedApp(commandLineArguments)
@@ -66,9 +66,9 @@ function LuviAppBundle:RunContainedApp(commandLineArguments)
 	-- But for zip apps, it's less confusing to see the executable name as the files referenced won't even exist on disk
 	-- This is similar to how errors appear in NodeJS, with a node: prefix (which I like better than luvit's generic bundle: prefix)
 	local executableName = path.basename(uv.exepath())
-	local optionalPrefix = self.zipReader and (executableName .. ":" ) or ""
+	local optionalPrefix = self.zipReader and (executableName .. ":") or ""
 	-- @ option = render error message with <file name>:, not the generic ["string ..."] prefix, which is far less readable
-	local compiledScriptChunk = assert(loadstring(main, "@"  .. optionalPrefix .. self.entryPoint))
+	local compiledScriptChunk = assert(loadstring(main, "@" .. optionalPrefix .. self.entryPoint))
 
 	self:ExportScriptGlobals(commandLineArguments)
 	return compiledScriptChunk(unpack(commandLineArguments))
@@ -89,7 +89,6 @@ function LuviAppBundle:ExportScriptGlobals(commandLineArguments)
 	_G.USER_SCRIPT_PATH = scriptPath
 	_G.USER_SCRIPT_ROOT = scriptRoot
 end
-
 
 -- This is tied to the import logic (bad...); it urgently needs a rework and more tests. Until then: DNT!
 function LuviAppBundle:CreateZipApp(outputPath)
@@ -119,7 +118,6 @@ function LuviAppBundle:CreateZipApp(outputPath)
 
 	local writer = miniz.new_writer()
 	local function copyFolder(path)
-
 		local files = bundle:readdir(path)
 		if not files then
 			return

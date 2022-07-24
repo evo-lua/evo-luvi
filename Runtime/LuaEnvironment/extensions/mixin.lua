@@ -2,11 +2,11 @@ local pairs = pairs
 local type = type
 
 local function copyFunctionsFromMixin(target, mixin)
-	if  type(target) ~= "table" then
+	if type(target) ~= "table" then
 		return
 	end
 
-	if  type(mixin) ~= "table" then
+	if type(mixin) ~= "table" then
 		return
 	end
 

@@ -84,7 +84,9 @@ function ZipFileSystemMixin:hasRootDirectory()
 end
 
 function ZipFileSystemMixin:getRootDirectory()
-	if not self:hasRootDirectory() then return nil, "No root directory" end
+	if not self:hasRootDirectory() then
+		return nil, "No root directory"
+	end
 
 	return self:readdir("")[1]
 end

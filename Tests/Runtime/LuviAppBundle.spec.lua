@@ -32,5 +32,4 @@ describe("LuviAppBundle", function()
 		local expectedErrorMessage = "main.lua:1: whoops" -- Default Lua format (not great, but alas...)
 		assertThrows(codeUnderTest, expectedErrorMessage)
 	end)
-
 end)

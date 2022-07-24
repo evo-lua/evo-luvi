@@ -227,7 +227,10 @@ describe("ExecuteCommand", function()
 			}
 			CLI:ExecuteCommand(commandInfo)
 
-			assert(uv.fs_stat(REBASED_ZIPAPP_EXAMPLE_OUTPUT), "Failed to create temporary file: " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT)
+			assert(
+				uv.fs_stat(REBASED_ZIPAPP_EXAMPLE_OUTPUT),
+				"Failed to create temporary file: " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT
+			)
 		end
 
 		createRegularZipApp()
@@ -236,7 +239,10 @@ describe("ExecuteCommand", function()
 
 	after(function()
 		assert(uv.fs_unlink(ZIPAPP_EXAMPLE_OUTPUT), "Failed to remove temporary file " .. ZIPAPP_EXAMPLE_OUTPUT)
-		assert(uv.fs_unlink(REBASED_ZIPAPP_EXAMPLE_OUTPUT), "Failed to remove temporary file " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT)
+		assert(
+			uv.fs_unlink(REBASED_ZIPAPP_EXAMPLE_OUTPUT),
+			"Failed to remove temporary file " .. REBASED_ZIPAPP_EXAMPLE_OUTPUT
+		)
 	end)
 
 	it("should raise an error if no command was passed", function()
@@ -326,7 +332,8 @@ describe("ExecuteCommand", function()
 		local function codeUnderTest()
 			CLI:ExecuteCommand(commandInfo)
 		end
-		local expectedErrorMessage = string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
+		local expectedErrorMessage =
+			string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
 		assertThrows(codeUnderTest, expectedErrorMessage)
 	end)
 
@@ -341,7 +348,8 @@ describe("ExecuteCommand", function()
 		local function codeUnderTest()
 			CLI:ExecuteCommand(commandInfo)
 		end
-		local expectedErrorMessage = string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
+		local expectedErrorMessage =
+			string.format("Entry point %s does not exist in app bundle %s", "invalid.lua", commandInfo.appPath)
 		assertThrows(codeUnderTest, expectedErrorMessage)
 	end)
 
@@ -367,15 +375,18 @@ describe("ExecuteCommand", function()
 		assertEquals("HelloWorldZipApp/entry.lua (vfs)#appArg1#appArg2", moduleReturns)
 	end)
 
-	it("should load the default entry point if a zip file that needs rebasing was passed without the optional -m flag", function()
-		local commandInfo = {
-			appPath = REBASED_ZIPAPP_EXAMPLE_OUTPUT,
-			appArgs = { "appArg1", "appArg2" },
-			options = {},
-		}
-		local moduleReturns = CLI:ExecuteCommand(commandInfo)
-		assertEquals("RebasedZipApp/app/main.lua (vfs)#appArg1#appArg2", moduleReturns)
-	end)
+	it(
+		"should load the default entry point if a zip file that needs rebasing was passed without the optional -m flag",
+		function()
+			local commandInfo = {
+				appPath = REBASED_ZIPAPP_EXAMPLE_OUTPUT,
+				appArgs = { "appArg1", "appArg2" },
+				options = {},
+			}
+			local moduleReturns = CLI:ExecuteCommand(commandInfo)
+			assertEquals("RebasedZipApp/app/main.lua (vfs)#appArg1#appArg2", moduleReturns)
+		end
+	)
 
 	it("should load the given entry point if a zip file that needs rebasing was passed with a valid -m path", function()
 		local commandInfo = {
@@ -398,8 +409,7 @@ describe("ExecuteCommand", function()
 
 		assertThrows(function()
 			CLI:ExecuteCommand(commandInfo)
-		end,
-		string.format("Failed to load %s (Unsupported file type)", commandInfo.appPath))
+		end, string.format("Failed to load %s (Unsupported file type)", commandInfo.appPath))
 	end)
 
 	it("should raise an error if an invalid file path was passed", function()
@@ -414,7 +424,6 @@ describe("ExecuteCommand", function()
 
 		assertThrows(function()
 			CLI:ExecuteCommand(commandInfo)
-		end,
-		string.format("Failed to load %s (No such file exists)", commandInfo.appPath))
+		end, string.format("Failed to load %s (No such file exists)", commandInfo.appPath))
 	end)
 end)

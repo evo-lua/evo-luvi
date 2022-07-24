@@ -32,9 +32,11 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	self.commandLineArguments = commandLineArgumentsPassedFromC
 
 	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
-	if self:IsZipApp() then	return self:StartBundledApp()
-	else return self:StartCommandLineParser()	end
-
+	if self:IsZipApp() then
+		return self:StartBundledApp()
+	else
+		return self:StartCommandLineParser()
+	end
 end
 
 function Luvi:StartBundledApp()

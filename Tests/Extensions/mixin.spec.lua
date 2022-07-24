@@ -28,14 +28,14 @@ describe("mixin", function()
 	end)
 
 	it("should not overwrite existing keys on the target table", function()
-	local target = { test1 = function() end }
+		local target = { test1 = function() end }
 
-	local mixin1 = { test1 = function() end }
-	local mixin2 = { test2 = function() end }
+		local mixin1 = { test1 = function() end }
+		local mixin2 = { test2 = function() end }
 
-	mixin(target, mixin1, mixin2)
+		mixin(target, mixin1, mixin2)
 
-	assertEquals(target.test1, target.test1)
-	assertEquals(target.test2, mixin2.test2)
+		assertEquals(target.test1, target.test1)
+		assertEquals(target.test2, mixin2.test2)
 	end)
 end)
