@@ -4,6 +4,9 @@ local uv = require("uv")
 local luvi = require("luvi")
 local luvipath = require("luvipath")
 local path_join = luvipath.pathJoin
+local path_extname = path.extname
+local path_dirname = path.dirname
+local path_basename = path.basename
 
 local PosixFileSystemMixin = require("PosixFileSystemMixin")
 local ZipFileSystemMixin = require("ZipFileSystemMixin")
@@ -39,8 +42,13 @@ function LuviAppBundle:Construct(appPath, entryPoint)
 	end
 
 	local stat = uv.fs_stat(path)
+	local isLuaScript = string.lower(path_extname(path)) == ".lua"
 	if not stat then
 		error(string.format("Failed to load %s (No such file exists)", path), 0)
+	elseif stat.type ~= "directory" and isLuaScript then
+		-- The simplest way to load a script is to pretend it's part of a "folder bundle", since that doesn't change anything semantically
+		instance.base = path_dirname(path)
+		instance.entryPoint = path_basename(path)
 	elseif stat.type ~= "directory" then
 		error(string.format("Failed to load %s (Unsupported file type)", path), 0)
 	end
