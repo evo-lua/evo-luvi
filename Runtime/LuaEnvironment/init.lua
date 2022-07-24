@@ -22,24 +22,32 @@ local miniz = require("miniz")
 local CLI = require("CLI")
 
 local Luvi = {
-	executablePath = uv.exepath()
+	executablePath = uv.exepath(),
+	commandLineArguments = {},
 }
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	self:LoadExtensionModules()
 
-	local commandInfo
-	if self:IsZipApp() then
-		-- Since the executable is a luvi-based app, it should be run instead of the default (embedded) luvi engine
-		commandInfo = {
-			appPath = self.executablePath,
-			appArgs = commandLineArgumentsPassedFromC,
-			options = {},
-		}
-	else
-		commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
-	end
+	self.commandLineArguments = commandLineArgumentsPassedFromC
 
+	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
+	if self:IsZipApp() then	return self:StartBundledApp()
+	else return self:StartCommandLineParser()	end
+
+end
+
+function Luvi:StartBundledApp()
+	local commandInfo = {
+		appPath = self.executablePath,
+		appArgs = self.commandLineArguments,
+		options = {},
+	}
+	return CLI:ExecuteCommand(commandInfo)
+end
+
+function Luvi:StartCommandLineParser()
+	local commandInfo = CLI:ParseCommandLineArguments(self.commandLineArguments)
 	return CLI:ExecuteCommand(commandInfo)
 end
 
