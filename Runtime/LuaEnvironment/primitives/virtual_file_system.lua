@@ -1,6 +1,3 @@
-local luvi = require("luvi")
-local bundle = luvi.bundle
-
 -- Upvalues
 local loadstring = loadstring
 
@@ -9,23 +6,32 @@ local loadstring = loadstring
 local vfs = {}
 
 function vfs.hasFile(filePath)
-	local fileStats = bundle.stat(filePath)
+	local bundle = vfs.getBundle()
+	local fileStats = bundle:stat(filePath)
 	if fileStats and fileStats.type == "file" then
 		return true
 	end
 end
 
 function vfs.hasFolder(filePath)
-	local fileStats = bundle.stat(filePath)
+	local bundle = vfs.getBundle()
+	local fileStats = bundle:stat(filePath)
 	if fileStats and fileStats.type == "directory" then
 		return true
 	end
 end
 
 function vfs.loadFile(filePath)
-	local fileContents = bundle.readfile(filePath)
+	local bundle = vfs.getBundle()
+	local fileContents = bundle:readfile(filePath)
 	local compiledChunk = loadstring(fileContents)()
 	return compiledChunk
+end
+
+function vfs.getBundle()
+	-- Defer loading since it won't be available when this module is first compiled
+	local luvi = require("luvi")
+	return luvi.bundle
 end
 
 return vfs

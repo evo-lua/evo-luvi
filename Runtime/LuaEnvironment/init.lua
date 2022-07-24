@@ -21,29 +21,56 @@ local miniz = require("miniz")
 
 local CLI = require("CLI")
 
-local luviBundle = require("luvibundle")
-local commonBundle = luviBundle.commonBundle
-
-local Luvi = {}
+local Luvi = {
+	executablePath = uv.exepath(),
+	commandLineArguments = {},
+}
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
-	local executablePath = uv.exepath()
-	if self:IsZipApp(executablePath) then
-		return self:RunLuviApp(executablePath, commandLineArgumentsPassedFromC)
+	self:LoadExtensionModules()
+
+	self.commandLineArguments = commandLineArgumentsPassedFromC
+
+	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
+	if self:IsZipApp() then
+		return self:StartBundledApp()
+	else
+		return self:StartCommandLineParser()
 	end
+end
 
-	local commandInfo = CLI:ParseCommandLineArguments(commandLineArgumentsPassedFromC)
-
+function Luvi:StartBundledApp()
+	local commandInfo = {
+		appPath = self.executablePath,
+		appArgs = self.commandLineArguments,
+		options = {},
+	}
 	return CLI:ExecuteCommand(commandInfo)
 end
 
-function Luvi:IsZipApp(filePath)
-	local zip = miniz.new_reader(filePath)
-	return zip ~= nil
+function Luvi:StartCommandLineParser()
+	local commandInfo = CLI:ParseCommandLineArguments(self.commandLineArguments)
+	return CLI:ExecuteCommand(commandInfo)
 end
 
-function Luvi:RunLuviApp(appPath, commandLineArguments)
-	return commonBundle({ appPath }, nil, commandLineArguments)
+function Luvi:LoadExtensionModules()
+	local primitives = require("primitives")
+	local extensionLoaders = require("extensions")
+
+	-- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
+	for name, primitiveLoader in pairs(primitives) do
+		package.preload[name] = primitiveLoader()
+	end
+
+	-- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
+	for name, extensionLoader in pairs(extensionLoaders) do
+		_G[name] = extensionLoader()
+	end
+end
+
+function Luvi:IsZipApp()
+	local zip = miniz.new_reader(self.executablePath)
+	return zip ~= nil
 end
 
 return function(args)

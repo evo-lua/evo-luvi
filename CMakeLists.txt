@@ -167,13 +167,16 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/CLI.lua
   Runtime/LuaEnvironment/init.lua
   Runtime/LuaEnvironment/luvipath.lua
-  Runtime/LuaEnvironment/luvibundle.lua
+  Runtime/LuaEnvironment/LuviAppBundle.lua
+  Runtime/LuaEnvironment/PosixFileSystemMixin.lua
+  Runtime/LuaEnvironment/ZipFileSystemMixin.lua
   Runtime/LuaEnvironment/primitives.lua
   Runtime/LuaEnvironment/primitives/v8_string.lua
   Runtime/LuaEnvironment/primitives/virtual_file_system.lua
   Runtime/LuaEnvironment/extensions.lua
   Runtime/LuaEnvironment/extensions/dump.lua
   Runtime/LuaEnvironment/extensions/import.lua
+  Runtime/LuaEnvironment/extensions/mixin.lua
   Runtime/LuaEnvironment/extensions/path.lua
   ${lpeg_re_lua}
 )

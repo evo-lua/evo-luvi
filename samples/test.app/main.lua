@@ -1,10 +1,8 @@
 local env = require("env")
 local uv = require("uv")
 local bundle = require("luvi").bundle
--- Register the utils lib as a module
-bundle.register("utils", "utils.lua")
 
-local utils = require("utils")
+local utils = loadstring(bundle:readfile("utils.lua"), "bundle:utils.lua")()
 local p = utils.prettyPrint
 local stdout = utils.stdout
 
@@ -76,23 +74,23 @@ env[r1] = r2
 assert(env[r1] == r2)
 p(env)
 p({
-	args = args,
+	args = { ... },
 	bundle = bundle,
 })
 p({
-	[""] = bundle.stat(""),
-	["add"] = bundle.stat("add"),
-	["main.lua"] = bundle.stat("main.lua"),
-	["fake"] = bundle.stat("fake"),
+	[""] = bundle:stat(""),
+	["add"] = bundle:stat("add"),
+	["main.lua"] = bundle:stat("main.lua"),
+	["fake"] = bundle:stat("fake"),
 })
-p(bundle.readfile("greetings.txt"))
+p(bundle:readfile("greetings.txt"))
 
-print("Testing bundle.stat")
-local rootStat = bundle.stat("")
+print("Testing bundle:stat")
+local rootStat = bundle:stat("")
 assert(rootStat.type == "directory")
-local addStat = bundle.stat("add")
+local addStat = bundle:stat("add")
 assert(addStat.type == "directory")
-local mainStat = bundle.stat("main.lua")
+local mainStat = bundle:stat("main.lua")
 assert(mainStat.type == "file")
 assert(mainStat.size > 3000)
 local tests = {
@@ -118,12 +116,12 @@ local tests = {
 for i = 1, #tests, 2 do
 	local path = tests[i]
 	local expected = tests[i + 1]
-	local actual = bundle.stat(path)
+	local actual = bundle:stat(path)
 	p(path, actual)
 	assert(deepEqual(expected, actual), "ERROR: stat(" .. path .. ")")
 end
 
-print("Testing bundle.readdir")
+print("Testing bundle:readdir")
 local rootTree = { "add", "greetings.txt", "main.lua", "sonnet-133.txt", "utils.lua" }
 local addTree = { "a.lua", "b.lua", "init.lua" }
 tests = {
@@ -147,7 +145,7 @@ table.sort(addTree)
 for i = 1, #tests, 2 do
 	local path = tests[i]
 	local expected = tests[i + 1]
-	local actual = bundle.readdir(path)
+	local actual = bundle:readdir(path)
 	table.sort(actual)
 	p(path, actual)
 	assert(deepEqual(expected, actual), "ERROR: readdir(" .. path .. ")")
@@ -187,7 +185,7 @@ p("zip bytes", #writer:finalize())
 
 do
 	print("miniz zlib compression - full data")
-	local original = string.rep(bundle.readfile("sonnet-133.txt"), 1000)
+	local original = string.rep(bundle:readfile("sonnet-133.txt"), 1000)
 	local deflator = miniz.new_deflator(9)
 	local deflated, err, part = deflator:deflate(original, "finish")
 	p("Compressed", #(deflated or part or ""))
@@ -201,7 +199,7 @@ end
 
 do
 	print("miniz zlib compression - partial data stream")
-	local original_full = bundle.readfile("sonnet-133.txt")
+	local original_full = bundle:readfile("sonnet-133.txt")
 	local original_parts = {}
 	for part in original_full:gmatch((".?"):rep(64)) do
 		original_parts[#original_parts + 1] = part
@@ -223,7 +221,7 @@ end
 
 do
 	print("miniz zlib compression - no stream")
-	local original = string.rep(bundle.readfile("sonnet-133.txt"), 1000)
+	local original = string.rep(bundle:readfile("sonnet-133.txt"), 1000)
 	local compressed = assert(miniz.compress(original))
 	local uncompressed = assert(miniz.uncompress(compressed, #original))
 	assert(uncompressed == original, "inflated data doesn't match original")
@@ -235,7 +233,7 @@ if options.zlib then
 	local zlib = require("zlib")
 	print("Testing zlib")
 	p("zlib version", zlib.version())
-	local tozblob = bundle.readfile("sonnet-133.txt")
+	local tozblob = bundle:readfile("sonnet-133.txt")
 	local defstreamf = zlib.deflate()
 	local infstreamf = zlib.inflate()
 	local deflated, def_eof, def_bytes_in, def_bytes_out = defstreamf(tozblob, "finish")

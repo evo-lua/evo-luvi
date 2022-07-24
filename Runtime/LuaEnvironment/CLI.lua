@@ -61,13 +61,13 @@ function CLI:ParseCommandLineArguments(argumentsVector)
 	return { appPath = bundles[1] or "", options = options, appArgs = appArgs }
 end
 
-local luvibundle = require("luvibundle")
+local LuviAppBundle = require("LuviAppBundle")
 
 local EXIT_SUCCESS = 0
 
 function CLI:ExecuteCommand(commandInfo)
 	if type(commandInfo) ~= "table" then
-		error("No command to execute")
+		error("No command to execute", 0)
 	end
 
 	local print = self.print
@@ -85,13 +85,12 @@ function CLI:ExecuteCommand(commandInfo)
 		return EXIT_SUCCESS
 	end
 
-	-- Build the app if output is given
+	local bundle = LuviAppBundle(commandInfo.appPath, commandInfo.options.main)
 	if commandInfo.options.output then
-		return luvibundle.buildBundle(commandInfo.options.output, luvibundle.makeBundle({ commandInfo.appPath }))
+		return bundle:CreateZipApp(commandInfo.options.output)
 	end
 
-	-- Run the luvi app with the extra args
-	return luvibundle.commonBundle({ commandInfo.appPath }, commandInfo.options.main, commandInfo.appArgs)
+	return bundle:RunContainedApp(commandInfo.appArgs)
 end
 
 function CLI:SetConsole(console)
