@@ -15,43 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 --]]
-
 local uv = require("uv")
 local miniz = require("miniz")
-
-local CLI = require("CLI")
 
 local Luvi = {
 	executablePath = uv.exepath(),
 	commandLineArguments = {},
 }
-
-function Luvi:LuaMain(commandLineArgumentsPassedFromC)
-	self:LoadExtensionModules()
-
-	self.commandLineArguments = commandLineArgumentsPassedFromC
-
-	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
-	if self:IsZipApp() then
-		return self:StartBundledApp()
-	else
-		return self:StartCommandLineParser()
-	end
-end
-
-function Luvi:StartBundledApp()
-	local commandInfo = {
-		appPath = self.executablePath,
-		appArgs = self.commandLineArguments,
-		options = {},
-	}
-	return CLI:ExecuteCommand(commandInfo)
-end
-
-function Luvi:StartCommandLineParser()
-	local commandInfo = CLI:ParseCommandLineArguments(self.commandLineArguments)
-	return CLI:ExecuteCommand(commandInfo)
-end
 
 function Luvi:LoadExtensionModules()
 	local primitives = require("primitives")
@@ -66,6 +36,36 @@ function Luvi:LoadExtensionModules()
 	for name, extensionLoader in pairs(extensionLoaders) do
 		_G[name] = extensionLoader()
 	end
+end
+
+-- They need to be loaded before any Lua modules are required or they won't be available in time
+Luvi:LoadExtensionModules()
+
+local CLI = require("CLI")
+
+function Luvi:LuaMain(commandLineArgumentsPassedFromC)
+	self.commandLineArguments = commandLineArgumentsPassedFromC
+
+	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
+	if self:IsZipApp() then
+		return self:StartBundledApp()
+	end
+
+	return self:StartCommandLineParser()
+end
+
+function Luvi:StartBundledApp()
+	local commandInfo = {
+		appPath = self.executablePath,
+		appArgs = self.commandLineArguments,
+		options = {},
+	}
+	return CLI:ExecuteCommand(commandInfo)
+end
+
+function Luvi:StartCommandLineParser()
+	local commandInfo = CLI:ParseCommandLineArguments(self.commandLineArguments)
+	return CLI:ExecuteCommand(commandInfo)
 end
 
 function Luvi:IsZipApp()
