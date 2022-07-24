@@ -3,7 +3,6 @@ local uv = require("uv")
 
 local luvi = require("luvi")
 local luvipath = require("luvipath")
-local luvibundle = require("luvibundle")
 local path_join = luvipath.pathJoin
 
 local PosixFileSystemMixin = require("PosixFileSystemMixin")
@@ -91,6 +90,8 @@ function LuviAppBundle:ExportScriptGlobals(commandLineArguments)
 	_G.USER_SCRIPT_ROOT = scriptRoot
 end
 
+
+-- This is tied to the import logic (bad...); it urgently needs a rework and more tests. Until then: DNT!
 function LuviAppBundle:CreateZipApp(outputPath)
 	local bundle = self
 	local target = path_join(uv.cwd(), outputPath)

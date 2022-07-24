@@ -121,12 +121,9 @@ static lua_State* vm_acquire()
 #ifdef WITH_PLAIN_LUA
 	{
 		LUALIB_API int luaopen_init(lua_State * L);
-		LUALIB_API int luaopen_luvibundle(lua_State * L);
 		LUALIB_API int luaopen_luvipath(lua_State * L);
 		lua_pushcfunction(L, luaopen_init);
 		lua_setfield(L, -2, "init");
-		lua_pushcfunction(L, luaopen_luvibundle);
-		lua_setfield(L, -2, "luvibundle");
 		lua_pushcfunction(L, luaopen_luvipath);
 		lua_setfield(L, -2, "luvipath");
 		luaL_requiref(L, "bit", luaopen_bit, 1);

@@ -170,7 +170,6 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/LuviAppBundle.lua
   Runtime/LuaEnvironment/PosixFileSystemMixin.lua
   Runtime/LuaEnvironment/ZipFileSystemMixin.lua
-  Runtime/LuaEnvironment/luvibundle.lua
   Runtime/LuaEnvironment/primitives.lua
   Runtime/LuaEnvironment/primitives/v8_string.lua
   Runtime/LuaEnvironment/primitives/virtual_file_system.lua
