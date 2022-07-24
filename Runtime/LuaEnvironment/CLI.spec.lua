@@ -337,6 +337,74 @@ describe("ExecuteCommand", function()
 		assertThrows(codeUnderTest, expectedErrorMessage)
 	end)
 
+	it("should load the given file if a lua file was passed without an optional -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "entry.lua"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load the file itself and not the main path if a lua file was passed with a valid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "entry.lua"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "main.lua",
+			},
+		}
+		local moduleReturns = CLI:ExecuteCommand(commandInfo)
+		assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
+	end)
+
+	it("should load a given lua file regardless of the capitalization used in its extension", function()
+		local validExtensions = {
+			"lua",
+			"LUA",
+			"Lua",
+			"lUa",
+		}
+		for _, extension in ipairs(validExtensions) do
+			local commandInfo = {
+				appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "entry." .. extension),
+				appArgs = { "appArg1", "appArg2" },
+				options = {},
+			}
+			local moduleReturns = CLI:ExecuteCommand(commandInfo)
+			assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
+		end
+	end)
+
+	it("should raise an error if an invalid lua file path was passed without an optional -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "invalid.lua"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {},
+		}
+		local function codeUnderTest()
+			CLI:ExecuteCommand(commandInfo)
+		end
+		local expectedErrorMessage = string.format("Failed to load %s (No such file exists)", commandInfo.appPath)
+		assertThrows(codeUnderTest, expectedErrorMessage)
+	end)
+
+	it("should raise an error ignoring the main path if a lua file was passed with in invalid -m path", function()
+		local commandInfo = {
+			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "doesnotexist.lua"),
+			appArgs = { "appArg1", "appArg2" },
+			options = {
+				main = "invalid.lua",
+			},
+		}
+		local function codeUnderTest()
+			CLI:ExecuteCommand(commandInfo)
+		end
+		local expectedErrorMessage = string.format("Failed to load %s (No such file exists)", commandInfo.appPath)
+		assertThrows(codeUnderTest, expectedErrorMessage)
+	end)
+
 	it("should raise an error if a zip file was passed with in invalid -m path", function()
 		local commandInfo = {
 			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldZipApp.zip"),
