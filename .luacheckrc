@@ -21,6 +21,13 @@ globals = {
 	"assertFalse",
 	"assertThrows",
 
+	-- Assertions
+	"assertEquals",
+	"assertFalse",
+	"assertTrue",
+	"assertFunctionCalls",
+	"assertThrows",
+
 	-- Bundle system
 	"PosixFileSystemMixin",
 	"ZipFileSystemMixin",

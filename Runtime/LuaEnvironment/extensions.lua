@@ -16,6 +16,9 @@ local extensionLoaders = {
 	mixin = function()
 		return require("mixin")
 	end,
+	assertions = function()
+		return require("assertions")
+	end,
 }
 
 return extensionLoaders
