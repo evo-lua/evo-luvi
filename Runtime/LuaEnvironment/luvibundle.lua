@@ -1,6 +1,5 @@
 local uv = require("uv")
 local miniz = require("miniz")
-local luvi = require("luvi")
 local luviPath = require("luvipath")
 local pathJoin = luviPath.pathJoin
 
@@ -60,41 +59,6 @@ local function buildBundle(target, bundle)
 	return
 end
 
-local PosixFileSystemMixin = require("PosixFileSystemMixin")
-local ZipFileSystemMixin = require("ZipFileSystemMixin")
-
-local function makeBundle(bundlePath)
-	local path = pathJoin(uv.cwd(), bundlePath)
-	local appBundle = {
-		base = path,
-		zipReader = miniz.new_reader(path) -- Can be nil for POSIX bundles, but that's working as intended
-	}
-
-	if appBundle.zipReader then
-		mixin(appBundle, ZipFileSystemMixin)
-		local topLevelDirectory = appBundle:getRootDirectory()
-		if topLevelDirectory then
-			appBundle:chroot(topLevelDirectory .. "/")
-		end
-		return appBundle
-	end
-
-	local stat = uv.fs_stat(path)
-	if not stat then
-		error(string.format("Failed to load %s (No such file exists)", path), 0)
-	elseif stat.type ~= "directory" then
-		error(string.format("Failed to load %s (Unsupported file type)", path), 0)
-	end
-
-	mixin(appBundle, PosixFileSystemMixin)
-
-	return appBundle
-end
-
--- Legacy export for makeBundle
-luvi.makeBundle = makeBundle
-
 return {
 	buildBundle = buildBundle,
-	makeBundle = makeBundle,
 }
