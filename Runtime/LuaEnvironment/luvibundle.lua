@@ -122,7 +122,14 @@ local function commonBundle(bundlePath, mainPath, args)
 	if not main then
 		error("Entry point " .. mainPath .. " does not exist in app bundle " .. bundle.base, 0)
 	end
-	local fn = assert(loadstring(main, "bundle:" .. mainPath))
+
+	-- It's not helpful to display the app name if we're just executing a script on disk, and would likely be misleading
+	-- But for zip apps, it's less confusing to see the executable name as the files referenced won't even exist on disk
+	-- This is similar to how errors appear in NodeJS, with a node: prefix (which I like better than luvit's generic bundle: prefix)
+	local executableName = path.basename(uv.exepath())
+	local optionalPrefix = bundle.zipReader and (executableName .. ":" ) or ""
+	-- @ option = render error message with <file name>:, not the generic ["string ..."] prefix, which is far less readable
+	local fn = assert(loadstring(main, "@"  .. optionalPrefix .. mainPath))
 
 	exportScriptGlobals()
 	return fn(unpack(args))
