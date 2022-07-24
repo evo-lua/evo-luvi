@@ -19,12 +19,6 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v2
 
-      - name: Install Luarocks
-        run: sudo apt-get install luarocks
-
-      - name: Install busted
-        run: sudo luarocks install busted
-
       - name: Fetch latest evo version tag
         # This seems like a hacky way of getting the tag, but I haven't found a better one that "just works"
         run: curl --location --silent --head --output curl.log -w %{url_effective} https://github.com/evo-lua/evo/releases/latest | grep --only-matching tag/.* | cut -f2- -d/ | tee LATEST_EVO_VERSION && cat curl.log # Print everything, for easier debugging
