@@ -35,6 +35,7 @@ globals = {
 
 	-- Nonstandard primitives
 	"format",
+	"printf",
 	"EVENT",
 	"TEST",
 	"DEBUG",

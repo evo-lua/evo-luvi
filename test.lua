@@ -3,6 +3,7 @@ local testCases = {
 	"Tests/Runtime/LuviAppBundle.spec.lua",
 	"Tests/Primitives/format.spec.lua",
 	"Tests/Primitives/logging.spec.lua",
+	"Tests/Primitives/printf.spec.lua",
 	"Tests/Extensions/assertEquals.spec.lua",
 	"Tests/Extensions/assertFunctionCalls.spec.lua",
 	"Tests/Extensions/assertThrows.spec.lua",
