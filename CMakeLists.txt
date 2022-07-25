@@ -139,11 +139,9 @@ endif (WithZLIB)
 add_definitions( -DLUVI_VERSION="${LUVI_VERSION}" )
 
 if(WIN32)
-  set(winsvc Runtime/Bindings/winsvc.h Runtime/Bindings/winsvcaux.h Runtime/Bindings/winsvc.c Runtime/Bindings/winsvcaux.c)
   if(WithSharedLibluv)
     add_definitions( -DLUA_BUILD_AS_DLL -DBUILDING_UV_SHARED )
   endif()
-  add_definitions( -DWITH_WINSVC )
   add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS )
 
   add_library (luvi_renamed Runtime/luvi_renamed.c)
@@ -161,7 +159,6 @@ if(LPEGLIB_DIR)
   set(lpeg_re_lua ${LPEGLIB_DIR}/re.lua)
 endif()
 lua_add_executable(luvi
-  ${winsvc}
   Runtime/main.c
   Runtime/luvi_compat.c
   Runtime/LuaEnvironment/CLI.lua

@@ -62,12 +62,6 @@ test.exe 1 2 3 4
 DEL /Q test.exe
 GOTO :end
 
-:winsvc
-IF NOT EXIST luvi.exe CALL Make.bat
-DEL /Q winsvc.exe
-luvi.exe samples\winsvc.app -o winsvc.exe
-GOTO :end
-
 :repl
 IF NOT EXIST luvi.exe CALL Make.bat
 DEL /Q repl.exe
