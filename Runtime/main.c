@@ -162,14 +162,6 @@ int main(int argc, char* argv[])
 
 	luv_set_thread_cb(vm_acquire, vm_release);
 
-#ifdef WITH_WINSVC
-	// Store luvi module definition at preload.openssl
-	lua_pushcfunction(L, luaopen_winsvc);
-	lua_setfield(L, -2, "winsvc");
-	lua_pushcfunction(L, luaopen_winsvcaux);
-	lua_setfield(L, -2, "winsvcaux");
-#endif
-
 	/* push debug function */
 	lua_pushcfunction(L, luvi_traceback);
 	errfunc = lua_gettop(L);
