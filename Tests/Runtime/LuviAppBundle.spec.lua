@@ -22,7 +22,8 @@ describe("LuviAppBundle", function()
 				zipAppWithErrors:RunContainedApp({})
 			end
 			-- This should probably use "myapp" as the app name, but that's not currently possible since evo loads the tests
-			local expectedErrorMessage = "evo:main.lua:1: whoops" -- Default Lua format (not great, but alas...)
+			local executableName = path.basename(uv.exepath())
+			local expectedErrorMessage = executableName .. ":main.lua:1: whoops" -- Default Lua format (not great, but alas...)
 			assertThrows(codeUnderTest, expectedErrorMessage)
 		end)
 

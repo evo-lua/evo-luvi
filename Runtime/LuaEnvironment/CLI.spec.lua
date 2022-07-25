@@ -359,24 +359,6 @@ describe("ExecuteCommand", function()
 		assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
 	end)
 
-	it("should load a given lua file regardless of the capitalization used in its extension", function()
-		local validExtensions = {
-			"lua",
-			"LUA",
-			"Lua",
-			"lUa",
-		}
-		for _, extension in ipairs(validExtensions) do
-			local commandInfo = {
-				appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "entry." .. extension),
-				appArgs = { "appArg1", "appArg2" },
-				options = {},
-			}
-			local moduleReturns = CLI:ExecuteCommand(commandInfo)
-			assertEquals("HelloWorldApp/entry.lua (disk)#appArg1#appArg2", moduleReturns)
-		end
-	end)
-
 	it("should raise an error if an invalid lua file path was passed without an optional -m path", function()
 		local commandInfo = {
 			appPath = path.join(uv.cwd(), "Tests", "Fixtures", "HelloWorldApp", "invalid.lua"),
