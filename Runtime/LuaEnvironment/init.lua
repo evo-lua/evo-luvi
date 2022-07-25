@@ -26,6 +26,7 @@ local Luvi = {
 function Luvi:LoadExtensionModules()
 	local primitives = require("primitives")
 	local extensionLoaders = require("extensions")
+	local apiNamespaces = require("namespaces")
 
 	-- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
 	for name, primitiveLoader in pairs(primitives) do
@@ -35,6 +36,11 @@ function Luvi:LoadExtensionModules()
 	-- Insert extension modules in the global namespace so they're available to user scripts and high-level libraries
 	for name, extensionLoader in pairs(extensionLoaders) do
 		_G[name] = extensionLoader()
+	end
+
+	-- Load after extensions since they will be used deliberately
+	for name, namespaceLoader in pairs(apiNamespaces) do
+		_G[name] = namespaceLoader()
 	end
 end
 
