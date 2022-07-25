@@ -7,6 +7,7 @@ local testCases = {
 	"Tests/Extensions/assertFunctionCalls.spec.lua",
 	"Tests/Extensions/assertThrows.spec.lua",
 	"Tests/Extensions/mixin.spec.lua",
+	"Tests/Extensions/transform.spec.lua",
 }
 
 C_Testing.CreateUnitTestRunner(testCases)

@@ -181,6 +181,7 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/extensions/import.lua
   Runtime/LuaEnvironment/extensions/mixin.lua
   Runtime/LuaEnvironment/extensions/path.lua
+  Runtime/LuaEnvironment/extensions/transform.lua
   ${lpeg_re_lua}
 )
 

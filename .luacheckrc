@@ -10,6 +10,7 @@ exclude_files = {
 }
 ignore = {
 	"212", -- unused argument 'self'; not a problem and commonly used for colon notation
+	"213", -- unused loop variable (kept for readability's sake)
 }
 globals = {
 	-- Test runner
@@ -49,6 +50,7 @@ globals = {
 	"import",
 	"mixin",
 	"path",
+	"transform",
 
 	-- evo APIs
 	"C_Testing",
