@@ -185,6 +185,8 @@ lua_add_executable(luvi
   Runtime/API/EventSystem/EventListenerMixin.lua
   Runtime/API/EventSystem/C_EventSystem.lua
   Runtime/API/FileSystem/C_FileSystem.lua
+  Runtime/API/Testing/Scenario.lua
+  Runtime/API/Testing/TestSuite.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}
 )

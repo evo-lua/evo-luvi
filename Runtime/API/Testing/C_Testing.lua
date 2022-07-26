@@ -1,4 +1,7 @@
-local C_Testing = {}
+local C_Testing = {
+	TestSuite = require("TestSuite"),
+	Scenario = require("Scenario"),
+}
 
 function C_Testing.CreateFauxConsole()
 	local tostring = tostring
