@@ -11,6 +11,9 @@ local namespaceLoaders = {
 	C_FileSystem = function()
 		return require("C_FileSystem")
 	end,
+	C_Networking = function()
+		return require("C_Networking")
+	end,
 }
 
 return namespaceLoaders
