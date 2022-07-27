@@ -1,4 +1,4 @@
-local path = _G.dump
+local dump = _G.dump
 _G.currentNamespace = "dump"
 
 -- I would hope all this (and more) is already covered by inspect.lua, but it's better to be safe
