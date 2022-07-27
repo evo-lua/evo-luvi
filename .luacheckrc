@@ -35,6 +35,7 @@ globals = {
 	"ZipFileSystemMixin",
 
 	-- Nonstandard primitives
+	"dump",
 	"format",
 	"printf",
 	"EVENT",

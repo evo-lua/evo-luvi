@@ -407,7 +407,7 @@ local DEFAULT_OPTIONS = {
 	silent = false,
 }
 
-return function(object, options)
+local function dump(object, options)
 	options = options or DEFAULT_OPTIONS
 	local dumpValue = inspect(object, options)
 	if not options.silent then
@@ -415,3 +415,7 @@ return function(object, options)
 	end
 	return dumpValue
 end
+
+_G.dump = dump
+
+return dump
