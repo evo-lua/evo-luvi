@@ -9,6 +9,7 @@ local testCases = {
 	"Tests/Extensions/assertFunctionCalls.spec.lua",
 	"Tests/Extensions/assertThrows.spec.lua",
 	"Tests/Extensions/mixin.spec.lua",
+	"Tests/Extensions/string.spec.lua",
 	"Tests/Extensions/table.spec.lua",
 	"Tests/Extensions/transform.spec.lua",
 }

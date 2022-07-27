@@ -3,9 +3,6 @@ package.path = package.path .. ";extensions/?.lua;"
 
 -- Since they may depend on primitives that aren't yet preloaded, defer the loading process
 local extensionLoaders = {
-	dump = function()
-		return require("dump")
-	end,
 	-- Nonstandard libraries
 	path = function()
 		return require("path")
@@ -21,6 +18,9 @@ local extensionLoaders = {
 	end,
 	assertions = function()
 		return require("assertions")
+	end,
+	stringx = function()
+		return require("stringx")
 	end,
 	tablex = function()
 		return require("tablex")

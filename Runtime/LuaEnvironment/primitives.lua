@@ -19,6 +19,9 @@ local primitives = {
 	["aliases"] = function()
 		return require("aliases")
 	end,
+	dump = function()
+		return require("dump")
+	end,
 }
 
 return primitives

@@ -401,13 +401,21 @@ local MAX_TABLE_NESTING_LEVEL = 30
 -- Note: This method is not appropriate for saving/restoring tables.
 -- It is meant to be used by the programmer mainly while debugging a program. (from the original README)
 local print = print
-local options = {
+local DEFAULT_OPTIONS = {
 	depth = MAX_TABLE_NESTING_LEVEL,
 	indent = "\t",
+	silent = false,
 }
 
-return function(...)
-	local dumpValue = inspect(..., options)
-	print(dumpValue)
+local function dump(object, options)
+	options = options or DEFAULT_OPTIONS
+	local dumpValue = inspect(object, options)
+	if not options.silent then
+		print(dumpValue)
+	end
 	return dumpValue
 end
+
+_G.dump = dump
+
+return dump
