@@ -22,6 +22,9 @@ local extensionLoaders = {
 	assertions = function()
 		return require("assertions")
 	end,
+	tablex = function()
+		return require("tablex")
+	end,
 }
 
 return extensionLoaders

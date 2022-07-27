@@ -9,6 +9,7 @@ exclude_files = {
 	"**/path.lua", -- Not much hope here; this is ported spaghetti code from NodeJS
 }
 ignore = {
+	"143", -- accessing undefined field of global (likely a nonstandard extension)
 	"212", -- unused argument 'self'; not a problem and commonly used for colon notation
 	"213", -- unused loop variable (kept for readability's sake)
 }
