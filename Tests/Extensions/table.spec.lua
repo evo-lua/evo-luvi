@@ -28,4 +28,49 @@ describe("table", function()
 			assertEquals(table.count({ hi = 42, nil, 43, nil, meep = 44 }), 3)
 		end)
 	end)
+
+	describe("diff", function()
+		local diff = table.diff
+		it("should raise an error if one of the two parameters is a non-table value", function()
+			local expectedErrorMessage = "Usage: diff(before : table, after : table)"
+			assertThrows(function()
+				diff({}, 42)
+			end, expectedErrorMessage)
+			assertThrows(function()
+				diff(function() end, {})
+			end, expectedErrorMessage)
+			assertThrows(function()
+				diff("asdf", 42)
+			end, expectedErrorMessage)
+		end)
+
+		it("should return an empty string if both tables are empty", function()
+			assertEquals(diff({}, {}), "")
+		end)
+
+		it("should return an empty string if both tables are identical and non-empty", function()
+			assertEquals(diff({ hi = 42, test = { nested = true } }, { hi = 42, test = { nested = true } }), "")
+		end)
+
+		it("should return a positive diff if the second table has a field that the first one is missing", function()
+			local separatorLine = "--------------------"
+			local expectedDiffString = separatorLine
+				.. "\n"
+				.. "{\n  hi = 42,\n  test = {\n    nested = true\n  }\n}"
+				.. "\n"
+				.. separatorLine
+				.. "\n"
+				.. "{\n  hi = 42,\n  test = {\n    nested = true,\n"
+				.. string.rep(" ", 17)
+				.. transform.brightRed("^ THERE BE A MISMATCH HERE")
+				.. "\n    secret = 123\n  }\n}"
+				.. "\n"
+				.. separatorLine
+
+			assertEquals(
+				diff({ hi = 42, test = { nested = true } }, { hi = 42, test = { nested = true, secret = 123 } }),
+				expectedDiffString
+			)
+		end)
+	end)
 end)
