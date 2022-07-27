@@ -178,6 +178,7 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/extensions/import.lua
   Runtime/LuaEnvironment/extensions/mixin.lua
   Runtime/LuaEnvironment/extensions/path.lua
+  Runtime/LuaEnvironment/extensions/stringx.lua
   Runtime/LuaEnvironment/extensions/tablex.lua
   Runtime/LuaEnvironment/extensions/transform.lua
   Runtime/LuaEnvironment/namespaces.lua
