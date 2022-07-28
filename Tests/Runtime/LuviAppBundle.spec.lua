@@ -34,5 +34,13 @@ describe("LuviAppBundle", function()
 			local expectedErrorMessage = "main.lua:1: whoops" -- Default Lua format (not great, but alas...)
 			assertThrows(codeUnderTest, expectedErrorMessage)
 		end)
+
+		it("should run the main thread in a coroutine", function()
+			local currentThread, isMainThread = coroutine.running()
+			assertEquals(coroutine.status(currentThread), "running")
+			assertEquals(type(currentThread), "thread")
+			-- If running on the main thread, we can't yield to pause until I/O is ready
+			assertFalse(isMainThread)
+		end)
 	end)
 end)
