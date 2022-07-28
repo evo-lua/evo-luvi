@@ -79,6 +79,13 @@ function Luvi:IsZipApp()
 	return zip ~= nil
 end
 
-return function(args)
-	return Luvi:LuaMain(args)
+local function StartMainThread(args)
+	local mainThread = coroutine.wrap(function()
+		return Luvi:LuaMain(args)
+	end)
+	local exitCode = mainThread()
+	uv.run()
+	return exitCode
 end
+
+return StartMainThread
