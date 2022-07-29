@@ -51,6 +51,7 @@ local CLI = require("CLI")
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	self.commandLineArguments = commandLineArgumentsPassedFromC
+	_G.arg = commandLineArgumentsPassedFromC -- Mimick the standard arg global to avoid confusing users
 
 	-- When the executable contains a luvi-based app, it should be run instead of the default CLI
 	if self:IsZipApp() then
