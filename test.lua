@@ -12,6 +12,8 @@ local testCases = {
 	"Tests/Extensions/string.spec.lua",
 	"Tests/Extensions/table.spec.lua",
 	"Tests/Extensions/transform.spec.lua",
+	-- The examples should run last as they may spam the console with irrelevant output
+	"Tests/test-example-snippets.lua",
 }
 
 C_Testing.CreateUnitTestRunner(testCases)
