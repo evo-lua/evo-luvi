@@ -1,5 +1,8 @@
 local string_sub = string.sub
 local math_max = math.max
+local string_gmatch = string.gmatch
+local table_insert = table.insert
+local type = type
 
 function _G.string.diff(before, after)
 	local maxIndexToCheck = math_max(#before, #after)
@@ -26,4 +29,18 @@ function _G.string.diff(before, after)
 			numCharsSinceLastNewline = 0
 		end
 	end
+end
+
+function _G.string.explode(inputString, delimiter)
+	if type(inputString) ~= "string" then
+		error("Usage: explode(inputString : string, delimiter : string?)", 0)
+	end
+
+	delimiter = delimiter or "%s" -- Use whitespace by default
+
+	local tokens = {}
+	for token in string_gmatch(inputString, "([^" .. delimiter .. "]+)") do
+		table_insert(tokens, token)
+	end
+	return tokens
 end
