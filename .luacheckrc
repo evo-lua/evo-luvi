@@ -56,6 +56,7 @@ globals = {
 	"transform",
 
 	-- evo APIs
+	"C_EventSystem",
 	"C_FileSystem",
 	"C_Testing",
 }

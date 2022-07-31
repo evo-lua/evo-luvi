@@ -5,6 +5,9 @@ local namespaceLoaders = {
 	C_Testing = function()
 		return require("C_Testing")
 	end,
+	C_EventSystem = function()
+		return require("C_EventSystem")
+	end,
 	C_FileSystem = function()
 		return require("C_FileSystem")
 	end,
