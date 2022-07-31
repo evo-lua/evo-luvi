@@ -11,7 +11,7 @@ local function copyFunctionsFromMixin(target, mixin)
 	end
 
 	for key, value in pairs(mixin) do
-		if type(value) == "function" and target[key] == nil then
+		if type(value) == "function" or type(value) == "table" and target[key] == nil then
 			target[key] = value
 		end
 	end

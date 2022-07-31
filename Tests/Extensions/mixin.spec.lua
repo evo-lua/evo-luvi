@@ -11,6 +11,18 @@ describe("mixin", function()
 		assertEquals(target.test2, mixin2.test2)
 	end)
 
+	it("should mix in all table values of the passed mixins", function()
+		local target = {}
+
+		local mixin1 = { test1 = { 42 } }
+		local mixin2 = { test2 = {} }
+
+		mixin(target, mixin1, mixin2)
+
+		assertEquals(target.test1, mixin1.test1)
+		assertEquals(target.test2, mixin2.test2)
+	end)
+
 	it("should skip any mixins passed that aren't table values", function()
 		local target = {}
 
