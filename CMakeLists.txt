@@ -183,6 +183,7 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/extensions/transform.lua
   Runtime/LuaEnvironment/namespaces.lua
   Runtime/API/EventSystem/EventListenerMixin.lua
+  Runtime/API/EventSystem/C_EventSystem.lua
   Runtime/API/FileSystem/C_FileSystem.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}
