@@ -32,7 +32,7 @@ function CLI:ParseCommandLineArguments(argumentsVector)
 			if options[command] then
 				error("Duplicate flags: " .. command, 0)
 			end
-			if command == "output" or command == "main" then
+			if command == "output" or command == "main" or command == "eval" then
 				key = command
 			elseif command then
 				options[command] = true
@@ -71,6 +71,11 @@ function CLI:ExecuteCommand(commandInfo)
 	end
 
 	local print = self.print
+
+	if commandInfo.options.eval then
+		print("Evaluating input: " .. commandInfo.options.eval)
+		return loadstring(commandInfo.options.eval)()
+	end
 
 	if commandInfo.options.version then
 		print(self:GetVersionText())
@@ -149,6 +154,7 @@ CLI.COMMAND_HANDLERS = {
 	["--version"] = "version",
 	["-h"] = "help",
 	["--help"] = "help",
+	["-e"] = "eval",
 }
 
 CLI.EXECUTABLE_NAME = "evo-luvi"
