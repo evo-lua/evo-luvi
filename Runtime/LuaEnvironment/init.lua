@@ -81,10 +81,7 @@ function Luvi:IsZipApp()
 end
 
 local function StartMainThread(args)
-	local mainThread = coroutine.wrap(function()
-		return Luvi:LuaMain(args)
-	end)
-	local exitCode = mainThread()
+	local exitCode = Luvi:LuaMain(args)
 	uv.run()
 	return exitCode
 end
