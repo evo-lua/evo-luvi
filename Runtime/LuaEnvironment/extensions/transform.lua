@@ -32,7 +32,7 @@ end
 
 local function transformText(text, color)
 	if type(text) ~= "string" then
-		ERROR("Usage: transform." .. color .. "(text : string)")
+		error("Usage: transform." .. color .. "(text : string)", 0)
 	end
 
 	if not transform.ENABLE_TEXT_TRANSFORMATIONS then

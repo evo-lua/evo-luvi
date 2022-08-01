@@ -40,6 +40,9 @@ jobs:
     - name: Run unit tests
       run: ./evo-luvi test.lua
 
+    - name: Run acceptance tests
+      run: ./evo-luvi scenarios.lua
+
   deploy-linux:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build]
