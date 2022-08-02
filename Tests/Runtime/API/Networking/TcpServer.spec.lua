@@ -66,4 +66,16 @@ describe("TcpServer", function()
 			server:StopListening()
 		end)
 	end)
+
+	describe("StartReading", function()
+		it("should print a human-readable error message when a client-side read error occurs", function()
+			local server = TcpServer()
+
+			local fauxTcpClient = C_Testing.CreateFauxTcpClient()
+
+			server:StartReading(fauxTcpClient)
+
+			server:StopListening()
+		end)
+	end)
 end)
