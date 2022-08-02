@@ -1,3 +1,4 @@
+local format = format
 local ipairs = ipairs
 local string_explode = string.explode
 local string_lower = string.lower
@@ -22,6 +23,20 @@ function EventListenerMixin:OnEvent(eventID, payload)
 end
 
 function EventListenerMixin:RegisterEvent(eventID)
+	if type(eventID) ~= "string" then
+		error("Usage: RegisterEvent(eventID : string)", 0)
+	end
+
+	local eventListenerName = self:GetDefaultListenerName(eventID)
+	local eventListener = self[eventListenerName]
+	if type(eventListener) ~= "function" then
+		error(format("Attempt to register unknown event %s", eventID), 0)
+	end
+
+	if self:IsEventRegistered(eventID) then
+		error(format("Failed to register event %s (already registered)", eventID), 0)
+	end
+
 	C_EventSystem.AddEventListener(eventID, self)
 	self.registeredEvents[eventID] = true
 end
