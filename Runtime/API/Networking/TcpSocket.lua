@@ -6,6 +6,7 @@ local type = type
 local AsyncHandleMixin = require("AsyncHandleMixin")
 local AsyncStreamMixin = require("AsyncStreamMixin")
 local AsyncSocketMixin = require("AsyncSocketMixin")
+local EventListenerMixin = require("EventListenerMixin")
 
 local TcpSocket = {
 	DEFAULT_SOCKET_CREATION_OPTIONS = {
@@ -57,17 +58,6 @@ function TcpSocket:GetURL()
 	return "tcp://" .. self.hostName .. ":" .. self.port
 end
 
-mixin(TcpSocket, AsyncHandleMixin, AsyncStreamMixin, AsyncSocketMixin)
-
-function TcpSocket:OnEvent(eventID, ...)
-	DEBUG("[TcpSocket] OnEvent triggered", eventID, ...)
-
-	local eventListener = self[eventID]
-	if not eventListener then
-		return
-	end
-
-	eventListener(self, eventID, ...)
-end
+mixin(TcpSocket, AsyncHandleMixin, AsyncStreamMixin, AsyncSocketMixin, EventListenerMixin)
 
 return TcpSocket

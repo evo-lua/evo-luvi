@@ -156,28 +156,4 @@ describe("TcpSocket", function()
 			socket.handle = libuvHandle
 		end)
 	end)
-
-	describe("OnEvent", function()
-		local socket = TcpSocket()
-		it("should do nothing if no event listener for the passed event ID was registered", function()
-			local eventID = "DUMMY_EVENT_DOES_NOT_EXIST"
-
-			assertEquals(socket:OnEvent(eventID), nil)
-		end)
-
-		it("should call the registered event listener and pass all arguments if one exists", function()
-			local eventID = "DUMMY_EVENT_DOES_NOT_EXIST"
-
-			local didPassArguments = false
-			socket[eventID] = function(self, event, arg1, ...)
-				didPassArguments = (arg1 == 42) and (event == eventID)
-			end
-
-			local function codeUnderTest()
-				socket:OnEvent(eventID, 42)
-			end
-			assertFunctionCalls(codeUnderTest, socket, eventID)
-			assertTrue(didPassArguments)
-		end)
-	end)
 end)
