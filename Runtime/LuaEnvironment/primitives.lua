@@ -22,6 +22,11 @@ local primitives = {
 	dump = function()
 		return require("dump")
 	end,
+	["mixins"] = function()
+		require("AsyncHandleMixin")
+		require("AsyncStreamMixin")
+		require("AsyncSocketMixin")
+	end,
 }
 
 return primitives

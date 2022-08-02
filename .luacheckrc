@@ -58,5 +58,6 @@ globals = {
 	-- evo APIs
 	"C_EventSystem",
 	"C_FileSystem",
+	"C_Networking",
 	"C_Testing",
 }

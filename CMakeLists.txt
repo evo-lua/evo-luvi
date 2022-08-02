@@ -184,9 +184,16 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/namespaces.lua
   Runtime/API/EventSystem/EventListenerMixin.lua
   Runtime/API/EventSystem/C_EventSystem.lua
+  Runtime/Primitives/AsyncHandleMixin.lua
+  Runtime/Primitives/AsyncStreamMixin.lua
+  Runtime/Primitives/AsyncSocketMixin.lua
   Runtime/API/FileSystem/C_FileSystem.lua
   Runtime/API/Testing/Scenario.lua
   Runtime/API/Testing/TestSuite.lua
+  Runtime/API/Networking/TcpSocket.lua
+  Runtime/API/Networking/TcpClient.lua
+  Runtime/API/Networking/TcpServer.lua
+  Runtime/API/Networking/C_Networking.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}
 )

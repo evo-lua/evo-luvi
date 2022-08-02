@@ -21,6 +21,8 @@ describe("EventListenerMixin", function()
 			tempObject.isEventPassed = true
 		end
 
+		function tempObject:OnTestEvent(eventID, payload) end
+
 		return tempObject
 	end
 
@@ -43,9 +45,24 @@ describe("EventListenerMixin", function()
 	end)
 
 	describe("RegisterEvent", function()
-		local listener = createNewEventListener()
+		it("should raise an error if a non-string value is passed as the event ID", function()
+			local listener = createNewEventListener()
+			local function codeUnderTest()
+				listener:RegisterEvent(42)
+			end
+			assertThrows(codeUnderTest, "Usage: RegisterEvent(eventID : string)")
+		end)
+
+		it("should raise an error if there exists no event handler function for the given event ID", function()
+			local listener = createNewEventListener()
+			local function codeUnderTest()
+				listener:RegisterEvent("EVENT_THAT_DOES_NOT_EXIST")
+			end
+			assertThrows(codeUnderTest, "Attempt to register unknown event EVENT_THAT_DOES_NOT_EXIST")
+		end)
 
 		it("should add an event listener for the given event", function()
+			local listener = createNewEventListener()
 			listener:RegisterEvent("HELLO_WORLD")
 
 			-- Can't hook the event handlers here, as the'yre stored as function values in the event registry (no lookup)
@@ -65,16 +82,14 @@ describe("EventListenerMixin", function()
 		end)
 
 		it("should raise an error if the event listener has already been registered for the given event", function()
-			EventListenerMixin:RegisterEvent("HELLO_WORLD_EVENT")
+			local listener = createNewEventListener()
+			listener:RegisterEvent("HELLO_WORLD")
 			local function registerDuplicateEvent()
-				EventListenerMixin:RegisterEvent("HELLO_WORLD_EVENT")
+				listener:RegisterEvent("HELLO_WORLD")
 			end
-			assertThrows(
-				registerDuplicateEvent,
-				"Failed to AddEventListener for HELLO_WORLD_EVENT (already registered)"
-			)
+			assertThrows(registerDuplicateEvent, "Failed to register event HELLO_WORLD (already registered)")
 
-			EventListenerMixin:UnregisterEvent("HELLO_WORLD_EVENT")
+			listener:UnregisterEvent("HELLO_WORLD")
 		end)
 	end)
 
@@ -98,28 +113,29 @@ describe("EventListenerMixin", function()
 
 	describe("UnregisterAllEvents", function()
 		local listener = createNewEventListener()
-		listener:RegisterEvent("ASDF")
-		listener:RegisterEvent("HI")
+		listener:RegisterEvent("TEST_EVENT")
+		listener:RegisterEvent("HELLO_WORLD")
 		it("should remove all registered event listeners", function()
-			assertTrue(listener:IsEventRegistered("ASDF"))
-			assertTrue(listener:IsEventRegistered("HI"))
+			assertTrue(listener:IsEventRegistered("TEST_EVENT"))
+			assertTrue(listener:IsEventRegistered("HELLO_WORLD"))
 			listener:UnregisterAllEvents()
-			assertFalse(listener:IsEventRegistered("ASDF"))
-			assertFalse(listener:IsEventRegistered("HI"))
+			assertFalse(listener:IsEventRegistered("TEST_EVENT"))
+			assertFalse(listener:IsEventRegistered("HELLO_WORLD"))
 		end)
 	end)
 
 	describe("IsEventRegistered", function()
-		local listener = createNewEventListener()
 		it("should return false if the given event has not been registered", function()
-			assertFalse(listener:IsEventRegistered("HI"))
+			local listener = createNewEventListener()
+			assertFalse(listener:IsEventRegistered("HELLO_WORLD"))
 		end)
 
 		it("should return true if the given event has been registered", function()
-			listener:RegisterEvent("ASDF")
-			assertTrue(listener:IsEventRegistered("ASDF"))
+			local listener = createNewEventListener()
+			listener:RegisterEvent("HELLO_WORLD")
+			assertTrue(listener:IsEventRegistered("HELLO_WORLD"))
 
-			listener:UnregisterEvent("ASDF")
+			listener:UnregisterEvent("HELLO_WORLD")
 		end)
 	end)
 
