@@ -10,19 +10,12 @@ local EventListenerMixin = {
 	registeredEvents = {},
 }
 
-local function createEventListener()
-	return function(self, eventID, payload)
-		DEBUG(eventID .. " triggered")
-	end
-end
-
 function EventListenerMixin:OnEvent(eventID, payload)
-	-- Defer creation of default listeners to allow testing them more easily
 	local defaultListenerName = self:GetDefaultListenerName(eventID)
 	local eventListener = self[defaultListenerName]
 
 	if type(eventListener) ~= "function" then
-		self[defaultListenerName] = createEventListener()
+		return
 	end
 
 	eventListener(self, eventID, payload)
