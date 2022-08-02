@@ -28,6 +28,27 @@ function C_Testing.CreateFauxConsole()
 	return fauxConsole
 end
 
+function C_Testing.CreateFauxTcpClient()
+	local fauxTcpClient = {}
+
+	function fauxTcpClient:read_start(onResultCallback)
+		onResultCallback("ERROR")
+	end
+
+	function fauxTcpClient:getpeername()
+		return {
+			family = "virtual",
+			ip = "127.0.0.1",
+			port = 123,
+		}
+	end
+
+	function fauxTcpClient:shutdown() end
+	function fauxTcpClient:close() end
+
+	return fauxTcpClient
+end
+
 function C_Testing.CreateUnitTestRunner(testCases)
 	-- Crappy makeshift test runner... for now it will do
 	local numTestsComplete = 0

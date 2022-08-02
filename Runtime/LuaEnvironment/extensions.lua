@@ -25,6 +25,9 @@ local extensionLoaders = {
 	tablex = function()
 		return require("tablex")
 	end,
+	libuvx = function()
+		return require("libuvx")
+	end,
 }
 
 return extensionLoaders
