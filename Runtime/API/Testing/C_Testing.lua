@@ -3,6 +3,8 @@ local C_Testing = {
 	Scenario = require("Scenario"),
 }
 
+local NANOSECONDS_PER_MILLISECOND = 10E5
+
 function C_Testing.CreateFauxConsole()
 	local tostring = tostring
 
@@ -137,7 +139,7 @@ function C_Testing.CreateUnitTestRunner(testCases)
 	end
 
 	local timeEnd = uv.hrtime()
-	local durationInMilliseconds = (timeEnd - timeStart) / 10E6 -- ns (hrtime) to ms
+	local durationInMilliseconds = (timeEnd - timeStart) / NANOSECONDS_PER_MILLISECOND -- ns (hrtime) to ms
 	durationInMilliseconds = math.floor(durationInMilliseconds + 0.5)
 
 	print()
