@@ -42,6 +42,13 @@ function TcpServer:Construct(creationOptions)
 
 	setmetatable(instance, self)
 
+	-- An unhandled SIGPIPE error signal will crash the server on platforms that send it, e.g. when attempting to write to a closed socket
+	if uv.constants.SIGPIPE then
+		local sigpipeSignal = uv.new_signal()
+		sigpipeSignal:start("sigpipe")
+		uv.unref(sigpipeSignal) -- This empty signal handler shouldn't prevent the event loop from exiting as it's a no-op
+	end
+
 	instance:StartListening()
 
 	return instance
