@@ -1,6 +1,12 @@
 describe("Scenario", function()
 	local function createNoOpScenario()
-		return C_Testing.Scenario("Do nothing")
+		local scenario = C_Testing.Scenario("Do nothing")
+
+		function scenario:SetDisplayedTime()
+			-- No-op to avoid fluctuations in the actual runtime breaking the tests
+		end
+
+		return scenario
 	end
 
 	local function createMultiAssertionScenario()
@@ -23,6 +29,10 @@ describe("Scenario", function()
 			assertEquals(someValue, 43)
 			assertEquals(someValue, 43, "Some value is set to 43")
 			assert(someValue == 44, "Some value is set to 44")
+		end
+
+		function scenario:SetDisplayedTime()
+			-- No-op to avoid fluctuations in the actual runtime breaking the tests
 		end
 
 		return scenario
