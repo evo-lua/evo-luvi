@@ -62,6 +62,10 @@ function Scenario:THEN(description)
 	self.descriptions.THEN = description
 end
 
+function Scenario:SetDisplayedTime(runTimeInMilliseconds)
+	self.runTimeInMilliseconds = runTimeInMilliseconds
+end
+
 function Scenario:Run(console)
 	local startTimeInNanoseconds = time()
 
@@ -89,7 +93,7 @@ function Scenario:Run(console)
 	local endTimeInNanoseconds = time()
 	local runTimeInNanoseconds = (endTimeInNanoseconds - startTimeInNanoseconds)
 	local runTimeInMilliseconds = runTimeInNanoseconds / NANOSECONDS_PER_MILLISECOND
-	self.runTimeInMilliseconds = runTimeInMilliseconds
+	self:SetDisplayedTime(runTimeInMilliseconds)
 
 	self:OnCleanup()
 
