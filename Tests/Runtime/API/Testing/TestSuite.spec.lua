@@ -11,6 +11,10 @@ describe("TestSuite", function()
 			assert(1234 == 12345, "FAILED assertion #2")
 		end
 
+		function scenario:SetDisplayedTime()
+			-- No-op to avoid fluctuations in the actual runtime breaking the tests
+		end
+
 		failingTestSuiteWithOneScenario:AddScenario(scenario)
 		return failingTestSuiteWithOneScenario
 	end
@@ -26,6 +30,10 @@ describe("TestSuite", function()
 			assert(1 == 1, "NOOP assertion #1")
 			assert(42 == 42, "NOOP assertion #2")
 			assert(1234 == 1234, "NOOP assertion #3")
+		end
+
+		function scenario:SetDisplayedTime()
+			-- No-op to avoid fluctuations in the actual runtime breaking the tests
 		end
 
 		testSuite:AddScenario(scenario)
