@@ -7,7 +7,7 @@ local print = print
 local time = uv.hrtime
 
 local NOOP_FUNCTION = function() end
-local NANOSECONDS_PER_MILLISECOND = 10E6
+local NANOSECONDS_PER_MILLISECOND = 10E5
 
 local Scenario = {}
 
