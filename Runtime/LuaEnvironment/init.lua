@@ -29,6 +29,8 @@ function Luvi:LoadExtensionModules()
 	local extensionLoaders = require("extensions")
 	local apiNamespaces = require("namespaces")
 
+	self:InitializeStaticLibraryExports()
+
 	-- Preload primitives (they shouldn't be available globally, but extensions may depend on them)
 	for name, primitiveLoader in pairs(primitives) do
 		package.preload[name] = primitiveLoader()
@@ -43,8 +45,6 @@ function Luvi:LoadExtensionModules()
 	for name, namespaceLoader in pairs(apiNamespaces) do
 		_G[name] = namespaceLoader()
 	end
-
-	self:InitializeStaticLibraryExports()
 end
 
 function Luvi:InitializeStaticLibraryExports()
