@@ -6,6 +6,7 @@ local testCases = {
 	"Tests/Runtime/API/FileSystem/C_FileSystem.spec.lua",
 	"Tests/Runtime/API/Testing/Scenario.spec.lua",
 	"Tests/Runtime/API/Testing/TestSuite.spec.lua",
+	"Tests/Runtime/API/Networking/IncrementalHttpParser.spec.lua",
 	"Tests/Runtime/API/Networking/C_Networking.spec.lua",
 	"Tests/Primitives/format.spec.lua",
 	"Tests/Primitives/logging.spec.lua",
