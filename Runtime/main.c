@@ -17,6 +17,7 @@
 
 #define LUA_LIB
 #include "Bindings/lenv.c"
+#include "Bindings/llhttp_ffi.c"
 #include "luv.h"
 #include "luvi.c"
 #include "luvi.h"
@@ -58,6 +59,15 @@ static int luvi_traceback(lua_State* L)
 	return 1;
 }
 
+static void export_static_ffi_bindings(lua_State* L)
+{
+	// This global table simply exports the static APIs embedded within the runtime for the FFI to call into
+	lua_newtable(L);
+	lua_setglobal(L, "STATIC_FFI_EXPORTS");
+
+	export_llhttp_bindings(L);
+}
+
 static lua_State* vm_acquire()
 {
 	lua_State* L = luaL_newstate();
@@ -66,6 +76,9 @@ static lua_State* vm_acquire()
 
 	// Add in the lua standard and compat libraries
 	luvi_openlibs(L);
+
+	// Export static libraries that have been added to the runtime
+	export_static_ffi_bindings(L);
 
 	// Get package.loaded so that we can load modules
 	lua_getglobal(L, "package");

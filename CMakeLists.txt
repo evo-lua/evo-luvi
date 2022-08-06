@@ -58,6 +58,7 @@ endif()
 
 option(WithSharedLibluv "Shared or Static libluv" OFF)
 option(WithOpenSSL "Include OpenSSL" OFF)
+option(WithLLHTTP "Include LLHTTP" ON)
 option(WithOpenSSLASM "Enable Assembly Optimizations" OFF)
 option(WithSharedOpenSSL "Shared or Static OpenSSL" ON)
 option(WithPCRE "Include " OFF)
@@ -118,6 +119,10 @@ include_directories(${LUA_COMPAT53_DIR}/c-api)
 if (WithOpenSSL)
   include(deps/openssl.cmake)
 endif (WithOpenSSL)
+
+if (WithLLHTTP)
+	include(deps/llhttp.cmake)
+endif (WithLLHTTP)
 
 if (WithPCRE)
   include (deps/pcre.cmake)
@@ -197,6 +202,7 @@ lua_add_executable(luvi
   Runtime/API/Networking/C_Networking.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}
+  ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 )
 
 if(APPLE)

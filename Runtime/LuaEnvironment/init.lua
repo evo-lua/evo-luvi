@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 --]]
+local ffi = require("ffi")
 local uv = require("uv")
 local miniz = require("miniz")
 
@@ -42,6 +43,29 @@ function Luvi:LoadExtensionModules()
 	for name, namespaceLoader in pairs(apiNamespaces) do
 		_G[name] = namespaceLoader()
 	end
+
+	self:InitializeStaticLibraryExports()
+end
+
+function Luvi:InitializeStaticLibraryExports()
+	local staticLibraryExports = _G.STATIC_FFI_EXPORTS
+	if not staticLibraryExports then
+		-- No static libraries present or static exports from C are unavailable? Not much to be done here...
+		return
+	end
+
+	-- Libraries exposed via static FFI wrappers need to be initialized differently (approach suggested by the LuaJIT author)
+	-- To avoid depedency hell, the runtime exports static "intermediary" objects to forward API calls to statically linked libraries
+	-- The exact same API is used, but calls are optimized via the FFI without a DLL/SO having to be present on disk
+	-- We substitute this object for the exports table that is normally added via load(), as it only works for shared libraries
+	for libraryName, staticWrapperObject in pairs(staticLibraryExports) do
+		local ffiBindings = require(libraryName)
+		local expectedStructName = "struct static_" .. libraryName .. "_exports_table*"
+		local ffiExportsTable = ffi.cast(expectedStructName, staticWrapperObject)
+		ffiBindings.bindings = ffiExportsTable
+	end
+
+	_G.STATIC_FFI_EXPORTS = nil -- They're no longer needed after the static FFI bindings have been set up
 end
 
 -- They need to be loaded before any Lua modules are required or they won't be available in time
