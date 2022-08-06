@@ -185,7 +185,7 @@ function Scenario:GetSummaryText()
 	local coloredSummaryText
 	if failedAssertionCount == 0 then
 		coloredSummaryText =
-			format("%s passing (%.2f ms)", totalAssertionCount - failedAssertionCount, self.runTimeInMilliseconds)
+			format("%s passing (%.0f ms)", totalAssertionCount - failedAssertionCount, self.runTimeInMilliseconds)
 	end
 
 	if failedAssertionCount > 0 then
