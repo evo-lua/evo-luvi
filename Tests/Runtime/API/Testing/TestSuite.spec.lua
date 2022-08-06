@@ -146,7 +146,7 @@ describe("TestSuite", function()
 					.. "\t"
 					.. transform.green("✓")
 					.. " "
-					.. "NOOP scenario: 3 passing (0.00 ms)"
+					.. "NOOP scenario: 3 passing (0 ms)"
 					.. "\n\n"
 				expectedConsoleOutput = expectedConsoleOutput
 					.. transform.green("All scenarios completed successfully!")
@@ -194,13 +194,13 @@ describe("TestSuite", function()
 				.. "\t"
 				.. transform.green("✓")
 				.. " "
-				.. "Asserting some stuff: 1 passing (0.00 ms)"
+				.. "Asserting some stuff: 1 passing (0 ms)"
 				.. "\n"
 			expectedConsoleOutput = expectedConsoleOutput
 				.. "\t"
 				.. transform.green("✓")
 				.. " "
-				.. "Asserting some more stuff: 1 passing (0.00 ms)"
+				.. "Asserting some more stuff: 1 passing (0 ms)"
 				.. "\n\n"
 			expectedConsoleOutput = expectedConsoleOutput
 				.. transform.green("All scenarios completed successfully!")
