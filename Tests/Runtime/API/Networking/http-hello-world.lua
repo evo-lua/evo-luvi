@@ -28,25 +28,60 @@ function scenario:OnRun()
 	local client = self.client
 
 	function client.TCP_CONNECTION_ESTABLISHED()
-		print("TCP_CONNECTION_ESTABLISHED")
-		client:Send("Hello server!")
+		-- "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
+		local websocketsUpgradeRequest = {
+			method = "GET",
+			requestedURL = "/chat",
+			versionString = "HTTP/1.1",
+			headers = {
+				["Host"] = "example.com:8000",
+				["Upgrade"] = "websocket",
+				["Connection"] = "Upgrade",
+				["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
+				["Sec-WebSocket-Version"] = "13",
+			},
+			body = {},
+		}
+		client:SendHttpRequest(websocketsUpgradeRequest)
 		hasClientSentMessageToServer = true
 	end
 
-	function client.TCP_CHUNK_RECEIVED(_, chunk)
-		print("TCP_CHUNK_RECEIVED")
-		assertEquals(chunk, "Hello server!", "Should receive the same message that was originally sent")
+	function client.HTTP_RESPONSE_RECEIVED(_, response)
+		print("HTTP_RESPONSE_RECEIVED")
+		assertEquals(response.headers, {})
+		assertEquals(response.body, "Hello world!")
+		assertEquals(response.statusCode, 200)
+		assertEquals(response.statusText, "OK")
+		assertEquals(response.versionString, "HTTP/1.1")
 		hasClientReceivedEchoMessage = true
 		-- The echo test is over, so we can continue with the report
 		coroutine.resume(currentThread)
 	end
 
 	local server = self.server
-	function server.TCP_CHUNK_RECEIVED(serverSocket, clientSocket, chunk)
-		print("TCP_CHUNK_RECEIVED")
-		assertEquals(chunk, "Hello server!")
+	function server.HTTP_REQUEST_RECEIVED(serverSocket, clientSocket, request)
+		print("HTTP_REQUEST_RECEIVED")
+
+		assertEquals(request.method, "GET")
+		assertEquals(request.requestedURL, "/chat")
+		assertEquals(request.versionString, "HTTP/1.1")
+		assertEquals(request.body, {})
+		assertEquals(request.headers["Host"], "example.com:8000")
+		assertEquals(request.headers["Upgrade"], "websocket")
+		assertEquals(request.headers["Connection"], "Upgrade")
+		assertEquals(request.headers["Sec-WebSocket-Key"], "dGhlIHNhbXBsZSBub25jZQ")
+		assertEquals(request.headers["Sec-WebSocket-Version"], "13")
+
 		hasServerReceivedMessage = true
-		serverSocket:Send(clientSocket, chunk)
+
+		local response = {
+			versionString = "HTTP/1.1",
+			statusCode = 200,
+			statusText = "OK",
+			headers = {},
+			body = "Hello world!",
+		}
+		serverSocket:SendHttpResponse(clientSocket, response)
 	end
 
 	function server.TCP_WRITE_SUCCEEDED()
