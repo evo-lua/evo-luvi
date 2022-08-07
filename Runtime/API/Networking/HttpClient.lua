@@ -34,7 +34,7 @@ end
 
 function HttpClient:SendHttpRequest(request)
 	print("SendHttpRequest", request)
-	-- TODO
+	self:Send(request:ToString())
 end
 
 HttpClient.__call = HttpClient.Construct

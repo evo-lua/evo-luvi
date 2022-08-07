@@ -46,7 +46,7 @@ function scenario:OnRun()
 			},
 			body = {},
 		}
-		client:SendHttpRequest(websocketsUpgradeRequest)
+		client:SendHttpRequest(C_Networking.HttpRequest(websocketsUpgradeRequest))
 		hasClientSentMessageToServer = true
 	end
 
