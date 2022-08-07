@@ -40,7 +40,7 @@ describe("HttpRequest", function()
 		end)
 	end)
 
-	describe("__tostring", function()
+	describe("ToString", function()
 		it("should return the equivalent string representation for the given request object", function()
 			local websocketsUpgradeRequest = {
 				method = "GET",
@@ -56,7 +56,7 @@ describe("HttpRequest", function()
 				body = {},
 			}
 			local request = C_Networking.HttpRequest(websocketsUpgradeRequest)
-			local requestString = request.__tostring()
+			local requestString = request:ToString()
 
 			local expectedRequestString =
 				"GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
