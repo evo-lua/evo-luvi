@@ -47,7 +47,7 @@ describe("HttpRequest", function()
 	end)
 
 	describe("ToString", function()
-		it("should return the equivalent string representation for the given request object", function()
+		it("should return the equivalent string representation for a given request object", function()
 			local request = C_Networking.HttpRequest(websocketsUpgradeRequest)
 			local requestString = request:ToString()
 
