@@ -26,7 +26,7 @@ end
 
 function HttpServer:Construct(creationOptions)
 	local instance = TcpServer(creationOptions)
-	setmetatable(instance, HttpServer)
+	setmetatable(instance, self)
 	dump(instance)
 	return instance
 end

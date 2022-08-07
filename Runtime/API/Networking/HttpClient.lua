@@ -28,11 +28,11 @@ function HttpClient:Construct(hostName, port)
 	print("HTTP CLIENT", hostName, port)
 	local instance = TcpClient(hostName, port)
 	dump(instance)
-	setmetatable(instance, HttpClient)
+	setmetatable(instance, self)
 	return instance
 end
 
-HttpClient.__call = HttpClient.HttpClient
+HttpClient.__call = HttpClient.Construct
 setmetatable(HttpClient, HttpClient)
 
 function HttpClient:HTTP_REQUESTED_SENT()
