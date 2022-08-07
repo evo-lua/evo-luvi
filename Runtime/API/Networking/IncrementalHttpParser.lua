@@ -199,18 +199,18 @@ function IncrementalHttpParser:Reset()
 end
 
 function IncrementalHttpParser:Execute(chunk)
-	DEBUG("Executing parser on chunk", chunk)
+	-- DEBUG("Executing parser on chunk", chunk)
 
-	local errNo = bindings.llhttp_execute(self.state, chunk, #chunk)
-	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
-		return
-	elseif tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
-		DEBUG("Expecting upgrade")
-		self:OnUpgrade()
-	else
-		local errorMessage = bindings.llhttp_errno_name(errNo)
-		self:OnError(ffi_string(errorMessage))
-	end
+	-- local errNo = bindings.llhttp_execute(self.state, chunk, #chunk)
+	-- if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
+	-- 	return
+	-- elseif tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
+	-- 	DEBUG("Expecting upgrade")
+	-- 	self:OnUpgrade()
+	-- else
+	-- 	local errorMessage = bindings.llhttp_errno_name(errNo)
+	-- 	self:OnError(ffi_string(errorMessage))
+	-- end
 end
 
 function IncrementalHttpParser:OnURL(requestedURL)
