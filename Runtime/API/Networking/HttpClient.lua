@@ -32,6 +32,11 @@ function HttpClient:Construct(hostName, port)
 	return instance
 end
 
+function HttpClient:SendHttpRequest(request)
+	print("SendHttpRequest", request)
+	-- TODO
+end
+
 HttpClient.__call = HttpClient.Construct
 setmetatable(HttpClient, HttpClient)
 
