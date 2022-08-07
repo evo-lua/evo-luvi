@@ -28,7 +28,6 @@ function scenario:OnRun()
 	local client = self.client
 
 	function client.TCP_CONNECTION_ESTABLISHED()
-		-- "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
 		local websocketsUpgradeRequest = {
 			method = "GET",
 			requestedURL = "/chat",
@@ -53,7 +52,9 @@ function scenario:OnRun()
 		assertEquals(response.statusCode, 200)
 		assertEquals(response.statusText, "OK")
 		assertEquals(response.versionString, "HTTP/1.1")
+
 		hasClientReceivedEchoMessage = true
+
 		-- The echo test is over, so we can continue with the report
 		coroutine.resume(currentThread)
 	end
