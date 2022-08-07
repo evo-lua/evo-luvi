@@ -39,9 +39,9 @@ function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
 	DEBUG("[HttpServer] HTTP_REQUEST_RECEIVED triggered", self:GetClientInfo(client), request)
 end
 
-function HttpServer:HTTP_RESPONSE_SENT(client, response)
-	DEBUG("[HttpServer] HTTP_RESPONSE_SENT triggered", self:GetClientInfo(client), response)
-end
+-- function HttpServer:HTTP_RESPONSE_SENT(client, response)
+-- 	DEBUG("[HttpServer] HTTP_RESPONSE_SENT triggered", self:GetClientInfo(client), response)
+-- end
 
 function HttpServer:HTTP_CONNECTION_UPGRADED(client)
 	DEBUG("[HttpServer] HTTP_CONNECTION_UPGRADED triggered", self:GetClientInfo(client))

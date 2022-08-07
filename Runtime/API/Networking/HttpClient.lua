@@ -40,12 +40,16 @@ end
 HttpClient.__call = HttpClient.Construct
 setmetatable(HttpClient, HttpClient)
 
-function HttpClient:HTTP_REQUESTED_SENT()
-	DEBUG("[HttpClient] HTTP_REQUESTED_SENT triggered")
-end
+-- function HttpClient:HTTP_REQUEST_SENT()
+-- 	DEBUG("[HttpClient] HTTP_REQUEST_SENT triggered")
+-- end
 
 function HttpClient:HTTP_RESPONSE_RECEIVED()
 	DEBUG("[HttpClient] HTTP_RESPONSE_RECEIVED triggered")
+end
+
+function HttpClient:HTTP_CONNECTION_UPGRADED()
+	DEBUG("[HttpClient] HTTP_CONNECTION_UPGRADED triggered")
 end
 
 return HttpClient
