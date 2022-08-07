@@ -1,4 +1,23 @@
 describe("HttpRequest", function()
+	local websocketsUpgradeRequest = {
+		method = "GET",
+		requestedURL = "/chat",
+		versionString = "HTTP/1.1",
+		headers = {
+			["Host"] = "example.com:8000",
+			["Upgrade"] = "websocket",
+			["Connection"] = "Upgrade",
+			["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
+			["Sec-WebSocket-Version"] = "13",
+			[1] = "Host",
+			[2] = "Upgrade",
+			[3] = "Connection",
+			[4] = "Sec-WebSocket-Key",
+			[5] = "Sec-WebSocket-Version",
+		},
+		body = {},
+	}
+
 	describe("Construct", function()
 		it("should initialize a default request object when no parameters were passed", function()
 			local request = C_Networking.HttpRequest()
@@ -10,19 +29,6 @@ describe("HttpRequest", function()
 		end)
 
 		it("should store the given request parameters if a table parameter was passed", function()
-			local websocketsUpgradeRequest = {
-				method = "GET",
-				requestedURL = "/chat",
-				versionString = "HTTP/1.1",
-				headers = {
-					["Host"] = "example.com:8000",
-					["Upgrade"] = "websocket",
-					["Connection"] = "Upgrade",
-					["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
-					["Sec-WebSocket-Version"] = "13",
-				},
-				body = "",
-			}
 			local request = C_Networking.HttpRequest(websocketsUpgradeRequest)
 
 			assertEquals(request.method, websocketsUpgradeRequest.method)
@@ -42,19 +48,6 @@ describe("HttpRequest", function()
 
 	describe("ToString", function()
 		it("should return the equivalent string representation for the given request object", function()
-			local websocketsUpgradeRequest = {
-				method = "GET",
-				requestedURL = "/chat",
-				versionString = "HTTP/1.1",
-				headers = {
-					["Host"] = "example.com:8000",
-					["Upgrade"] = "websocket",
-					["Connection"] = "Upgrade",
-					["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
-					["Sec-WebSocket-Version"] = "13",
-				},
-				body = {},
-			}
 			local request = C_Networking.HttpRequest(websocketsUpgradeRequest)
 			local requestString = request:ToString()
 

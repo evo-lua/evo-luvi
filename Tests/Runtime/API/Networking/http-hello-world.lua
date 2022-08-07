@@ -38,6 +38,11 @@ function scenario:OnRun()
 				["Connection"] = "Upgrade",
 				["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
 				["Sec-WebSocket-Version"] = "13",
+				[1] = "Host",
+				[2] = "Upgrade",
+				[3] = "Connection",
+				[4] = "Sec-WebSocket-Key",
+				[5] = "Sec-WebSocket-Version",
 			},
 			body = {},
 		}
@@ -72,6 +77,11 @@ function scenario:OnRun()
 		assertEquals(request.headers["Connection"], "Upgrade")
 		assertEquals(request.headers["Sec-WebSocket-Key"], "dGhlIHNhbXBsZSBub25jZQ")
 		assertEquals(request.headers["Sec-WebSocket-Version"], "13")
+		assertEquals(request.headers[1], "Host")
+		assertEquals(request.headers[2], "Upgrade")
+		assertEquals(request.headers[3], "Connection")
+		assertEquals(request.headers[4], "Sec-WebSocket-Key")
+		assertEquals(request.headers[5], "Sec-WebSocket-Version")
 
 		hasServerReceivedMessage = true
 

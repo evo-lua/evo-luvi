@@ -1,10 +1,10 @@
-local pairs = pairs
+local ipairs = ipairs
 local setmetatable = setmetatable
 local table_concat = table.concat
 
 local HttpRequest = {}
 
-function HttpRequest:Constructor(requestObject)
+function HttpRequest:Construct(requestObject)
 	requestObject = requestObject
 		or {
 			method = "GET",
@@ -19,7 +19,7 @@ function HttpRequest:Constructor(requestObject)
 	return requestObject
 end
 
-HttpRequest.__call = HttpRequest.Constructor
+HttpRequest.__call = HttpRequest.Construct
 HttpRequest.__index = HttpRequest
 
 function HttpRequest:ToString()
@@ -29,16 +29,18 @@ function HttpRequest:ToString()
 
 	tokens[#tokens + 1] = statusLine
 
-	for key, value in pairs(self.headers) do
-		tokens[#tokens + 1] = key .. ": " .. value
+	for index, fieldName in ipairs(self.headers) do
+		-- The headers are split into a simple dictionary (for fast lookups) and a map to maintain the order of arrival (for serialization)
+		tokens[#tokens + 1] = fieldName .. ": " .. self.headers[fieldName]
 	end
 
 	if #self.body > 0 then
-		tokens[#tokens + 1] = "\r\n" -- Separate headers and body
 		tokens[#tokens + 1] = self.body
 	end
-	local requestString = table_concat(tokens, "\r\n")
 
+	tokens[#tokens + 1] = "\r\n" -- Signals EOF
+
+	local requestString = table_concat(tokens, "\r\n")
 	return requestString
 end
 
