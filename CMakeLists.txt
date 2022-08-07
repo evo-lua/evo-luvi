@@ -175,6 +175,7 @@ lua_add_executable(luvi
   Runtime/LuaEnvironment/primitives.lua
   Runtime/LuaEnvironment/primitives/aliases.lua
   Runtime/LuaEnvironment/primitives/dump.lua
+  Runtime/LuaEnvironment/primitives/extend.lua
   Runtime/LuaEnvironment/primitives/v8_string.lua
   Runtime/LuaEnvironment/primitives/logging.lua
   Runtime/LuaEnvironment/primitives/virtual_file_system.lua
@@ -200,6 +201,8 @@ lua_add_executable(luvi
   Runtime/API/Networking/TcpSocket.lua
   Runtime/API/Networking/TcpClient.lua
   Runtime/API/Networking/TcpServer.lua
+  Runtime/API/Networking/HttpClient.lua
+  Runtime/API/Networking/HttpServer.lua
   Runtime/API/Networking/C_Networking.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}

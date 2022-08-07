@@ -50,6 +50,7 @@ globals = {
 	"EMERGENCY",
 
 	-- Nonstandard extensions
+	"extend",
 	"import",
 	"mixin",
 	"path",
