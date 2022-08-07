@@ -6,7 +6,7 @@ describe("HttpRequest", function()
 			assertEquals(request.requestedURL, "/")
 			assertEquals(request.versionString, "HTTP/1.1")
 			assertEquals(request.headers, {})
-			assertEquals(request.body, {})
+			assertEquals(request.body, "")
 		end)
 
 		it("should store the given request parameters if a table parameter was passed", function()
@@ -21,7 +21,7 @@ describe("HttpRequest", function()
 					["Sec-WebSocket-Key"] = "dGhlIHNhbXBsZSBub25jZQ==",
 					["Sec-WebSocket-Version"] = "13",
 				},
-				body = {},
+				body = "",
 			}
 			local request = C_Networking.HttpRequest(websocketsUpgradeRequest)
 

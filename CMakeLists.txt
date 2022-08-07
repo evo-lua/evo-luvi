@@ -203,6 +203,8 @@ lua_add_executable(luvi
   Runtime/API/Networking/TcpServer.lua
   Runtime/API/Networking/HttpClient.lua
   Runtime/API/Networking/HttpServer.lua
+  Runtime/API/Networking/HttpRequest.lua
+  Runtime/API/Networking/HttpResponse.lua
   Runtime/API/Networking/C_Networking.lua
   Runtime/API/Testing/C_Testing.lua
   ${lpeg_re_lua}
