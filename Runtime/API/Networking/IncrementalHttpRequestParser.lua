@@ -33,10 +33,13 @@ local IncrementalHttpRequestParser = {
 	},
 }
 
+local HttpRequest = require("HttpRequest")
+
 function IncrementalHttpRequestParser:Construct()
 	local instance = {
 		state = ffi_new("llhttp_t"),
 		settings = ffi_new("llhttp_settings_t"),
+		currentRequest = HttpRequest(),
 	}
 
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
@@ -46,7 +49,19 @@ function IncrementalHttpRequestParser:Construct()
 	return instance
 end
 
-IncrementalHttpRequestParser.__index = IncrementalHttpRequestParser
+local rawget = rawget
+
+function IncrementalHttpRequestParser.__index(target, key)
+	if rawget(IncrementalHttpRequestParser, key) ~= nil then
+		return IncrementalHttpRequestParser[key]
+	end
+	return rawget(target, key)
+end
+
+function IncrementalHttpRequestParser:GetCurrentRequest()
+	return self.currentRequest
+end
+
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
 setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
