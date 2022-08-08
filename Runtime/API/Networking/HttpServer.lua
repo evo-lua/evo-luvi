@@ -92,24 +92,89 @@ end
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
 
+local IncrementalHttpRequestParser = {
+	-- Signature: parserState : llhttp_t (the other arguments are useless)
+	INFO_CALLBACKS = {
+		on_message_begin = "TEST_EVENT",
+		on_headers_complete = "TEST_EVENT",
+		on_chunk_header = "TEST_EVENT",
+		on_chunk_complete = "TEST_EVENT",
+		on_url_complete = "TEST_EVENT",
+		on_status_complete = "TEST_EVENT",
+		on_header_field_complete = "TEST_EVENT",
+		on_header_value_complete = "TEST_EVENT",
+	},
+	-- Signature: parserState : llhttp_t, stringPointer, stringLengthInBytes
+	DATA_CALLBACKS = {
+		on_url = "TEST_EVENT",
+		on_status = "TEST_EVENT",
+		on_header_field = "TEST_EVENT",
+		on_header_value = "TEST_EVENT",
+		on_body = "TEST_EVENT",
+	},
+}
+
+function IncrementalHttpRequestParser:Construct()
+	local instance = {
+		state = ffi_new("llhttp_t"),
+		settings = ffi_new("llhttp_settings_t"),
+	}
+
+	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
+
+	setmetatable(instance, self)
+
+	return instance
+end
+
+function IncrementalHttpRequestParser:RegisterInfoCallbacks(server) end
+
+function IncrementalHttpRequestParser:RegisterDataCallbacks(server) end
+
+IncrementalHttpRequestParser.__index = IncrementalHttpRequestParser
+IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
+setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
+
+local pairs = pairs
+
+-- TODO Replace with llhttp events
+function HttpServer:TEST_EVENT(client, parsedString)
+	DEBUG("[HttpServer] TEST_EVENT triggered", self:GetClientInfo(client), parsedString)
+end
+
+function HttpServer:RegisterParserCallbacks(client)
+	local parser = self.httpParsers[client]
+
+	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
+	for callbackName, eventID in pairs(parser.INFO_CALLBACKS) do
+		local function infoCallbackHandler(parserState)
+			self[eventID](self, client)
+			return llhttp.ERROR_TYPES.HPE_OK
+		end
+		parser.settings[callbackName] = infoCallbackHandler
+	end
+
+	for callbackName, eventID in pairs(parser.DATA_CALLBACKS) do
+		local function dataCallbackHandler(parserState, stringPointer, stringLengthInBytes)
+			local parsedString = ffi_string(stringPointer, stringLengthInBytes)
+			self[eventID](self, client, parsedString)
+			return llhttp.ERROR_TYPES.HPE_OK
+		end
+		parser.settings[callbackName] = dataCallbackHandler
+	end
+end
+
+function HttpServer:InitializeRequestParser(client)
+	local requestParser = IncrementalHttpRequestParser()
+	self.httpParsers[client] = requestParser
+
+	self:RegisterParserCallbacks(client)
+end
+
 function HttpServer:TCP_CLIENT_CONNECTED(client)
 	DEBUG("[HttpServer] TCP_CLIENT_CONNECTED triggered", self:GetClientInfo(client))
-	-- InitializeIncrementalHttpParser(client)
-	local parserState = ffi_new("llhttp_t")
-	local settings = ffi_new("llhttp_settings_t")
-	-- TODO register callback
 
-	-- RegisterParserCallbacks
-		-- RegisterInfoCallbacks
-		-- RegisterDataCallbacks
-	settings.on_message_complete = function(parser)
-		self:HTTP_MESSAGE_RECEIVED(client, parser)
-		return llhttp.ERROR_TYPES.HPE_OK
-	end
-	-- TODO  hook into events
-
-	llhttp_init(parserState, llhttp.PARSER_TYPES.HTTP_BOTH, settings)
-	self.httpParsers[client] = parserState -- IncrementalHttpParser()
+	self:InitializeRequestParser(client)
 end
 
 -- TODO call finish if client sends EOF
@@ -117,7 +182,7 @@ end
 function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 	DEBUG("[HttpServer] TCP_CHUNK_RECEIVED triggered", self:GetClientInfo(client), chunk)
 
-	local parser = self.httpParsers[client]
+	local parser = self.httpParsers[client] -- TODO
 
 	DEBUG("Executing llhttp parser on chunk", chunk)
 
