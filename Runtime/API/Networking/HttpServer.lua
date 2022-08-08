@@ -92,27 +92,68 @@ end
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
 
+function HttpServer:HTTP_MESSAGE_BEGIN(client)
+	DEBUG("[HttpServer] HTTP_MESSAGE_START triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADERS_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADERS_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_CHUNK_HEADER(client)
+	DEBUG("[HttpServer] HTTP_CHUNK_HEADER triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_CHUNK_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_CHUNK_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_URL_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_URL_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_STATUS_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_STATUS_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADER_FIELD_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADER_FIELD_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADER_VALUE_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADER_VALUE_COMPLETE triggered", self:GetClientInfo(client))
+end
+
 local IncrementalHttpRequestParser = {
 	-- Signature: parserState : llhttp_t (the other arguments are useless)
 	INFO_CALLBACKS = {
-		on_message_begin = "TEST_EVENT",
-		on_headers_complete = "TEST_EVENT",
-		on_chunk_header = "TEST_EVENT",
-		on_chunk_complete = "TEST_EVENT",
-		on_url_complete = "TEST_EVENT",
-		on_status_complete = "TEST_EVENT",
-		on_header_field_complete = "TEST_EVENT",
-		on_header_value_complete = "TEST_EVENT",
+		on_message_begin = "HTTP_MESSAGE_BEGIN",
+		on_headers_complete = "HTTP_HEADERS_COMPLETE",
+		on_chunk_header = "HTTP_CHUNK_HEADER",
+		on_chunk_complete = "HTTP_CHUNK_COMPLETE",
+		on_url_complete = "HTTP_URL_COMPLETE",
+		on_status_complete = "HTTP_STATUS_COMPLETE",
+		on_header_field_complete = "HTTP_HEADER_FIELD_COMPLETE",
+		on_header_value_complete = "HTTP_HEADER_VALUE_COMPLETE",
 	},
 	-- Signature: parserState : llhttp_t, stringPointer, stringLengthInBytes
 	DATA_CALLBACKS = {
-		on_url = "TEST_EVENT",
-		on_status = "TEST_EVENT",
-		on_header_field = "TEST_EVENT",
-		on_header_value = "TEST_EVENT",
-		on_body = "TEST_EVENT",
+		on_url = "HTTP_URL",
+		on_status = "HTTP_STATUS",
+		on_header_field = "HTTP_HEADER_FIELD",
+		on_header_value = "HTTP_HEADER_VALUE",
+		on_body = "HTTP_BODY",
 	},
 }
+
+function HttpServer:HTTP_URL(client, parsedString)
+	DEBUG("[HttpServer] HTTP_URL triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_STATUS(client, parsedString)
+	DEBUG("[HttpServer] HTTP_STATUS triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_HEADER_FIELD(client, parsedString)
+	DEBUG("[HttpServer] HTTP_HEADER_FIELD triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_HEADER_VALUE(client, parsedString)
+	DEBUG("[HttpServer] HTTP_HEADER_VALUE triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_BODY(client, parsedString)
+	DEBUG("[HttpServer] HTTP_BODY triggered", self:GetClientInfo(client), parsedString)
+end
 
 function IncrementalHttpRequestParser:Construct()
 	local instance = {
@@ -136,11 +177,6 @@ IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
 setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
 local pairs = pairs
-
--- TODO Replace with llhttp events
-function HttpServer:TEST_EVENT(client, parsedString)
-	DEBUG("[HttpServer] TEST_EVENT triggered", self:GetClientInfo(client), parsedString)
-end
 
 function HttpServer:RegisterParserCallbacks(client)
 	local parser = self.httpParsers[client]
