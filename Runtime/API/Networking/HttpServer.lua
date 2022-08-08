@@ -56,6 +56,7 @@ local function llhttpParserState__toHttpMessage(parser)
 		finish = tonumber(parser.finish),
 		flags = tonumber(parser.flags),
 		status_code = tonumber(parser.status_code),
+		data = tostring(parser.data),
 	}
 	return message
 end
@@ -93,10 +94,14 @@ setmetatable(HttpServer, HttpServer)
 
 function HttpServer:TCP_CLIENT_CONNECTED(client)
 	DEBUG("[HttpServer] TCP_CLIENT_CONNECTED triggered", self:GetClientInfo(client))
-	-- TODO create parser when client connects,
+	-- InitializeIncrementalHttpParser(client)
 	local parserState = ffi_new("llhttp_t")
 	local settings = ffi_new("llhttp_settings_t")
 	-- TODO register callback
+
+	-- RegisterParserCallbacks
+		-- RegisterInfoCallbacks
+		-- RegisterDataCallbacks
 	settings.on_message_complete = function(parser)
 		self:HTTP_MESSAGE_RECEIVED(client, parser)
 		return llhttp.ERROR_TYPES.HPE_OK
