@@ -21,7 +21,6 @@ local websocketsUpgradeRequest = {
 }
 
 describe("IncrementalHttpRequestParser", function()
-
 	local defaultRequest = HttpRequest()
 	describe("Construct", function()
 		local parser = IncrementalHttpRequestParser()
@@ -42,7 +41,7 @@ describe("IncrementalHttpRequestParser", function()
 		it("should update the cached request if a valid HTTP message was parsed in multiple chunks", function()
 			local websocketsRequestStrings = {
 				"GET /chat HTTP/1.1\r\n",
-				"Host: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
+				"Host: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
 			}
 
 			local incompleteRequest = HttpRequest()
@@ -57,9 +56,7 @@ describe("IncrementalHttpRequestParser", function()
 		end)
 	end)
 
-	describe("GetCachedRequest", function()
-
-	end)
+	describe("GetCachedRequest", function() end)
 
 	describe("ResetInternalState", function()
 		local parser = IncrementalHttpRequestParser()

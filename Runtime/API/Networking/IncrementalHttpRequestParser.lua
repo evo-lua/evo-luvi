@@ -62,6 +62,14 @@ function IncrementalHttpRequestParser:GetCachedRequest()
 	return self.cachedRequest
 end
 
+function IncrementalHttpRequestParser:ParseNextChunk(chunk)
+	-- TODO
+end
+
+function IncrementalHttpRequestParser:ResetInternalState()
+	-- TODO
+end
+
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
 setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
