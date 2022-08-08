@@ -100,10 +100,10 @@ function IncrementalHttpParser:Construct()
 	end
 
 	-- Possible return values 0, -1, HPE_PAUSED
-	settings.on_message_complete = function(parserState)
-		instance:OnMessageComplete()
-		return llhttp.ERROR_TYPES.HPE_OK
-	end
+	-- settings.on_message_complete = function(parserState)
+	-- 	instance:OnMessageComplete()
+	-- 	return llhttp.ERROR_TYPES.HPE_OK
+	-- end
 
 	-- When on_chunk_header is called, the current chunk length is stored in parser->content_length.
 	-- Possible return values 0, -1, `HPE_PAUSED`

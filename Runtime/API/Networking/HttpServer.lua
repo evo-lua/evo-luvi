@@ -43,6 +43,7 @@ local llhttp = require("llhttp")
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
 local llhttp_init = llhttp.bindings.llhttp_init
+local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 
 local ffi = require("ffi")
 local ffi_new = ffi.new
@@ -54,6 +55,10 @@ function HttpServer:TCP_CLIENT_CONNECTED(client)
 	local parserState = ffi_new("llhttp_t")
 	local settings = ffi_new("llhttp_settings_t")
 	-- TODO register callback
+	settings.on_message_complete = function(parser)
+		self:HTTP_MESSAGE_RECEIVED(client, parser)
+		return llhttp.ERROR_TYPES.HPE_OK
+	end
 	-- TODO  hook into events
 
 	llhttp_init(parserState, llhttp.PARSER_TYPES.HTTP_BOTH, settings)
@@ -69,8 +74,14 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 
 	DEBUG("Executing llhttp parser on chunk", chunk)
 
-	local errNo = llhttp_execute(parser, chunk, #chunk)
+	local errNo = llhttp_execute(parser, chunk, #chunk) -- TODO Request mode
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
+		-- check if llhttp_message_needs_eof, then call finish?
+		if llhttp_message_needs_eof(parser) then
+			DEBUG("Message needs EOF")
+		end
+		-- llhttp_should_keep_alive?
+		-- llhttp_finish -> invokes message completed cb
 		return
 	elseif tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
 		DEBUG("Expecting HTTP upgrade")
@@ -98,6 +109,11 @@ function HttpServer:OnParserError(client, errorMessage)
 end
 
 -- Customizable event handlers: These should be overwritten as needed
+function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
+	-- TODO request, response, extract message
+	DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
+end
+
 function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
 	DEBUG("[HttpServer] HTTP_REQUEST_RECEIVED triggered", self:GetClientInfo(client), request)
 end
