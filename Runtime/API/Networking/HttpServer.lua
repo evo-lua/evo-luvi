@@ -15,6 +15,7 @@ local setmetatable = setmetatable
 
 local TcpSocket = require("TcpSocket")
 local TcpServer = require("TcpServer")
+local IncrementalHttpRequestParser = require("IncrementalHttpRequestParser")
 
 local HttpServer = {}
 
@@ -91,90 +92,6 @@ end
 
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
-
-function HttpServer:HTTP_MESSAGE_BEGIN(client)
-	DEBUG("[HttpServer] HTTP_MESSAGE_START triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADERS_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADERS_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_CHUNK_HEADER(client)
-	DEBUG("[HttpServer] HTTP_CHUNK_HEADER triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_CHUNK_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_CHUNK_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_URL_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_URL_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_STATUS_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_STATUS_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADER_FIELD_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADER_FIELD_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADER_VALUE_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADER_VALUE_COMPLETE triggered", self:GetClientInfo(client))
-end
-
-local IncrementalHttpRequestParser = {
-	-- Signature: parserState : llhttp_t (the other arguments are useless)
-	INFO_CALLBACKS = {
-		on_message_begin = "HTTP_MESSAGE_BEGIN",
-		on_headers_complete = "HTTP_HEADERS_COMPLETE",
-		on_chunk_header = "HTTP_CHUNK_HEADER",
-		on_chunk_complete = "HTTP_CHUNK_COMPLETE",
-		on_url_complete = "HTTP_URL_COMPLETE",
-		on_status_complete = "HTTP_STATUS_COMPLETE",
-		on_header_field_complete = "HTTP_HEADER_FIELD_COMPLETE",
-		on_header_value_complete = "HTTP_HEADER_VALUE_COMPLETE",
-	},
-	-- Signature: parserState : llhttp_t, stringPointer, stringLengthInBytes
-	DATA_CALLBACKS = {
-		on_url = "HTTP_URL",
-		on_status = "HTTP_STATUS",
-		on_header_field = "HTTP_HEADER_FIELD",
-		on_header_value = "HTTP_HEADER_VALUE",
-		on_body = "HTTP_BODY",
-	},
-}
-
-function HttpServer:HTTP_URL(client, parsedString)
-	DEBUG("[HttpServer] HTTP_URL triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_STATUS(client, parsedString)
-	DEBUG("[HttpServer] HTTP_STATUS triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_HEADER_FIELD(client, parsedString)
-	DEBUG("[HttpServer] HTTP_HEADER_FIELD triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_HEADER_VALUE(client, parsedString)
-	DEBUG("[HttpServer] HTTP_HEADER_VALUE triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_BODY(client, parsedString)
-	DEBUG("[HttpServer] HTTP_BODY triggered", self:GetClientInfo(client), parsedString)
-end
-
-function IncrementalHttpRequestParser:Construct()
-	local instance = {
-		state = ffi_new("llhttp_t"),
-		settings = ffi_new("llhttp_settings_t"),
-	}
-
-	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
-
-	setmetatable(instance, self)
-
-	return instance
-end
-
-function IncrementalHttpRequestParser:RegisterInfoCallbacks(server) end
-
-function IncrementalHttpRequestParser:RegisterDataCallbacks(server) end
-
-IncrementalHttpRequestParser.__index = IncrementalHttpRequestParser
-IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
-setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
 local pairs = pairs
 
@@ -268,12 +185,53 @@ function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
 	DEBUG("[HttpServer] HTTP_REQUEST_RECEIVED triggered", self:GetClientInfo(client), request)
 end
 
--- function HttpServer:HTTP_RESPONSE_SENT(client, response)
--- 	DEBUG("[HttpServer] HTTP_RESPONSE_SENT triggered", self:GetClientInfo(client), response)
--- end
-
 function HttpServer:HTTP_CONNECTION_UPGRADED(client)
 	DEBUG("[HttpServer] HTTP_CONNECTION_UPGRADED triggered", self:GetClientInfo(client))
+end
+
+-- TODO Move request parsing logic to the parser class
+
+-- llhttp info callbacks
+function HttpServer:HTTP_MESSAGE_BEGIN(client)
+	DEBUG("[HttpServer] HTTP_MESSAGE_START triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADERS_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADERS_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_CHUNK_HEADER(client)
+	DEBUG("[HttpServer] HTTP_CHUNK_HEADER triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_CHUNK_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_CHUNK_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_URL_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_URL_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_STATUS_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_STATUS_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADER_FIELD_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADER_FIELD_COMPLETE triggered", self:GetClientInfo(client))
+end
+function HttpServer:HTTP_HEADER_VALUE_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_HEADER_VALUE_COMPLETE triggered", self:GetClientInfo(client))
+end
+
+-- llhttp data callbacks
+function HttpServer:HTTP_URL(client, parsedString)
+	DEBUG("[HttpServer] HTTP_URL triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_STATUS(client, parsedString)
+	DEBUG("[HttpServer] HTTP_STATUS triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_HEADER_FIELD(client, parsedString)
+	DEBUG("[HttpServer] HTTP_HEADER_FIELD triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_HEADER_VALUE(client, parsedString)
+	DEBUG("[HttpServer] HTTP_HEADER_VALUE triggered", self:GetClientInfo(client), parsedString)
+end
+function HttpServer:HTTP_BODY(client, parsedString)
+	DEBUG("[HttpServer] HTTP_BODY triggered", self:GetClientInfo(client), parsedString)
 end
 
 return HttpServer

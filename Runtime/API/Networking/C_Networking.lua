@@ -7,6 +7,7 @@ local C_Networking = {
 	HttpClient = require("HttpClient"),
 	HttpRequest = require("HttpRequest"),
 	HttpResponse = require("HttpResponse"),
+	IncrementalHttpRequestParser = require("IncrementalHttpRequestParser"),
 	AsyncHandleMixin = require("AsyncHandleMixin"),
 	AsyncStreamMixin = require("AsyncStreamMixin"),
 	AsyncSocketMixin = require("AsyncSocketMixin"),
