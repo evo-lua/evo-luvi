@@ -21,16 +21,12 @@ local TcpServer = {
 }
 
 function TcpServer.__index(target, key)
-	print("TcpServer", target, key)
 	if rawget(TcpServer, key) ~= nil then
-		print("TcpServer")
 		return TcpServer[key]
 	end
 	if TcpSocket[key] ~= nil then
-		print("TcpSocket")
 		return TcpSocket[key]
 	end
-	print("rawget")
 	return rawget(target, key)
 end
 

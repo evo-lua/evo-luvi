@@ -63,20 +63,15 @@ local function llhttpParserState__toHttpMessage(parser)
 end
 
 function HttpServer.__index(target, key)
-	print("HttpServer", target, key)
 	if rawget(HttpServer, key) ~= nil then
-		print("HttpServer")
 		return HttpServer[key]
 	end
 	if TcpServer[key] ~= nil then
-		print("TcpServer")
 		return TcpServer[key]
 	end
 	if TcpSocket[key] ~= nil then
-		print("TcpSocket")
 		return TcpSocket[key]
 	end
-	print("rawget")
 	return rawget(target, key)
 end
 
