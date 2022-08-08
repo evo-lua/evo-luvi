@@ -174,7 +174,7 @@ function HttpServer:OnParserError(client, errorMessage)
 end
 
 -- Customizable event handlers: These should be overwritten as needed
-function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
+function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser) -- TODO unused?
 	-- TODO request, response, extract message
 	DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
 	local message = llhttpParserState__toHttpMessage(parser)
