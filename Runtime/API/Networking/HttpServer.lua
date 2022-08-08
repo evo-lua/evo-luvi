@@ -188,7 +188,7 @@ end
 
 -- llhttp info callbacks
 function HttpServer:HTTP_MESSAGE_BEGIN(client)
-	DEBUG("[HttpServer] HTTP_MESSAGE_START triggered", self:GetClientInfo(client))
+	DEBUG("[HttpServer] HTTP_MESSAGE_BEGIN triggered", self:GetClientInfo(client))
 end
 function HttpServer:HTTP_HEADERS_COMPLETE(client)
 	DEBUG("[HttpServer] HTTP_HEADERS_COMPLETE triggered", self:GetClientInfo(client))
@@ -210,6 +210,10 @@ function HttpServer:HTTP_HEADER_FIELD_COMPLETE(client)
 end
 function HttpServer:HTTP_HEADER_VALUE_COMPLETE(client)
 	DEBUG("[HttpServer] HTTP_HEADER_VALUE_COMPLETE triggered", self:GetClientInfo(client))
+end
+
+function HttpServer:HTTP_MESSAGE_COMPLETE(client)
+	DEBUG("[HttpServer] HTTP_MESSAGE_COMPLETE triggered", self:GetClientInfo(client))
 end
 
 -- llhttp data callbacks

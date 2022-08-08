@@ -21,6 +21,7 @@ local IncrementalHttpRequestParser = {
 		on_status_complete = "HTTP_STATUS_COMPLETE",
 		on_header_field_complete = "HTTP_HEADER_FIELD_COMPLETE",
 		on_header_value_complete = "HTTP_HEADER_VALUE_COMPLETE",
+		on_message_complete = "HTTP_MESSAGE_COMPLETE",
 	},
 	-- Signature: parserState : llhttp_t, stringPointer, stringLengthInBytes
 	DATA_CALLBACKS = {
@@ -44,10 +45,6 @@ function IncrementalHttpRequestParser:Construct()
 
 	return instance
 end
-
-function IncrementalHttpRequestParser:RegisterInfoCallbacks(server) end
-
-function IncrementalHttpRequestParser:RegisterDataCallbacks(server) end
 
 IncrementalHttpRequestParser.__index = IncrementalHttpRequestParser
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
