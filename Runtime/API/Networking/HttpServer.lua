@@ -186,10 +186,10 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 
 	DEBUG("Executing llhttp parser on chunk", chunk)
 
-	local errNo = llhttp_execute(parser, chunk, #chunk) -- TODO Request mode
+	local errNo = llhttp_execute(parser.state, chunk, #chunk) -- TODO Request mode
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
 		-- check if llhttp_message_needs_eof, then call finish?
-		if llhttp_message_needs_eof(parser) then
+		if llhttp_message_needs_eof(parser.state) then
 			DEBUG("Message needs EOF")
 		end
 		-- llhttp_should_keep_alive?
