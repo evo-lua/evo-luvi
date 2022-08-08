@@ -3,13 +3,12 @@ local tonumber = tonumber
 local llhttp = require("llhttp")
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
-local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 
 local ffi = require("ffi")
-local ffi_new = ffi.new
 local ffi_string = ffi.string
 
+local pairs = pairs
 local rawget = rawget
 local setmetatable = setmetatable
 
@@ -20,28 +19,6 @@ local IncrementalHttpRequestParser = require("IncrementalHttpRequestParser")
 local HttpServer = {}
 
 local function llhttpParserState__toHttpMessage(parser)
-	-- struct llhttp__internal_s {
-	-- 	int32_t _index;
-	-- 	void* _span_pos0;
-	-- 	void* _span_cb0;
-	-- 	int32_t error;
-	-- 	const char* reason;
-	-- 	const char* error_pos;
-	-- 	void* data;
-	-- 	void* _current;
-	-- 	uint64_t content_length;
-	-- 	uint8_t type;
-	-- 	uint8_t method;
-	-- 	uint8_t http_major;
-	-- 	uint8_t http_minor;
-	-- 	uint8_t header_state;
-	-- 	uint8_t lenient_flags;
-	-- 	uint8_t upgrade;
-	-- 	uint8_t finish;
-	-- 	uint16_t flags;
-	-- 	uint16_t status_code;
-	-- 	void* settings;
-	-- };
 	local message = {
 		error = tonumber(parser.error),
 		reason = tostring(parser.reason),
@@ -81,14 +58,11 @@ function HttpServer:Construct(creationOptions)
 
 	instance.httpParsers = {}
 
-	dump(instance)
 	return instance
 end
 
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
-
-local pairs = pairs
 
 function HttpServer:RegisterParserCallbacks(client)
 	local parser = self.httpParsers[client]
@@ -130,26 +104,27 @@ end
 function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 	DEBUG("[HttpServer] TCP_CHUNK_RECEIVED triggered", self:GetClientInfo(client), chunk)
 
-	local parser = self.httpParsers[client] -- TODO
+	local parser = self.httpParsers[client]
 
 	DEBUG("Executing llhttp parser on chunk", chunk)
+	parser:ParseNextChunk(chunk)
 
-	local errNo = llhttp_execute(parser.state, chunk, #chunk) -- TODO Request mode
-	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
-		-- check if llhttp_message_needs_eof, then call finish?
-		if llhttp_message_needs_eof(parser.state) then
-			DEBUG("Message needs EOF")
-		end
-		-- llhttp_should_keep_alive?
-		-- llhttp_finish -> invokes message completed cb
-		return
-	elseif tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
-		DEBUG("Expecting HTTP upgrade")
-		self:OnUpgradeRequestReceived(client)
-	else
-		local errorMessage = llhttp_errno_name(errNo) -- TODO append parser.reason ?
-		self:OnParserError(client, ffi_string(errorMessage))
-	end
+	-- local errNo = llhttp_execute(parser.state, chunk, #chunk)
+	-- if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
+	-- 	-- check if llhttp_message_needs_eof, then call finish?
+	-- 	if llhttp_message_needs_eof(parser.state) then
+	-- 		DEBUG("Message needs EOF")
+	-- 	end
+	-- 	-- llhttp_should_keep_alive?
+	-- 	-- llhttp_finish -> invokes message completed cb
+	-- 	return
+	-- elseif tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
+	-- 	DEBUG("Expecting HTTP upgrade")
+	-- 	self:OnUpgradeRequestReceived(client)
+	-- else
+	-- 	local errorMessage = llhttp_errno_name(errNo) -- TODO append parser.reason ?
+	-- 	self:OnParserError(client, ffi_string(errorMessage))
+	-- end
 end
 
 function HttpServer:OnUpgradeRequestReceived(client)
