@@ -1,3 +1,15 @@
+local tonumber = tonumber
+
+local llhttp = require("llhttp")
+local llhttp_execute = llhttp.bindings.llhttp_execute
+local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
+local llhttp_init = llhttp.bindings.llhttp_init
+local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
+
+local ffi = require("ffi")
+local ffi_new = ffi.new
+local ffi_string = ffi.string
+
 local rawget = rawget
 local setmetatable = setmetatable
 
@@ -5,6 +17,48 @@ local TcpSocket = require("TcpSocket")
 local TcpServer = require("TcpServer")
 
 local HttpServer = {}
+
+local function llhttpParserState__toHttpMessage(parser)
+	-- struct llhttp__internal_s {
+	-- 	int32_t _index;
+	-- 	void* _span_pos0;
+	-- 	void* _span_cb0;
+	-- 	int32_t error;
+	-- 	const char* reason;
+	-- 	const char* error_pos;
+	-- 	void* data;
+	-- 	void* _current;
+	-- 	uint64_t content_length;
+	-- 	uint8_t type;
+	-- 	uint8_t method;
+	-- 	uint8_t http_major;
+	-- 	uint8_t http_minor;
+	-- 	uint8_t header_state;
+	-- 	uint8_t lenient_flags;
+	-- 	uint8_t upgrade;
+	-- 	uint8_t finish;
+	-- 	uint16_t flags;
+	-- 	uint16_t status_code;
+	-- 	void* settings;
+	-- };
+	local message = {
+		error = tonumber(parser.error),
+		reason = tostring(parser.reason),
+		error_pos = tostring(parser.error_pos),
+		content_length = tonumber(parser.content_length),
+		type = tonumber(parser.type),
+		method = tonumber(parser.method),
+		http_major = tonumber(parser.http_major),
+		http_minor = tonumber(parser.http_minor),
+		header_state = tonumber(parser.header_state),
+		lenient_flags = tonumber(parser.lenient_flags),
+		upgrade = tonumber(parser.upgrade),
+		finish = tonumber(parser.finish),
+		flags = tonumber(parser.flags),
+		status_code = tonumber(parser.status_code),
+	}
+	return message
+end
 
 function HttpServer.__index(target, key)
 	print("HttpServer", target, key)
@@ -36,18 +90,6 @@ end
 
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
-
-local tonumber = tonumber
-
-local llhttp = require("llhttp")
-local llhttp_execute = llhttp.bindings.llhttp_execute
-local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
-local llhttp_init = llhttp.bindings.llhttp_init
-local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
-
-local ffi = require("ffi")
-local ffi_new = ffi.new
-local ffi_string = ffi.string
 
 function HttpServer:TCP_CLIENT_CONNECTED(client)
 	DEBUG("[HttpServer] TCP_CLIENT_CONNECTED triggered", self:GetClientInfo(client))
@@ -112,6 +154,8 @@ end
 function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
 	-- TODO request, response, extract message
 	DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
+	local message = llhttpParserState__toHttpMessage(parser)
+	dump(message)
 end
 
 function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
