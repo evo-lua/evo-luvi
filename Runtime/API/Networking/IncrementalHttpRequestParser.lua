@@ -170,6 +170,9 @@ end
 function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
 	self.isBufferReady = true
+
+	local methodID = tonumber(self.state.method)
+	self.bufferedRequest.method = methodID -- TODO use reverse LUT (llhttp-ffi)
 end
 
 -- llhttp data callbacks
