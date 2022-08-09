@@ -1,3 +1,4 @@
+-- TODO use LuaJIT string buffers (benchmark)
 local ffi = require("ffi")
 local llhttp = require("llhttp")
 
@@ -134,6 +135,7 @@ end
 function IncrementalHttpRequestParser:ResetInternalState()
 	DEBUG("Resetting internal parser state")
 	llhttp_reset(self.state)
+	self.bufferedRequest = HttpRequest()
 end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
@@ -173,9 +175,12 @@ end
 -- llhttp data callbacks
 function IncrementalHttpRequestParser:HTTP_URL(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_URL triggered", parsedString)
+	self.bufferedRequest.requestedURL = self.bufferedRequest.requestedURL .. parsedString
 end
+
 function IncrementalHttpRequestParser:HTTP_STATUS(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS triggered", parsedString)
+	self.bufferedRequest.requestedURL = self.bufferedRequest.requestedURL .. parsedString
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
@@ -185,6 +190,7 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
 end
 function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_BODY triggered", parsedString)
+	self.bufferedRequest.body = self.bufferedRequest.body .. parsedString
 end
 
 return IncrementalHttpRequestParser

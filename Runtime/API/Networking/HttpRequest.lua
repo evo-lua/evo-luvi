@@ -7,9 +7,9 @@ local HttpRequest = {}
 function HttpRequest:Construct(requestObject)
 	requestObject = requestObject
 		or {
-			method = "GET",
-			requestedURL = "/",
-			versionString = "HTTP/1.1",
+			method = "",
+			requestedURL = "",
+			versionString = "",
 			headers = {},
 			body = "",
 		}
