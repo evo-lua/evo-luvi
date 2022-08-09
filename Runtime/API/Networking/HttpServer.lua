@@ -173,6 +173,12 @@ function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
 	dump(message)
 end
 
+function HttpServer:SendHttpResponse(client, responseObject)
+	-- TODO NYI
+	local responseString = responseObject:ToString()
+	DEBUG(format("Sending response of length %d to client %s", #responseString, self:GetClientInfo(client)))
+end
+
 function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
 	DEBUG("[HttpServer] HTTP_REQUEST_RECEIVED triggered", self:GetClientInfo(client), request)
 end

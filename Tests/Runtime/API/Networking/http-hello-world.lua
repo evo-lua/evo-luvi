@@ -92,7 +92,7 @@ function scenario:OnRun()
 			statusText = "OK",
 			headers = {},
 			body = "Hello world!",
-		}
+		} -- HttpResponse(responseObject)
 		serverSocket:SendHttpResponse(clientSocket, response)
 	end
 
