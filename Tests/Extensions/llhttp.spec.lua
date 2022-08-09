@@ -21,6 +21,7 @@ describe("llhttp", function()
 			"llhttp_get_error_reason",
 			"llhttp_set_error_reason",
 			"llhttp_get_error_pos",
+			"llhttp_get_upgrade",
 			"llhttp_errno_name",
 			"llhttp_method_name",
 			"llhttp_set_lenient_headers",

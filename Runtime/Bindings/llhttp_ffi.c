@@ -13,6 +13,7 @@ struct static_llhttp_exports_table {
 	void (*llhttp_resume_after_upgrade)(llhttp_t* parser);
 	llhttp_errno_t (*llhttp_get_errno)(const llhttp_t* parser);
 	const char* (*llhttp_get_error_reason)(const llhttp_t* parser);
+	uint8_t (*llhttp_get_upgrade)(llhttp_t* parser);
 	void (*llhttp_set_error_reason)(llhttp_t* parser, const char* reason);
 	const char* (*llhttp_get_error_pos)(const llhttp_t* parser);
 	const char* (*llhttp_errno_name)(llhttp_errno_t err);
@@ -48,8 +49,8 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_resume_after_upgrade = llhttp_resume_after_upgrade;
 	llhttp_exports_table.llhttp_get_errno = llhttp_get_errno;
 	llhttp_exports_table.llhttp_get_error_reason = llhttp_get_error_reason;
-	llhttp_exports_table.llhttp_set_error_reason = llhttp_set_error_reason;
 	llhttp_exports_table.llhttp_get_error_pos = llhttp_get_error_pos;
+	llhttp_exports_table.llhttp_get_upgrade = llhttp_get_upgrade;
 	llhttp_exports_table.llhttp_errno_name = llhttp_errno_name;
 	llhttp_exports_table.llhttp_method_name = llhttp_method_name;
 	llhttp_exports_table.llhttp_set_lenient_headers = llhttp_set_lenient_headers;
