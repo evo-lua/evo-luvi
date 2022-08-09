@@ -86,13 +86,14 @@ function scenario:OnRun()
 
 		hasServerReceivedMessage = true
 
-		local response = {
+		local responseObject = {
 			versionString = "HTTP/1.1",
 			statusCode = 200,
 			statusText = "OK",
 			headers = {},
 			body = "Hello world!",
-		} -- HttpResponse(responseObject)
+		}
+		local response = C_Networking.HttpResponse(responseObject)
 		serverSocket:SendHttpResponse(clientSocket, response)
 	end
 
