@@ -76,7 +76,6 @@ function HttpServer:TCP_CLIENT_CONNECTED(client)
 	self:InitializeRequestParser(client)
 end
 
-
 function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 	DEBUG("[HttpServer] TCP_CHUNK_RECEIVED triggered", self:GetClientInfo(client), chunk)
 
@@ -123,21 +122,20 @@ function HttpServer:OnUpgradeRequestReceived(client)
 	-- TODO
 	DEBUG("[HttpServer] OnUpgradeRequestReceived triggered")
 	-- Protocol handlers should be initialized here if supported (HTTPS/WS/WSS), then replace the TCP_CHUNK_RECEIVED handler
-		-- Afterwards, trigger new event to signal successful upgrade: HTTP_CONNECTION_UPGRADED(eventID, protocol)
-		-- Where protocol is one of { "ws", "https", "wss" }
-	end
+	-- Afterwards, trigger new event to signal successful upgrade: HTTP_CONNECTION_UPGRADED(eventID, protocol)
+	-- Where protocol is one of { "ws", "https", "wss" }
+end
 
-	function HttpServer:OnParserError(client, errorMessage)
-		DEBUG("[HttpServer] OnParserError triggered")
-		self:TCP_CLIENT_READ_ERROR(client, errorMessage)
+function HttpServer:OnParserError(client, errorMessage)
+	DEBUG("[HttpServer] OnParserError triggered")
+	self:TCP_CLIENT_READ_ERROR(client, errorMessage)
 
-		-- TODO: Destroy parser, also on shutdown (Disconnect?) // TCP_CLIENT_DISCONNECTED
+	-- TODO: Destroy parser, also on shutdown (Disconnect?) // TCP_CLIENT_DISCONNECTED
 
-		self:Disconnect(client, errorMessage)
-		self:TCP_SESSION_ENDED(client)
-	end
+	self:Disconnect(client, errorMessage)
+	self:TCP_SESSION_ENDED(client)
+end
 
-	-- TODO call finish if client sends EOF
 function HttpServer:TCP_EOF_RECEIVED(client)
 	DEBUG("[HttpServer] TCP_EOF_RECEIVED triggered", self:GetClientInfo(client))
 	local parser = self.httpParsers[client]
@@ -146,19 +144,25 @@ function HttpServer:TCP_EOF_RECEIVED(client)
 	if not isParserExpectingEOF then
 		WARNING("Received EOF in the middle of an ongoing HTTP request (connection failed or misbehaving client?)")
 		-- This seems like an incomplete request, so just sever the connection to avoid unexpected errors
-		 self:OnParserError(client, "Unexpected EOF received in the middle of an ongoing request")
-		 return
+		self:OnParserError(client, "Unexpected EOF received in the middle of an ongoing request")
+		return
+	end
+
+	local isOK, errorMessage = parser:FinalizeBufferedRequest() -- TODO NYI
+	if not isOK then
+		self:OnParserError(client, errorMessage)
+		return
 	end
 
 	local request = parser:GetBufferedRequest()
 	self:HTTP_REQUEST_RECEIVED(client, request)
 end
 
-	-- Customizable event handlers: These should be overwritten as needed
-	function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
-		-- TODO request, response, extract message
-		DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
-		local message = llhttpParserState__toHttpMessage(parser)
+-- Customizable event handlers: These should be overwritten as needed
+function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
+	-- TODO request, response, extract message
+	DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
+	local message = llhttpParserState__toHttpMessage(parser)
 	dump(message)
 end
 
