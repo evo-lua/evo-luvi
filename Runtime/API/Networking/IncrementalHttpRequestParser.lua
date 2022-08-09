@@ -108,7 +108,8 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 end
 
 function IncrementalHttpRequestParser:IsExpectingUpgrade()
-	return tonumber(llhttp_get_upgrade(self.state) == 1)
+	-- Should use llhttp_get_upgrade instead (not currently exported)
+	return tonumber(self.state.upgrade == 1)
 end
 
 function IncrementalHttpRequestParser:IsExpectingEndOfTransmission()
