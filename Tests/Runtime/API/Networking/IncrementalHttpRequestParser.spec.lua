@@ -21,11 +21,10 @@ local websocketsUpgradeRequest = {
 }
 
 describe("IncrementalHttpRequestParser", function()
-	local defaultRequest = HttpRequest()
 	describe("Construct", function()
 		local parser = IncrementalHttpRequestParser()
-		it("should initialize the parser with a empty request buffer", function()
-			assertEquals(parser:GetBufferedRequest(), defaultRequest)
+		it("should return nil if the buffered request is not yet finalized", function()
+			assertEquals(parser:GetBufferedRequest(), nil)
 		end)
 	end)
 
