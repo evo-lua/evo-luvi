@@ -5,6 +5,7 @@ local ffi_new = ffi.new
 local ffi_string = ffi.string
 
 local llhttp_init = llhttp.bindings.llhttp_init
+local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
 
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
@@ -87,7 +88,8 @@ end
 
 function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 	local errNo = llhttp_execute(self.state, chunk, #chunk)
-	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
+	local isParserInErrorState = tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK
+	if isParserInErrorState then
 		if llhttp_message_needs_eof(self.state) then
 			DEBUG("Message needs EOF")
 		end
@@ -95,18 +97,22 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 		if llhttp_should_keep_alive(self.state) then
 			DEBUG("Expecting another message; connection should be kept alive")
 		end
-
-		return true
 	end
 
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
 		DEBUG("Expecting HTTP upgrade")
-		return true
 	end
 
-	-- TODO append parser.reason ?
 	local errorMessage = llhttp_errno_name(errNo)
-	return nil, ffi_string(errorMessage)
+	return isParserInErrorState, ffi_string(errorMessage)
+end
+
+function IncrementalHttpRequestParser:IsExpectingUpgrade()
+	return tonumber(llhttp_get_upgrade(self.state) == 1)
+end
+
+function IncrementalHttpRequestParser:IsExpectingEndOfTransmission()
+	return tonumber(llhttp_message_needs_eof(self.state) == 1)
 end
 
 function IncrementalHttpRequestParser:ResetInternalState()
