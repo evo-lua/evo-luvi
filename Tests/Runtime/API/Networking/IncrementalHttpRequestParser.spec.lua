@@ -24,21 +24,21 @@ describe("IncrementalHttpRequestParser", function()
 	local defaultRequest = HttpRequest()
 	describe("Construct", function()
 		local parser = IncrementalHttpRequestParser()
-		it("should initialize the parser with a empty request cache", function()
+		it("should initialize the parser with a empty request buffer", function()
 			assertEquals(parser:GetBufferedRequest(), defaultRequest)
 		end)
 	end)
 
 	describe("ParseNextChunk", function()
 		local parser = IncrementalHttpRequestParser()
-		it("should update the cached request if a valid HTTP message was parsed in a single chunk", function()
+		it("should update the buffered request if a valid HTTP message was parsed in a single chunk", function()
 			local websocketsRequestString =
 				"GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
 			parser:ParseNextChunk(websocketsRequestString)
 			assertEquals(parser:GetBufferedRequest(), websocketsUpgradeRequest)
 		end)
 
-		it("should update the cached request if a valid HTTP message was parsed in multiple chunks", function()
+		it("should update the buffered request if a valid HTTP message was parsed in multiple chunks", function()
 			local websocketsRequestStrings = {
 				"GET /chat HTTP/1.1\r\n",
 				"Host: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
