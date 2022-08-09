@@ -175,6 +175,10 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	DEBUG(format("Storing received header pair - %s: %s", fieldName, fieldValue))
 	self.bufferedRequest.headers[fieldName] = fieldValue
 
+	-- This is somewhat redundant, but allows serializing headers in the exact order they were received later
+	-- .All the while, also preserving the ability to perform dictionary lookups (constant-time + ease-of-use)
+	self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
+
 	-- Reset buffer so the next key-value-pair can be stored
 	self.lastReceivedHeaderKey = ""
 	self.lastReceivedHeaderValue = ""
