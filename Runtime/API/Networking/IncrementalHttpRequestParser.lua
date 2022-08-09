@@ -40,7 +40,7 @@ function IncrementalHttpRequestParser:Construct()
 	local instance = {
 		state = ffi_new("llhttp_t"),
 		settings = ffi_new("llhttp_settings_t"),
-		cachedRequest = HttpRequest(),
+		bufferedRequest = HttpRequest(),
 	}
 
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
@@ -60,7 +60,7 @@ function IncrementalHttpRequestParser.__index(target, key)
 end
 
 function IncrementalHttpRequestParser:GetBufferedRequest()
-	return self.cachedRequest
+	return self.bufferedRequest
 end
 
 local tonumber = tonumber
