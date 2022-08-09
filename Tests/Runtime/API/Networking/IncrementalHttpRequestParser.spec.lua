@@ -20,6 +20,14 @@ local websocketsUpgradeRequest = {
 	body = {},
 }
 
+local websocketsRequestString =
+	"GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
+
+local websocketsRequestStrings = {
+	"GET /chat HTTP/1.1\r\n",
+	"Host: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+}
+
 describe("IncrementalHttpRequestParser", function()
 	describe("Construct", function()
 		local parser = IncrementalHttpRequestParser()
@@ -31,18 +39,13 @@ describe("IncrementalHttpRequestParser", function()
 	describe("ParseNextChunk", function()
 		local parser = IncrementalHttpRequestParser()
 		it("should update the buffered request if a valid HTTP message was parsed in a single chunk", function()
-			local websocketsRequestString =
-				"GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
 			parser:ParseNextChunk(websocketsRequestString)
+			parser:FinalizeBufferedRequest()
 			assertEquals(parser:GetBufferedRequest(), websocketsUpgradeRequest)
+			dump(parser)
 		end)
 
 		it("should update the buffered request if a valid HTTP message was parsed in multiple chunks", function()
-			local websocketsRequestStrings = {
-				"GET /chat HTTP/1.1\r\n",
-				"Host: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-			}
-
 			local incompleteRequest = HttpRequest()
 			incompleteRequest.method = "GET"
 			incompleteRequest.versionString = "HTTP/1.1"
@@ -51,20 +54,25 @@ describe("IncrementalHttpRequestParser", function()
 			parser:ParseNextChunk(websocketsRequestStrings[1])
 			assertEquals(parser:GetBufferedRequest(), incompleteRequest)
 			parser:ParseNextChunk(websocketsRequestStrings[2])
+			parser:FinalizeBufferedRequest()
 			assertEquals(parser:GetBufferedRequest(), websocketsUpgradeRequest)
 		end)
 	end)
 
-	describe("GetBufferedRequest", function() end)
+	-- describe("GetBufferedRequest", function() end)
 
 	describe("ResetInternalState", function()
-		local parser = IncrementalHttpRequestParser()
-		it("should re-initialize the parser with an empty request cache")
+		it("should re-initialize the parser with an empty request cache", function()
+			local parser = IncrementalHttpRequestParser()
+			parser:ParseNextChunk(websocketsRequestString)
+			-- parser:ResetInternalState()
+			assertEquals(parser:GetBufferedRequest(), nil)
+		end)
 	end)
 
-	describe("IsRequestFinished", function()
-		local parser = IncrementalHttpRequestParser()
-	end)
+	-- describe("IsRequestFinished", function()
+	-- 	local parser = IncrementalHttpRequestParser()
+	-- end)
 
-	describe("Flush", function() end)
+	-- describe("Flush", function() end)
 end)

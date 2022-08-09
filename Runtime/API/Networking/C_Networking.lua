@@ -1,5 +1,4 @@
 local C_Networking = {
-	IncrementalHttpParser = require("IncrementalHttpParser"),
 	TcpSocket = require("TcpSocket"),
 	TcpServer = require("TcpServer"),
 	TcpClient = require("TcpClient"),

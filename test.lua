@@ -9,7 +9,6 @@ local testCases = {
 	"Tests/Runtime/API/Networking/HttpRequest.spec.lua",
 	"Tests/Runtime/API/Networking/HttpResponse.spec.lua",
 	"Tests/Runtime/API/Networking/IncrementalHttpRequestParser.spec.lua",
-	"Tests/Runtime/API/Networking/IncrementalHttpParser.spec.lua",
 	"Tests/Runtime/API/Networking/C_Networking.spec.lua",
 	"Tests/Primitives/extend.spec.lua",
 	"Tests/Primitives/format.spec.lua",

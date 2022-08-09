@@ -155,7 +155,7 @@ function HttpServer:TCP_EOF_RECEIVED(client)
 		return
 	end
 
-	local isOK, errorMessage = parser:FinalizeBufferedRequest() -- TODO NYI
+	local isOK, errorMessage = parser:FinalizeBufferedRequest()
 	if not isOK then
 		self:OnParserError(client, errorMessage)
 		return
@@ -177,6 +177,8 @@ function HttpServer:SendHttpResponse(client, responseObject)
 	-- TODO NYI
 	local responseString = responseObject:ToString()
 	DEBUG(format("Sending response of length %d to client %s", #responseString, self:GetClientInfo(client)))
+
+	self:Send(client, responseString)
 end
 
 function HttpServer:HTTP_REQUEST_RECEIVED(client, request)
