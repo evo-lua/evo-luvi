@@ -104,7 +104,11 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 
 	if parser:IsExpectingUpgrade() and not wasParserExpectingUpgrade then
 		self:OnUpgradeRequestReceived(client)
-		return
+	else
+		if not isOK then
+			self:OnParserError(client, errorMessage)
+			return
+		end
 	end
 
 	if parser:IsExpectingEndOfTransmission() and not wasParserExpectingEOF then
@@ -112,10 +116,13 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 		return
 	end
 
-	if not isOK then
-		self:OnParserError(client, errorMessage)
+	local request = parser:GetBufferedRequest()
+	if not request then -- Not yet complete
 		return
 	end
+
+	parser:ResetInternalState() -- Prepare for new requests, if the parser is to be re-used (keep-alive enabled)
+	self:HTTP_REQUEST_RECEIVED(client, request)
 end
 
 function HttpServer:OnUpgradeRequestReceived(client)

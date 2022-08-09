@@ -8,8 +8,9 @@ local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
 local llhttp_finish = llhttp.bindings.llhttp_finish
-local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
+-- local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade -- NYI
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
+local llhttp_reset = llhttp.bindings.llhttp_reset
 local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 
 local IncrementalHttpRequestParser = {
@@ -42,6 +43,7 @@ function IncrementalHttpRequestParser:Construct()
 		state = ffi_new("llhttp_t"),
 		settings = ffi_new("llhttp_settings_t"),
 		bufferedRequest = HttpRequest(),
+		isBufferReady = false,
 	}
 
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
@@ -61,6 +63,10 @@ function IncrementalHttpRequestParser.__index(target, key)
 end
 
 function IncrementalHttpRequestParser:GetBufferedRequest()
+	if not self.isBufferReady then
+		return
+	end
+
 	return self.bufferedRequest
 end
 
@@ -126,7 +132,8 @@ function IncrementalHttpRequestParser:FinalizeBufferedRequest()
 end
 
 function IncrementalHttpRequestParser:ResetInternalState()
-	-- TODO
+	DEBUG("Resetting internal parser state")
+	llhttp_reset(self.state)
 end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
@@ -160,6 +167,7 @@ end
 
 function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
+	self.isBufferReady = true
 end
 
 -- llhttp data callbacks
