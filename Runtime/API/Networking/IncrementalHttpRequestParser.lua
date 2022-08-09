@@ -59,7 +59,7 @@ function IncrementalHttpRequestParser.__index(target, key)
 	return rawget(target, key)
 end
 
-function IncrementalHttpRequestParser:GetCachedRequest()
+function IncrementalHttpRequestParser:GetBufferedRequest()
 	return self.cachedRequest
 end
 
