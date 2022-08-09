@@ -102,11 +102,6 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 	DEBUG("Executing low-level HTTP parser on incoming chunk", chunk)
 	local isOK, errorMessage = parser:ParseNextChunk(chunk)
 
-	if not isOK then
-		self:OnParserError(client, errorMessage)
-		return
-	end
-
 	if parser:IsExpectingUpgrade() and not wasParserExpectingUpgrade then
 		self:OnUpgradeRequestReceived(client)
 		return
@@ -114,6 +109,11 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 
 	if parser:IsExpectingEndOfTransmission() and not wasParserExpectingEOF then
 		DEBUG("Received end of request, waiting for EOF now")
+		return
+	end
+
+	if not isOK then
+		self:OnParserError(client, errorMessage)
 		return
 	end
 end

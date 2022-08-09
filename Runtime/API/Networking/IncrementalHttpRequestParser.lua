@@ -5,10 +5,10 @@ local ffi_new = ffi.new
 local ffi_string = ffi.string
 
 local llhttp_init = llhttp.bindings.llhttp_init
-local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
-
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
+local llhttp_finish = llhttp.bindings.llhttp_finish
+local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 
@@ -109,11 +109,20 @@ end
 
 function IncrementalHttpRequestParser:IsExpectingUpgrade()
 	-- Should use llhttp_get_upgrade instead (not currently exported)
-	return tonumber(self.state.upgrade == 1)
+	return tonumber(self.state.upgrade) == 1
 end
 
 function IncrementalHttpRequestParser:IsExpectingEndOfTransmission()
-	return tonumber(llhttp_message_needs_eof(self.state) == 1)
+	return tonumber(llhttp_message_needs_eof(self.state)) == 1
+end
+
+function IncrementalHttpRequestParser:FinalizeBufferedRequest()
+	DEBUG("[IncrementalHttpRequestParser] Finalizing buffered request")
+	local errNo = llhttp_finish(self.state)
+	local isParserInErrorState = tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK
+
+	local errorMessage = llhttp_errno_name(errNo)
+	return isParserInErrorState, ffi_string(errorMessage)
 end
 
 function IncrementalHttpRequestParser:ResetInternalState()
