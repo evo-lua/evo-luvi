@@ -167,6 +167,8 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE_COMPLETE triggered")
 end
 
+-- TODO check for missing upvalues everywhere
+
 function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
 	self.isBufferReady = true
@@ -174,6 +176,10 @@ function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	local methodID = tonumber(self.state.method)
 	local methodName = llhttp.HTTP_METHODS[methodID]
 	self.bufferedRequest.method = methodName
+
+	local major = self.state.http_major
+	local minor = self.state.http_minor
+	self.bufferedRequest.versionString = format("HTTP/%d.%d", major, minor)
 end
 
 -- llhttp data callbacks
