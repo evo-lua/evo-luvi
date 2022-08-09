@@ -64,33 +64,10 @@ end
 HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
 
-function HttpServer:RegisterParserCallbacks(client)
-	local parser = self.httpParsers[client]
-
-	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
-	for callbackName, eventID in pairs(parser.INFO_CALLBACKS) do
-		local function infoCallbackHandler(parserState)
-			self[eventID](self, client)
-			return llhttp.ERROR_TYPES.HPE_OK
-		end
-		parser.settings[callbackName] = infoCallbackHandler
-	end
-
-	for callbackName, eventID in pairs(parser.DATA_CALLBACKS) do
-		local function dataCallbackHandler(parserState, stringPointer, stringLengthInBytes)
-			local parsedString = ffi_string(stringPointer, stringLengthInBytes)
-			self[eventID](self, client, parsedString)
-			return llhttp.ERROR_TYPES.HPE_OK
-		end
-		parser.settings[callbackName] = dataCallbackHandler
-	end
-end
-
 function HttpServer:InitializeRequestParser(client)
 	local requestParser = IncrementalHttpRequestParser()
+	requestParser:RegisterParserCallbacks(client)
 	self.httpParsers[client] = requestParser
-
-	self:RegisterParserCallbacks(client)
 end
 
 function HttpServer:TCP_CLIENT_CONNECTED(client)
@@ -157,55 +134,6 @@ end
 
 function HttpServer:HTTP_CONNECTION_UPGRADED(client)
 	DEBUG("[HttpServer] HTTP_CONNECTION_UPGRADED triggered", self:GetClientInfo(client))
-end
-
--- TODO Move request parsing logic to the parser class
-
--- llhttp info callbacks
-function HttpServer:HTTP_MESSAGE_BEGIN(client)
-	DEBUG("[HttpServer] HTTP_MESSAGE_BEGIN triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADERS_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADERS_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_CHUNK_HEADER(client)
-	DEBUG("[HttpServer] HTTP_CHUNK_HEADER triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_CHUNK_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_CHUNK_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_URL_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_URL_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_STATUS_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_STATUS_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADER_FIELD_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADER_FIELD_COMPLETE triggered", self:GetClientInfo(client))
-end
-function HttpServer:HTTP_HEADER_VALUE_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_HEADER_VALUE_COMPLETE triggered", self:GetClientInfo(client))
-end
-
-function HttpServer:HTTP_MESSAGE_COMPLETE(client)
-	DEBUG("[HttpServer] HTTP_MESSAGE_COMPLETE triggered", self:GetClientInfo(client))
-end
-
--- llhttp data callbacks
-function HttpServer:HTTP_URL(client, parsedString)
-	DEBUG("[HttpServer] HTTP_URL triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_STATUS(client, parsedString)
-	DEBUG("[HttpServer] HTTP_STATUS triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_HEADER_FIELD(client, parsedString)
-	DEBUG("[HttpServer] HTTP_HEADER_FIELD triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_HEADER_VALUE(client, parsedString)
-	DEBUG("[HttpServer] HTTP_HEADER_VALUE triggered", self:GetClientInfo(client), parsedString)
-end
-function HttpServer:HTTP_BODY(client, parsedString)
-	DEBUG("[HttpServer] HTTP_BODY triggered", self:GetClientInfo(client), parsedString)
 end
 
 return HttpServer

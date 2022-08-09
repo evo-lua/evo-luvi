@@ -65,8 +65,27 @@ end
 
 local tonumber = tonumber
 
-function IncrementalHttpRequestParser:ParseNextChunk(chunk)
+function IncrementalHttpRequestParser:RegisterParserCallbacks()
+	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
+	for callbackName, eventID in pairs(self.INFO_CALLBACKS) do
+		local function infoCallbackHandler(parserState)
+			self[eventID](self)
+			return llhttp.ERROR_TYPES.HPE_OK
+		end
+		self.settings[callbackName] = infoCallbackHandler
+	end
 
+	for callbackName, eventID in pairs(self.DATA_CALLBACKS) do
+		local function dataCallbackHandler(parserState, stringPointer, stringLengthInBytes)
+			local parsedString = ffi_string(stringPointer, stringLengthInBytes)
+			self[eventID](self, parsedString)
+			return llhttp.ERROR_TYPES.HPE_OK
+		end
+		self.settings[callbackName] = dataCallbackHandler
+	end
+end
+
+function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 	local errNo = llhttp_execute(self.state, chunk, #chunk)
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK then
 		if llhttp_message_needs_eof(self.state) then
@@ -77,15 +96,15 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 			DEBUG("Expecting another message; connection should be kept alive")
 		end
 
-
 		return true
 	end
 
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
 		DEBUG("Expecting HTTP upgrade")
+		return true
 	end
 
-		-- TODO append parser.reason ?
+	-- TODO append parser.reason ?
 	local errorMessage = llhttp_errno_name(errNo)
 	return nil, ffi_string(errorMessage)
 end
@@ -96,5 +115,52 @@ end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
 setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
+
+-- llhttp info callbacks
+function IncrementalHttpRequestParser:HTTP_MESSAGE_BEGIN()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_BEGIN triggered")
+end
+function IncrementalHttpRequestParser:HTTP_HEADERS_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADERS_COMPLETE triggered")
+end
+function IncrementalHttpRequestParser:HTTP_CHUNK_HEADER()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_HEADER triggered")
+end
+function IncrementalHttpRequestParser:HTTP_CHUNK_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_COMPLETE triggered")
+end
+function IncrementalHttpRequestParser:HTTP_URL_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_URL_COMPLETE triggered")
+end
+function IncrementalHttpRequestParser:HTTP_STATUS_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS_COMPLETE triggered")
+end
+function IncrementalHttpRequestParser:HTTP_HEADER_FIELD_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD_COMPLETE triggered")
+end
+function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE_COMPLETE triggered")
+end
+
+function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
+	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
+end
+
+-- llhttp data callbacks
+function IncrementalHttpRequestParser:HTTP_URL(parsedString)
+	DEBUG("[IncrementalHttpRequestParser] HTTP_URL triggered", parsedString)
+end
+function IncrementalHttpRequestParser:HTTP_STATUS(parsedString)
+	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS triggered", parsedString)
+end
+function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
+	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
+end
+function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
+	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE triggered", parsedString)
+end
+function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
+	DEBUG("[IncrementalHttpRequestParser] HTTP_BODY triggered", parsedString)
+end
 
 return IncrementalHttpRequestParser
