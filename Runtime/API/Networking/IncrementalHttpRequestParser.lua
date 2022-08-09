@@ -45,6 +45,8 @@ function IncrementalHttpRequestParser:Construct()
 		settings = ffi_new("llhttp_settings_t"),
 		bufferedRequest = HttpRequest(),
 		isBufferReady = false,
+		lastReceivedHeaderKey = "",
+		lastReceivedHeaderValue = "",
 	}
 
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
@@ -136,6 +138,8 @@ function IncrementalHttpRequestParser:ResetInternalState()
 	DEBUG("Resetting internal parser state")
 	llhttp_reset(self.state)
 	self.bufferedRequest = HttpRequest()
+	self.lastReceivedHeaderKey = ""
+	self.lastReceivedHeaderValue = ""
 end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
@@ -165,6 +169,15 @@ function IncrementalHttpRequestParser:HTTP_HEADER_FIELD_COMPLETE()
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE_COMPLETE triggered")
+
+	local fieldName = self.lastReceivedHeaderKey
+	local fieldValue = self.lastReceivedHeaderValue
+	DEBUG(format("Storing received header pair - %s: %s", fieldName, fieldValue))
+	self.bufferedRequest.headers[fieldName] = fieldValue
+
+	-- Reset buffer so the next key-value-pair can be stored
+	self.lastReceivedHeaderKey = ""
+	self.lastReceivedHeaderValue = ""
 end
 
 -- TODO check for missing upvalues everywhere
@@ -194,10 +207,22 @@ function IncrementalHttpRequestParser:HTTP_STATUS(parsedString)
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
+
+	-- -- todo multiples? needs tests, review spec/nodejs issue (I remember vaguely there was one)
+	-- if self.headers[fieldName] then
+	-- 	WARNING("Duplicate HTTP header key " .. fieldName)
+	-- end
+	-- self.headers[fieldName] = ""
+	-- self.additionalState.lastHeaderField = fieldName
+
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey .. parsedString
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE triggered", parsedString)
+
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue .. parsedString
 end
+
 function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_BODY triggered", parsedString)
 	self.bufferedRequest.body = self.bufferedRequest.body .. parsedString
