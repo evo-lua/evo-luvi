@@ -1,14 +1,3 @@
-local tonumber = tonumber
-
-local llhttp = require("llhttp")
-local llhttp_execute = llhttp.bindings.llhttp_execute
-local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
-local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
-
-local ffi = require("ffi")
-local ffi_string = ffi.string
-
-local pairs = pairs
 local rawget = rawget
 local setmetatable = setmetatable
 
@@ -17,27 +6,6 @@ local TcpServer = require("TcpServer")
 local IncrementalHttpRequestParser = require("IncrementalHttpRequestParser")
 
 local HttpServer = {}
-
-local function llhttpParserState__toHttpMessage(parser)
-	local message = {
-		error = tonumber(parser.error),
-		reason = tostring(parser.reason),
-		error_pos = tostring(parser.error_pos),
-		content_length = tonumber(parser.content_length),
-		type = tonumber(parser.type),
-		method = tonumber(parser.method),
-		http_major = tonumber(parser.http_major),
-		http_minor = tonumber(parser.http_minor),
-		header_state = tonumber(parser.header_state),
-		lenient_flags = tonumber(parser.lenient_flags),
-		upgrade = tonumber(parser.upgrade),
-		finish = tonumber(parser.finish),
-		flags = tonumber(parser.flags),
-		status_code = tonumber(parser.status_code),
-		data = tostring(parser.data),
-	}
-	return message
-end
 
 function HttpServer.__index(target, key)
 	if rawget(HttpServer, key) ~= nil then
@@ -163,14 +131,6 @@ function HttpServer:TCP_EOF_RECEIVED(client)
 
 	local request = parser:GetBufferedRequest()
 	self:HTTP_REQUEST_RECEIVED(client, request)
-end
-
--- Customizable event handlers: These should be overwritten as needed
-function HttpServer:HTTP_MESSAGE_RECEIVED(client, parser)
-	-- TODO request, response, extract message
-	DEBUG("[HttpServer] HTTP_MESSAGE_RECEIVED triggered", self:GetClientInfo(client), parser)
-	local message = llhttpParserState__toHttpMessage(parser)
-	dump(message)
 end
 
 function HttpServer:SendHttpResponse(client, responseObject)

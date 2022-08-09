@@ -110,6 +110,7 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
 		DEBUG("Expecting HTTP upgrade")
+		return
 	end
 
 	local errorMessage = llhttp_errno_name(errNo)
