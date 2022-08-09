@@ -67,6 +67,7 @@ function scenario:OnRun()
 	local server = self.server
 	function server.HTTP_REQUEST_RECEIVED(serverSocket, clientSocket, request)
 		print("HTTP_REQUEST_RECEIVED")
+		dump(request)
 
 		assertEquals(request.method, "GET")
 		assertEquals(request.requestedURL, "/chat")
