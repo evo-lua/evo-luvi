@@ -11,7 +11,9 @@ local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
 local llhttp_finish = llhttp.bindings.llhttp_finish
 -- local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade -- NYI
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
+local llhttp_method_name = llhttp.bindings.llhttp_method_name
 local llhttp_reset = llhttp.bindings.llhttp_reset
+local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 
 local IncrementalHttpRequestParser = {
@@ -49,6 +51,7 @@ function IncrementalHttpRequestParser:Construct()
 		lastReceivedHeaderValue = "",
 	}
 
+	llhttp_settings_init(instance.settings)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
 
 	setmetatable(instance, self)
@@ -110,7 +113,6 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 
 	if tonumber(errNo) == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE then
 		DEBUG("Expecting HTTP upgrade")
-		return
 	end
 
 	local errorMessage = llhttp_errno_name(errNo)
@@ -191,8 +193,7 @@ function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
 	self.isBufferReady = true
 
-	local methodID = tonumber(self.state.method)
-	local methodName = llhttp.HTTP_METHODS[methodID]
+	local methodName = llhttp_method_name(self.state.method)
 	self.bufferedRequest.method = methodName
 
 	local major = self.state.http_major
@@ -213,13 +214,6 @@ end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
 
-	-- -- todo multiples? needs tests, review spec/nodejs issue (I remember vaguely there was one)
-	-- if self.headers[fieldName] then
-	-- 	WARNING("Duplicate HTTP header key " .. fieldName)
-	-- end
-	-- self.headers[fieldName] = ""
-	-- self.additionalState.lastHeaderField = fieldName
-
 	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey .. parsedString
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
@@ -232,5 +226,7 @@ function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_BODY triggered", parsedString)
 	self.bufferedRequest.body = self.bufferedRequest.body .. parsedString
 end
+
+-- HttpParserMixin
 
 return IncrementalHttpRequestParser
