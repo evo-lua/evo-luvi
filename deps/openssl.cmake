@@ -25,7 +25,12 @@ else (WithSharedOpenSSL)
       set(OPENSSL_BUILD_COMMAND nmake)
   else()
       set(OPENSSL_CONFIGURE_COMMAND ./config ${OPENSSL_CONFIG_OPTIONS})
-      set(OPENSSL_BUILD_COMMAND make)
+
+      if(DEFINED $ENV{MAKEFLAGS})
+        set(OPENSSL_BUILD_COMMAND make $ENV{MAKEFLAGS})
+      else()
+        set(OPENSSL_BUILD_COMMAND make)
+      endif()
   endif()
 
   ExternalProject_Add(openssl
@@ -62,4 +67,3 @@ endif (WithSharedOpenSSL)
 
 add_definitions(-DWITH_OPENSSL)
 include(deps/lua-openssl.cmake)
-
