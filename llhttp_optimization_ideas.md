@@ -24,6 +24,7 @@ Goals: Security, spec compliance, performance, ability to offload maintenance
 * libwebsockets: Could not figure out integration (bad docs), not as widely used as mongoose, questionable if maintained to best standards (issues go unanswered when maintainer dislikes them)
 * mongoose: Easy to integrate via FFI + good docs, cannot integrate with libuv, performance not a concern (embedded/portability focused)
 * llhttp: Best match so far, widely used in NodeJS, however a bit annoying to integrate (statically) and not the best docs/no pull style API = bad for ffi optimizations
+* picohttpparser: Not actively maintained, seems to lack basic functionality (get POST body?)
 * homebrew (yikes): Does not fulfill goals at all, let's not reinvent this particular wheel
 
 ## Comparison
