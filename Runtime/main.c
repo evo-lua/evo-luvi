@@ -16,9 +16,8 @@
  */
 
 #define LUA_LIB
-#include "Bindings/lenv.c"
-#include "Bindings/llhttp_ffi.c"
 #include "luv.h"
+#include "Bindings/llhttp_ffi.c"
 #include "luvi.c"
 #include "luvi.h"
 #ifndef MINIZ_NO_STDIO
@@ -95,9 +94,6 @@ static lua_State* vm_acquire()
 	// Get package.preload so we can store builtins in it.
 	lua_getfield(L, -1, "preload");
 	lua_remove(L, -2); // Remove package
-
-	lua_pushcfunction(L, luaopen_env);
-	lua_setfield(L, -2, "env");
 
 	lua_pushcfunction(L, luaopen_miniz);
 	lua_setfield(L, -2, "miniz");
