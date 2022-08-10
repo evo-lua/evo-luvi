@@ -9,7 +9,7 @@ local helloWorldRequest = {
 		["Host"] = "example.com:8000",
 		[1] = "Host",
 	},
-	body = {},
+	body = "",
 }
 
 local websocketsUpgradeRequest = {
@@ -61,7 +61,7 @@ describe("IncrementalHttpRequestParser", function()
 			-- dump(parser)
 			parser:FinalizeBufferedRequest()
 			parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
-			dump(parser)
+			-- dump(parser)
 			assertEquals(parser:GetBufferedRequest(), helloWorldRequest)
 		end)
 
@@ -76,9 +76,19 @@ describe("IncrementalHttpRequestParser", function()
 			assertEquals(parser:GetBufferedRequest(), incompleteRequest)
 			parser:ParseNextChunk(helloWorldRequestStrings[2])
 			parser:FinalizeBufferedRequest()
-			-- dump(parser)
+			parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
+			dump(parser)
 			assertEquals(parser:GetBufferedRequest(), helloWorldRequest)
 		end)
+
+		it(
+			"should update the buffered request if a valid WS upgrade request was parsed in a single chunk",
+			function() end
+		)
+		it(
+			"should update the buffered request if a valid WS upgrade request was parsed in a multiple chunks",
+			function() end
+		)
 	end)
 
 	-- describe("GetBufferedRequest", function() end)
@@ -87,7 +97,7 @@ describe("IncrementalHttpRequestParser", function()
 		it("should re-initialize the parser with an empty request cache", function()
 			local parser = IncrementalHttpRequestParser()
 			parser:ParseNextChunk(helloWorldRequestString)
-			-- parser:ResetInternalState()
+			parser:ResetInternalState()
 			assertEquals(parser:GetBufferedRequest(), nil)
 		end)
 	end)

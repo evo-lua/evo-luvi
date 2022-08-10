@@ -149,6 +149,7 @@ function IncrementalHttpRequestParser:ResetInternalState()
 	DEBUG("Resetting internal parser state")
 	llhttp_reset(self.state)
 	self.bufferedRequest = HttpRequest()
+	self.isBufferReady = false
 	self.lastReceivedHeaderKey = ""
 	self.lastReceivedHeaderValue = ""
 end
