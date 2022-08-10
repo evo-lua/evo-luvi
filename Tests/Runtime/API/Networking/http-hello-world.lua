@@ -8,9 +8,9 @@ scenario:WHEN("A HTTP client sends a basic request")
 scenario:THEN("The server should respond with a valid hello world response")
 
 local hasClientSentMessageToServer = false
-local hasServerReceivedMessage = false
+local hasServerReceivedRequest = false
 local hasServerSentResponse = false
-local hasClientReceivedEchoMessage = false
+local hasClientReceivedResponse = false
 
 function scenario:OnSetup()
 	print("OnSetup")
@@ -58,7 +58,18 @@ function scenario:OnRun()
 		assertEquals(response.statusText, "OK")
 		assertEquals(response.versionString, "HTTP/1.1")
 
-		hasClientReceivedEchoMessage = true
+		hasClientReceivedResponse = true
+
+		-- The echo test is over, so we can continue with the report
+		coroutine.resume(currentThread)
+	end
+
+	-- TODO Remove after HTTP_RESPONSE_RECEIVED works
+	function client.TCP_CHUNK_RECEIVED(_, chunk)
+		print("TCP_CHUNK_RECEIVED")
+		local expectedResponse = "HTTP/1.1 200 OK\r\nHello world!\r\n\r\n"
+		assertEquals(chunk, expectedResponse)
+		hasClientReceivedResponse = true
 
 		-- The echo test is over, so we can continue with the report
 		coroutine.resume(currentThread)
@@ -84,7 +95,7 @@ function scenario:OnRun()
 		assertEquals(request.headers[4], "Sec-WebSocket-Key")
 		assertEquals(request.headers[5], "Sec-WebSocket-Version")
 
-		hasServerReceivedMessage = true
+		hasServerReceivedRequest = true
 
 		local responseObject = {
 			versionString = "HTTP/1.1",
@@ -108,10 +119,10 @@ end
 
 function scenario:OnEvaluate()
 	print("OnEvaluate")
-	assertTrue(hasClientSentMessageToServer, "The client should have sent a message to the server")
-	assertTrue(hasServerReceivedMessage, "The server should have received the client's message")
+	assertTrue(hasClientSentMessageToServer, "The client should have sent a request to the server")
+	assertTrue(hasServerReceivedRequest, "The server should have received the client's request")
 	assertTrue(hasServerSentResponse, "The server should have sent a response")
-	assertTrue(hasClientReceivedEchoMessage, "The client should have received the response")
+	assertTrue(hasClientReceivedResponse, "The client should have received the response")
 end
 
 function scenario:OnCleanup()
