@@ -1,4 +1,3 @@
-local HttpRequest = C_Networking.HttpRequest
 local IncrementalHttpRequestParser = C_Networking.IncrementalHttpRequestParser
 
 local helloWorldRequest = {
@@ -28,7 +27,7 @@ local websocketsUpgradeRequest = {
 		[4] = "Sec-WebSocket-Key",
 		[5] = "Sec-WebSocket-Version",
 	},
-	body = {},
+	body = "",
 }
 
 local helloWorldRequestString = "GET /hello-world.html HTTP/1.1\r\nHost: example.com:8000\r\n\r\n"
@@ -77,13 +76,28 @@ describe("IncrementalHttpRequestParser", function()
 			assertEquals(parser:GetBufferedRequest(), helloWorldRequest)
 		end)
 
-		it(
-			"should update the buffered request if a valid WS upgrade request was parsed in a single chunk",
-			function() end
-		)
+		it("should update the buffered request if a valid WS upgrade request was parsed in a single chunk", function()
+			local parser = IncrementalHttpRequestParser()
+			parser:ParseNextChunk(websocketsRequestString)
+			-- dump(parser)
+			parser:FinalizeBufferedRequest()
+			parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
+			-- dump(parser)
+			assertEquals(parser:GetBufferedRequest(), websocketsUpgradeRequest)
+		end)
 		it(
 			"should update the buffered request if a valid WS upgrade request was parsed in a multiple chunks",
-			function() end
+			function()
+				local parser = IncrementalHttpRequestParser()
+
+				parser:ParseNextChunk(websocketsRequestStrings[1])
+				assertEquals(parser:GetBufferedRequest(), nil) -- Not yet finalized, so the buffer should be internal only
+				parser:ParseNextChunk(websocketsRequestStrings[2])
+				parser:FinalizeBufferedRequest()
+				parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
+				dump(parser)
+				assertEquals(parser:GetBufferedRequest(), websocketsUpgradeRequest)
+			end
 		)
 	end)
 
