@@ -67,13 +67,9 @@ describe("IncrementalHttpRequestParser", function()
 
 		it("should update the buffered request if a valid HTTP message was parsed in multiple chunks", function()
 			local parser = IncrementalHttpRequestParser()
-			local incompleteRequest = HttpRequest()
-			incompleteRequest.method = "GET"
-			incompleteRequest.versionString = "HTTP/1.1"
-			incompleteRequest.requestedURL = "/chat"
 
 			parser:ParseNextChunk(helloWorldRequestStrings[1])
-			assertEquals(parser:GetBufferedRequest(), incompleteRequest)
+			assertEquals(parser:GetBufferedRequest(), nil) -- Not yet finalized, so the buffer should be internal only
 			parser:ParseNextChunk(helloWorldRequestStrings[2])
 			parser:FinalizeBufferedRequest()
 			parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
