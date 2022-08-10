@@ -30,7 +30,6 @@ if not success then
 	success, uv = pcall(require, "luv")
 end
 assert(success, uv)
-local getenv = require("os").getenv
 
 local prettyPrint, dump, strip, color, colorize, loadColors
 local theme = {}
@@ -338,7 +337,7 @@ if uv.guess_handle(1) == "tty" then
 		width = 80
 	end
 	-- auto-detect when 16 color mode should be used
-	local term = getenv("TERM")
+	local term = uv.os_getenv("TERM")
 	if term and (term == "xterm" or term:match("-256color$")) then
 		defaultTheme = 256
 	else
