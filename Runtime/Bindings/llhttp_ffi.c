@@ -22,6 +22,17 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 };
 
+#define EXPAND_AS_STRING(text) #text
+#define TOSTRING(text) EXPAND_AS_STRING(text)
+#define LLHTTP_VERSION_STRING      \
+	TOSTRING(LLHTTP_VERSION_MAJOR) \
+	"." TOSTRING(LLHTTP_VERSION_MINOR) "." TOSTRING(LLHTTP_VERSION_PATCH)
+
+const char* llhttp_get_version_string(void)
+{
+	return LLHTTP_VERSION_STRING;
+}
+
 void export_llhttp_bindings(lua_State* L)
 {
 	static struct static_llhttp_exports_table llhttp_exports_table;

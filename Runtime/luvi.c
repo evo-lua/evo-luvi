@@ -42,6 +42,8 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");
 #endif
+	lua_pushstring(L, llhttp_get_version_string());
+	lua_setfield(L, -2, "llhttp");
 	lua_pushstring(L, uv_version_string());
 	lua_setfield(L, -2, "libuv");
 	lua_setfield(L, -2, "options");
