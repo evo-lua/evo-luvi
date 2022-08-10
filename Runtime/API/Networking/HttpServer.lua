@@ -34,7 +34,6 @@ setmetatable(HttpServer, HttpServer)
 
 function HttpServer:InitializeRequestParser(client)
 	local requestParser = IncrementalHttpRequestParser()
-	requestParser:RegisterParserCallbacks(client)
 	self.httpParsers[client] = requestParser
 end
 
@@ -123,11 +122,11 @@ function HttpServer:TCP_EOF_RECEIVED(client)
 		return
 	end
 
-	local isOK, errorMessage = parser:FinalizeBufferedRequest()
-	if not isOK then
-		self:OnParserError(client, errorMessage)
-		return
-	end
+	-- local isOK, errorMessage = parser:FinalizeBufferedRequest()
+	-- if not isOK then
+	-- 	self:OnParserError(client, errorMessage)
+	-- 	return
+	-- end
 
 	local request = parser:GetBufferedRequest()
 	self:HTTP_REQUEST_RECEIVED(client, request)

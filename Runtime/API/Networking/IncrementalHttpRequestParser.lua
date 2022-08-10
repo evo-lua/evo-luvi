@@ -51,10 +51,12 @@ function IncrementalHttpRequestParser:Construct()
 		lastReceivedHeaderValue = "",
 	}
 
-	llhttp_settings_init(instance.settings)
+	-- llhttp_settings_init(instance.settings)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
 
 	setmetatable(instance, self)
+
+	instance:RegisterCallbackHandlers()
 
 	return instance
 end
@@ -78,7 +80,7 @@ end
 
 local tonumber = tonumber
 
-function IncrementalHttpRequestParser:RegisterParserCallbacks()
+function IncrementalHttpRequestParser:RegisterCallbackHandlers()
 	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
 	for callbackName, eventID in pairs(self.INFO_CALLBACKS) do
 		local function infoCallbackHandler(parserState)
@@ -101,6 +103,11 @@ end
 function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 	local errNo = llhttp_execute(self.state, chunk, #chunk)
 	local isParserInErrorState = tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK
+	if not isParserInErrorState then
+		-- DEBUG("[IncrementalHttpRequestParser] Finalizing buffered request")
+		-- local errNo = llhttp_finish(self.state)
+	end
+
 	if isParserInErrorState then
 		if llhttp_message_needs_eof(self.state) then
 			DEBUG("Message needs EOF")
@@ -134,6 +141,7 @@ function IncrementalHttpRequestParser:FinalizeBufferedRequest()
 	local isParserInErrorState = tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK
 
 	local errorMessage = llhttp_errno_name(errNo)
+	DEBUG(format("llhttp_finish returned %s (error: %s)", isParserInErrorState, ffi_string(errorMessage)))
 	return isParserInErrorState, ffi_string(errorMessage)
 end
 
@@ -194,7 +202,7 @@ function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	self.isBufferReady = true
 
 	local methodName = llhttp_method_name(self.state.method)
-	self.bufferedRequest.method = methodName
+	self.bufferedRequest.method = ffi_string(methodName)
 
 	local major = self.state.http_major
 	local minor = self.state.http_minor
