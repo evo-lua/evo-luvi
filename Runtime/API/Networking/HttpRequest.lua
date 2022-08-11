@@ -1,27 +1,23 @@
-local ffi = require("ffi")
+local buffer = require("string.buffer")
+
+local buffer_new = buffer.new
 
 local ipairs = ipairs
 local setmetatable = setmetatable
 local table_concat = table.concat
 
 local HttpRequest = {
-	cdefs = [[
-		typedef struct HttpRequest {
-			void* methodStringBuffer;
-		}
-	]],
+	INITIAL_BUFFER_SIZE_IN_BYTES = 64,
 }
-
-ffi.cdef(HttpRequest.cdefs)
 
 function HttpRequest:Construct(requestObject)
 	requestObject = requestObject
 		or {
-			method = "",
-			requestedURL = "",
-			versionString = "",
+			method = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
+			requestedURL = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
+			versionString = buffer_new(8), -- HTTP/x.y,
 			headers = {},
-			body = "",
+			body = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
 		}
 
 	setmetatable(requestObject, self)
@@ -33,11 +29,11 @@ HttpRequest.__call = HttpRequest.Construct
 HttpRequest.__index = HttpRequest
 
 function HttpRequest:Reset()
-	self.method = ""
-	self.requestedURL = ""
-	self.versionString = ""
-	self.headers = {}
-	self.body = ""
+	self.method:reset()
+	self.requestedURL:reset()
+	self.versionString:reset()
+	self.headers = {} -- TBD wipe?
+	self.body:reset()
 end
 
 function HttpRequest:ToString()

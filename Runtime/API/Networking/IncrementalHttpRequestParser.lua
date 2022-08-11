@@ -197,8 +197,8 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
 
 	-- Reset buffer so the next key-value-pair can be stored
-	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:reset()
-	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:reset()
+	self.lastReceivedHeaderKey:reset()
+	self.lastReceivedHeaderValue:reset()
 end
 
 -- TODO check for missing upvalues everywhere
@@ -208,37 +208,37 @@ function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	self.isBufferReady = true
 
 	local methodName = llhttp_method_name(self.state.method)
-	self.bufferedRequest.method = ffi_string(methodName)
+	self.bufferedRequest.method:set(ffi_string(methodName))
 
 	local major = self.state.http_major
 	local minor = self.state.http_minor
-	self.bufferedRequest.versionString = format("HTTP/%d.%d", major, minor)
+	self.bufferedRequest.versionString:set(format("HTTP/%d.%d", major, minor))
 end
 
 -- llhttp data callbacks
 function IncrementalHttpRequestParser:HTTP_URL(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_URL triggered", parsedString)
-	self.bufferedRequest.requestedURL = self.bufferedRequest.requestedURL .. parsedString
+	self.bufferedRequest.requestedURL:put(parsedString)
 end
 
-function IncrementalHttpRequestParser:HTTP_STATUS(parsedString)
+function IncrementalHttpRequestParser:HTTP_STATUS(parsedString) -- TBD can we eliminate the ffi_string overhead and just pass const char?
 	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS triggered", parsedString)
-	self.bufferedRequest.requestedURL = self.bufferedRequest.requestedURL .. parsedString
+	self.bufferedRequest.requestedURL:put(parsedString)
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
 
-	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:put(parsedString)
+	self.lastReceivedHeaderKey:put(parsedString)
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE triggered", parsedString)
 
-	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:put(parsedString)
+	self.lastReceivedHeaderValue:put(parsedString)
 end
 
 function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_BODY triggered", parsedString)
-	self.bufferedRequest.body = self.bufferedRequest.body .. parsedString
+	self.bufferedRequest.body:put(parsedString)
 end
 
 -- HttpParserMixin
