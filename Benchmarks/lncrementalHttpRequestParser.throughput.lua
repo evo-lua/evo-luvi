@@ -10,7 +10,7 @@ function benchmark:OnSetup()
 	self.globalDebugPrintHandler = _G.DEBUG
 	_G.DEBUG = function() end -- NOOP so it can be eliminated in optimized traces
 
-	self.iterationCount = 1000000 -- It's too slow to do much more in a reasonable timeframe
+	self.iterationCount = 100000 -- It's too slow to do much more in a reasonable timeframe
 
 	parser = C_Networking.IncrementalHttpRequestParser()
 end

@@ -210,9 +210,7 @@ function IncrementalHttpRequestParser:HTTP_MESSAGE_COMPLETE()
 	local methodName = llhttp_method_name(self.state.method)
 	self.bufferedRequest.method:set(ffi_string(methodName))
 
-	local major = self.state.http_major
-	local minor = self.state.http_minor
-	self.bufferedRequest.versionString:set(format("HTTP/%d.%d", major, minor))
+	self.bufferedRequest.versionString:set(format("HTTP/%d.%d", self.state.http_major, self.state.http_minor))
 end
 
 -- llhttp data callbacks
