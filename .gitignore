@@ -4,3 +4,7 @@ luvi-src.tar.gz
 evo
 evo-luvi
 luvi
+*.log
+*.data
+*.data
+*.log
