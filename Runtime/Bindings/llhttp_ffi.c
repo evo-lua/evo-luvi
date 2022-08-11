@@ -1,4 +1,6 @@
 #include "llhttp.h"
+// TODO remove printf
+#include <stdio.h>
 
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
@@ -22,6 +24,80 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 };
 
+struct http_request {
+};
+
+struct http_response {
+};
+
+struct http_message {
+};
+
+// int (*llhttp_data_cb)(llhttp_t* parser_state, const char *at, size_t length);
+
+// Note: Parameters at & length are useless for llhttp_cb, do not use them in non-llhttp_data_cb callbacks
+// llhttp info callbacks
+int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t length)
+{
+
+	// local fieldName = tostring(self.lastReceivedHeaderKey)
+	// local fieldValue = tostring(self.lastReceivedHeaderValue)
+	// DEBUG(format("Storing received header pair - %s: %s", fieldName, fieldValue))
+	// self.bufferedRequest.headers[fieldName] = fieldValue
+
+	// -- This is somewhat redundant, but allows serializing headers in the exact order they were received later
+	// -- .All the while, also preserving the ability to perform dictionary lookups (constant-time + ease-of-use)
+	// self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
+
+	// -- Reset buffer so the next key-value-pair can be stored
+	// self.lastReceivedHeaderKey:reset()
+	// self.lastReceivedHeaderValue:reset()
+	return HPE_OK;
+}
+
+int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
+	// self.isBufferReady = true
+
+	// local methodName = llhttp_method_name(self.state.method)
+	// self.bufferedRequest.method:set(ffi_string(methodName))
+
+	// self.bufferedRequest.versionString:set(format("HTTP/%d.%d", self.state.http_major, self.state.http_minor))
+	return HPE_OK;
+}
+
+// llhttp data callbacks
+int on_http_url(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// self.bufferedRequest.requestedURL:put(parsedString)
+	return HPE_OK;
+}
+
+int on_status(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// self.bufferedRequest.requestedURL:put(parsedString)
+	return HPE_OK;
+}
+
+int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// self.lastReceivedHeaderKey:put(parsedString)
+	return HPE_OK;
+}
+
+int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// self.lastReceivedHeaderValue:put(parsedString)
+	return HPE_OK;
+}
+
+int on_body(llhttp_t* parser_state, const char* at, size_t length)
+{
+	// self.bufferedRequest.body:put(parsedString)
+	return HPE_OK;
+}
+
 #define EXPAND_AS_STRING(text) #text
 #define TOSTRING(text) EXPAND_AS_STRING(text)
 #define LLHTTP_VERSION_STRING      \
@@ -33,12 +109,18 @@ const char* llhttp_get_version_string(void)
 	return LLHTTP_VERSION_STRING;
 }
 
+static void init_settings_with_callbacks(llhttp_settings_t* settings)
+{
+	printf("Initializing llhttp settings with callbacks...\n"); // TODO remove
+	llhttp_settings_init(settings);
+}
+
 void export_llhttp_bindings(lua_State* L)
 {
 	static struct static_llhttp_exports_table llhttp_exports_table;
 	llhttp_exports_table.llhttp_init = llhttp_init;
 	llhttp_exports_table.llhttp_reset = llhttp_reset;
-	llhttp_exports_table.llhttp_settings_init = llhttp_settings_init;
+	llhttp_exports_table.llhttp_settings_init = init_settings_with_callbacks;
 	llhttp_exports_table.llhttp_execute = llhttp_execute;
 	llhttp_exports_table.llhttp_finish = llhttp_finish;
 	llhttp_exports_table.llhttp_message_needs_eof = llhttp_message_needs_eof;

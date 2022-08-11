@@ -81,7 +81,7 @@ function IncrementalHttpRequestParser:Construct()
 		lastReceivedHeaderValue = buffer.new(1024),
 	}
 
-	-- llhttp_settings_init(instance.settings)
+	llhttp_settings_init(instance.settings) -- Also sets up callbacks in C (to avoid Lua/C call overhead)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
 
 	setmetatable(instance, self)
@@ -221,7 +221,7 @@ end
 
 function IncrementalHttpRequestParser:HTTP_STATUS(parsedString) -- TBD can we eliminate the ffi_string overhead and just pass const char?
 	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS triggered", parsedString)
-	self.bufferedRequest.requestedURL:put(parsedString)
+	self.bufferedRequest.requestedURL:put(parsedString) -- TODO why save to url?? wtf
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
