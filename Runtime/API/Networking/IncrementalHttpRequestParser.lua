@@ -63,7 +63,7 @@ function IncrementalHttpRequestParser:Construct()
 
 	setmetatable(instance, self)
 
-	instance:RegisterCallbackHandlers()
+	instance:RegisterCallbackHandlers() -- TODO optimize via ffi
 
 	return instance
 end
@@ -74,6 +74,9 @@ function IncrementalHttpRequestParser.__index(target, key)
 	end
 	return rawget(target, key)
 end
+
+IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
+setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
 function IncrementalHttpRequestParser:GetBufferedRequest()
 	if not self.isBufferReady then
@@ -156,9 +159,6 @@ function IncrementalHttpRequestParser:ResetInternalState()
 	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:reset()
 	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:reset()
 end
-
-IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
-setmetatable(IncrementalHttpRequestParser, IncrementalHttpRequestParser)
 
 -- llhttp info callbacks
 function IncrementalHttpRequestParser:HTTP_MESSAGE_BEGIN()
