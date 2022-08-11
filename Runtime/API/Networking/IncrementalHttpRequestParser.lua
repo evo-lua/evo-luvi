@@ -7,6 +7,9 @@ local buffer = require("string.buffer")
 local ffi_new = ffi.new
 local ffi_string = ffi.string
 
+local format = format
+local rawget = rawget
+local tonumber = tonumber
 local tostring = tostring
 
 local llhttp_init = llhttp.bindings.llhttp_init
@@ -65,8 +68,8 @@ function IncrementalHttpRequestParser:Construct()
 	return instance
 end
 
-local rawget = rawget
-local format = format
+
+
 
 function IncrementalHttpRequestParser.__index(target, key)
 	if rawget(IncrementalHttpRequestParser, key) ~= nil then
@@ -83,7 +86,6 @@ function IncrementalHttpRequestParser:GetBufferedRequest()
 	return self.bufferedRequest
 end
 
-local tonumber = tonumber
 
 function IncrementalHttpRequestParser:RegisterCallbackHandlers()
 	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
