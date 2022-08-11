@@ -23,7 +23,6 @@ Benchmark.__call = Benchmark.Construct
 setmetatable(Benchmark, Benchmark)
 
 function Benchmark:Start(numIterations)
-
 	self:OnSetup()
 
 	numIterations = numIterations or self.iterationCount
