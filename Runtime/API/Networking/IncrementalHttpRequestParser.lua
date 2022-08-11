@@ -86,7 +86,7 @@ function IncrementalHttpRequestParser:Construct()
 
 	setmetatable(instance, self)
 
-	instance:RegisterCallbackHandlers() -- TODO optimize via ffi
+	-- instance:RegisterCallbackHandlers() -- TODO optimize via ffi
 
 	return instance
 end

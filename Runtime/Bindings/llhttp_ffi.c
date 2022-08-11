@@ -39,6 +39,7 @@ struct http_message {
 // llhttp info callbacks
 int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_header_value_complete with token %.*s\n", length, at);
 
 	// local fieldName = tostring(self.lastReceivedHeaderKey)
 	// local fieldValue = tostring(self.lastReceivedHeaderValue)
@@ -57,6 +58,7 @@ int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t leng
 
 int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_message_complete with token %.*s\n", length, at);
 	// DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
 	// self.isBufferReady = true
 
@@ -68,26 +70,30 @@ int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
 }
 
 // llhttp data callbacks
-int on_http_url(llhttp_t* parser_state, const char* at, size_t length)
+int on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_url with token %.*s\n", length, at);
 	// self.bufferedRequest.requestedURL:put(parsedString)
 	return HPE_OK;
 }
 
 int on_status(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_status with token %.*s\n", length, at);
 	// self.bufferedRequest.requestedURL:put(parsedString)
 	return HPE_OK;
 }
 
 int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_header_field with token %.*s\n", length, at);
 	// self.lastReceivedHeaderKey:put(parsedString)
 	return HPE_OK;
 }
 
 int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 {
+	printf("[C] llhttp called on_header_value with token %.*s\n", length, at);
 	// self.lastReceivedHeaderValue:put(parsedString)
 	return HPE_OK;
 }
@@ -95,6 +101,7 @@ int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
+	printf("[C] llhttp called on_body with token %.*s\n", length, at);
 	return HPE_OK;
 }
 
@@ -113,6 +120,17 @@ static void init_settings_with_callbacks(llhttp_settings_t* settings)
 {
 	printf("Initializing llhttp settings with callbacks...\n"); // TODO remove
 	llhttp_settings_init(settings);
+
+	// Set up info callbacks
+	settings->on_header_value_complete = on_header_value_complete;
+	settings->on_message_complete = on_message_complete;
+
+	// Set up data callbacks
+	settings->on_url = on_url;
+	settings->on_status = on_status;
+	settings->on_header_field = on_header_field;
+	settings->on_header_value = on_header_value;
+	settings->on_body = on_body;
 }
 
 void export_llhttp_bindings(lua_State* L)
