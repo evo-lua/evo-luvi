@@ -155,8 +155,8 @@ function IncrementalHttpRequestParser:ResetInternalState()
 	llhttp_reset(self.state)
 	self.bufferedRequest = HttpRequest()
 	self.isBufferReady = false
-	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:skip(#self.lastReceivedHeaderKey)
-	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:skip(#self.lastReceivedHeaderValue)
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:reset()
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:reset()
 end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
@@ -197,8 +197,8 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
 
 	-- Reset buffer so the next key-value-pair can be stored
-	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:skip(#self.lastReceivedHeaderKey)
-	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:skip(#self.lastReceivedHeaderValue)
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:reset()
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:reset()
 end
 
 -- TODO check for missing upvalues everywhere
