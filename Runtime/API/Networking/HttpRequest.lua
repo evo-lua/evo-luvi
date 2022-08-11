@@ -1,4 +1,5 @@
 local buffer = require("string.buffer")
+local table_clear = require("table.clear")
 
 local buffer_new = buffer.new
 
@@ -32,7 +33,7 @@ function HttpRequest:Reset()
 	self.method:reset()
 	self.requestedURL:reset()
 	self.versionString:reset()
-	self.headers = {} -- TBD wipe?
+	table_clear(self.headers)
 	self.body:reset()
 end
 
