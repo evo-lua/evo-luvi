@@ -132,10 +132,10 @@ end
 function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 	local errNo = llhttp_execute(self.state, chunk, #chunk)
 	local isParserInErrorState = tonumber(errNo) == llhttp.ERROR_TYPES.HPE_OK
-	if not isParserInErrorState then
-		-- DEBUG("[IncrementalHttpRequestParser] Finalizing buffered request")
-		-- local errNo = llhttp_finish(self.state)
-	end
+	-- if not isParserInErrorState then
+	-- 	-- DEBUG("[IncrementalHttpRequestParser] Finalizing buffered request")
+	-- 	-- local errNo = llhttp_finish(self.state)
+	-- end
 
 	if isParserInErrorState then
 		if llhttp_message_needs_eof(self.state) then
@@ -151,8 +151,8 @@ function IncrementalHttpRequestParser:ParseNextChunk(chunk)
 		DEBUG("Expecting HTTP upgrade")
 	end
 
-	local errorMessage = llhttp_errno_name(errNo)
-	return isParserInErrorState, ffi_string(errorMessage)
+	-- local errorMessage = llhttp_errno_name(errNo)
+	return isParserInErrorState --, ffi_string(errorMessage)
 end
 
 function IncrementalHttpRequestParser:IsExpectingUpgrade()
