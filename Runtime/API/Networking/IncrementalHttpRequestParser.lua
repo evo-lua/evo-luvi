@@ -23,16 +23,39 @@ local llhttp_reset = llhttp.bindings.llhttp_reset
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 
+-- function IncrementalHttpRequestParser:HTTP_MESSAGE_BEGIN()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_BEGIN triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_HEADERS_COMPLETE()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADERS_COMPLETE triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_CHUNK_HEADER()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_HEADER triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_CHUNK_COMPLETE()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_COMPLETE triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_URL_COMPLETE()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_URL_COMPLETE triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_STATUS_COMPLETE()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS_COMPLETE triggered")
+-- end
+-- function IncrementalHttpRequestParser:HTTP_HEADER_FIELD_COMPLETE()
+-- 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD_COMPLETE triggered")
+-- end
+
 local IncrementalHttpRequestParser = {
 	-- Signature: parserState : llhttp_t (the other arguments are useless)
+	-- Most of them are useless, and they're a huge bottleneck - so do not enable unless absolutely necessary
 	INFO_CALLBACKS = {
-		on_message_begin = "HTTP_MESSAGE_BEGIN",
-		on_headers_complete = "HTTP_HEADERS_COMPLETE",
-		on_chunk_header = "HTTP_CHUNK_HEADER",
-		on_chunk_complete = "HTTP_CHUNK_COMPLETE",
-		on_url_complete = "HTTP_URL_COMPLETE",
-		on_status_complete = "HTTP_STATUS_COMPLETE",
-		on_header_field_complete = "HTTP_HEADER_FIELD_COMPLETE",
+		-- on_message_begin = "HTTP_MESSAGE_BEGIN",
+		-- on_headers_complete = "HTTP_HEADERS_COMPLETE",
+		-- on_chunk_header = "HTTP_CHUNK_HEADER",
+		-- on_chunk_complete = "HTTP_CHUNK_COMPLETE",
+		-- on_url_complete = "HTTP_URL_COMPLETE",
+		-- on_status_complete = "HTTP_STATUS_COMPLETE",
+		-- on_header_field_complete = "HTTP_HEADER_FIELD_COMPLETE",
 		on_header_value_complete = "HTTP_HEADER_VALUE_COMPLETE",
 		on_message_complete = "HTTP_MESSAGE_COMPLETE",
 	},
@@ -161,27 +184,6 @@ function IncrementalHttpRequestParser:ResetInternalState()
 end
 
 -- llhttp info callbacks
-function IncrementalHttpRequestParser:HTTP_MESSAGE_BEGIN()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_BEGIN triggered")
-end
-function IncrementalHttpRequestParser:HTTP_HEADERS_COMPLETE()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADERS_COMPLETE triggered")
-end
-function IncrementalHttpRequestParser:HTTP_CHUNK_HEADER()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_HEADER triggered")
-end
-function IncrementalHttpRequestParser:HTTP_CHUNK_COMPLETE()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_CHUNK_COMPLETE triggered")
-end
-function IncrementalHttpRequestParser:HTTP_URL_COMPLETE()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_URL_COMPLETE triggered")
-end
-function IncrementalHttpRequestParser:HTTP_STATUS_COMPLETE()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_STATUS_COMPLETE triggered")
-end
-function IncrementalHttpRequestParser:HTTP_HEADER_FIELD_COMPLETE()
-	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD_COMPLETE triggered")
-end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE_COMPLETE triggered")
 
