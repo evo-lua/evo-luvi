@@ -1,5 +1,5 @@
 #include "llhttp.h"
-// TODO remove printf
+// TODO remove //printf
 #include <stdio.h>
 
 struct static_llhttp_exports_table {
@@ -39,7 +39,7 @@ struct http_message {
 // llhttp info callbacks
 int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_header_value_complete with token %.*s\n", length, at);
+	// printf("[C] llhttp called on_header_value_complete with token %.*s\n", length, at);
 
 	// local fieldName = tostring(self.lastReceivedHeaderKey)
 	// local fieldValue = tostring(self.lastReceivedHeaderValue)
@@ -58,9 +58,9 @@ int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t leng
 
 int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_message_complete with token %.*s\n", length, at);
-	// DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
-	// self.isBufferReady = true
+	// printf("[C] llhttp called on_message_complete with token %.*s\n", length, at);
+	//  DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
+	//  self.isBufferReady = true
 
 	// local methodName = llhttp_method_name(self.state.method)
 	// self.bufferedRequest.method:set(ffi_string(methodName))
@@ -72,36 +72,36 @@ int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
 // llhttp data callbacks
 int on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_url with token %.*s\n", length, at);
-	// self.bufferedRequest.requestedURL:put(parsedString)
+	// printf("[C] llhttp called on_url with token %.*s\n", length, at);
+	//  self.bufferedRequest.requestedURL:put(parsedString)
 	return HPE_OK;
 }
 
 int on_status(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_status with token %.*s\n", length, at);
-	// self.bufferedRequest.requestedURL:put(parsedString)
+	// printf("[C] llhttp called on_status with token %.*s\n", length, at);
+	//  self.bufferedRequest.requestedURL:put(parsedString)
 	return HPE_OK;
 }
 
 int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_header_field with token %.*s\n", length, at);
-	// self.lastReceivedHeaderKey:put(parsedString)
+	// printf("[C] llhttp called on_header_field with token %.*s\n", length, at);
+	//  self.lastReceivedHeaderKey:put(parsedString)
 	return HPE_OK;
 }
 
 int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_header_value with token %.*s\n", length, at);
-	// self.lastReceivedHeaderValue:put(parsedString)
+	// printf("[C] llhttp called on_header_value with token %.*s\n", length, at);
+	//  self.lastReceivedHeaderValue:put(parsedString)
 	return HPE_OK;
 }
 
 int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
-	printf("[C] llhttp called on_body with token %.*s\n", length, at);
+	// printf("[C] llhttp called on_body with token %.*s\n", length, at);
 	return HPE_OK;
 }
 
@@ -118,7 +118,7 @@ const char* llhttp_get_version_string(void)
 
 static void init_settings_with_callbacks(llhttp_settings_t* settings)
 {
-	printf("Initializing llhttp settings with callbacks...\n"); // TODO remove
+	// printf("Initializing llhttp settings with callbacks...\n"); // TODO remove
 	llhttp_settings_init(settings);
 
 	// Set up info callbacks
