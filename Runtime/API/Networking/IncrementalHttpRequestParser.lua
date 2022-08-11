@@ -68,9 +68,6 @@ function IncrementalHttpRequestParser:Construct()
 	return instance
 end
 
-
-
-
 function IncrementalHttpRequestParser.__index(target, key)
 	if rawget(IncrementalHttpRequestParser, key) ~= nil then
 		return IncrementalHttpRequestParser[key]
@@ -85,7 +82,6 @@ function IncrementalHttpRequestParser:GetBufferedRequest()
 
 	return self.bufferedRequest
 end
-
 
 function IncrementalHttpRequestParser:RegisterCallbackHandlers()
 	-- This is a bit convoluted, but llhttp doesn't offer any other way of registering events :/
