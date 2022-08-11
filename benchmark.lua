@@ -1,5 +1,5 @@
 local benchmarks = {
-	"./Benchmarks/llhttp-ffi.throughput.lua",
+	-- "./Benchmarks/llhttp-ffi.throughput.lua",
 	"./Benchmarks/lncrementalHttpRequestParser.throughput.lua",
 }
 
