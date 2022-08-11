@@ -15,8 +15,8 @@ function HttpRequest:Construct(requestObject)
 	requestObject = requestObject
 		or {
 			method = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
-			requestedURL = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
-			versionString = buffer_new(8), -- HTTP/x.y,
+			requestedURL = buffer_new(16), -- No valid HTTP method uses more than 13 characters
+			versionString = buffer_new(8), -- HTTP/x.y
 			headers = {},
 			body = buffer_new(HttpRequest.INITIAL_BUFFER_SIZE_IN_BYTES),
 		}
