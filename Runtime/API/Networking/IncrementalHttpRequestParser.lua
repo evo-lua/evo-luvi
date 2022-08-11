@@ -2,8 +2,12 @@
 local ffi = require("ffi")
 local llhttp = require("llhttp")
 
+local buffer = require("string.buffer")
+
 local ffi_new = ffi.new
 local ffi_string = ffi.string
+
+local tostring = tostring
 
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
@@ -47,8 +51,8 @@ function IncrementalHttpRequestParser:Construct()
 		settings = ffi_new("llhttp_settings_t"),
 		bufferedRequest = HttpRequest(),
 		isBufferReady = false,
-		lastReceivedHeaderKey = "",
-		lastReceivedHeaderValue = "",
+		lastReceivedHeaderKey = buffer.new(1024),
+		lastReceivedHeaderValue = buffer.new(1024),
 	}
 
 	-- llhttp_settings_init(instance.settings)
@@ -62,6 +66,7 @@ function IncrementalHttpRequestParser:Construct()
 end
 
 local rawget = rawget
+local format = format
 
 function IncrementalHttpRequestParser.__index(target, key)
 	if rawget(IncrementalHttpRequestParser, key) ~= nil then
@@ -150,8 +155,8 @@ function IncrementalHttpRequestParser:ResetInternalState()
 	llhttp_reset(self.state)
 	self.bufferedRequest = HttpRequest()
 	self.isBufferReady = false
-	self.lastReceivedHeaderKey = ""
-	self.lastReceivedHeaderValue = ""
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:skip(#self.lastReceivedHeaderKey)
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:skip(#self.lastReceivedHeaderValue)
 end
 
 IncrementalHttpRequestParser.__call = IncrementalHttpRequestParser.Construct
@@ -182,8 +187,8 @@ end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE_COMPLETE triggered")
 
-	local fieldName = self.lastReceivedHeaderKey
-	local fieldValue = self.lastReceivedHeaderValue
+	local fieldName = tostring(self.lastReceivedHeaderKey)
+	local fieldValue = tostring(self.lastReceivedHeaderValue)
 	DEBUG(format("Storing received header pair - %s: %s", fieldName, fieldValue))
 	self.bufferedRequest.headers[fieldName] = fieldValue
 
@@ -192,8 +197,8 @@ function IncrementalHttpRequestParser:HTTP_HEADER_VALUE_COMPLETE()
 	self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
 
 	-- Reset buffer so the next key-value-pair can be stored
-	self.lastReceivedHeaderKey = ""
-	self.lastReceivedHeaderValue = ""
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:skip(#self.lastReceivedHeaderKey)
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:skip(#self.lastReceivedHeaderValue)
 end
 
 -- TODO check for missing upvalues everywhere
@@ -223,12 +228,12 @@ end
 function IncrementalHttpRequestParser:HTTP_HEADER_FIELD(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_FIELD triggered", parsedString)
 
-	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey .. parsedString
+	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:put(parsedString)
 end
 function IncrementalHttpRequestParser:HTTP_HEADER_VALUE(parsedString)
 	DEBUG("[IncrementalHttpRequestParser] HTTP_HEADER_VALUE triggered", parsedString)
 
-	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue .. parsedString
+	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:put(parsedString)
 end
 
 function IncrementalHttpRequestParser:HTTP_BODY(parsedString)
