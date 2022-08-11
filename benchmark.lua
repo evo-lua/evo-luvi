@@ -1,5 +1,6 @@
 local benchmarks = {
 	"./Benchmarks/llhttp-ffi.throughput.lua",
+	"./Benchmarks/lncrementalHttpRequestParser.throughput.lua",
 }
 
 for _, filePath in pairs(benchmarks) do

@@ -3,7 +3,7 @@ local bold = transform.bold
 
 local Benchmark = {
 	label = "<no label>",
-	DEFAULT_ITERATION_COUNT = 10000000,
+	iterationCount = 10000000,
 }
 
 function Benchmark:Construct(label)
@@ -23,11 +23,11 @@ Benchmark.__call = Benchmark.Construct
 setmetatable(Benchmark, Benchmark)
 
 function Benchmark:Start(numIterations)
-	numIterations = numIterations or self.DEFAULT_ITERATION_COUNT
-
-	printf("Starting benchmark %s for %d iterations ", bold(self.label), numIterations)
 
 	self:OnSetup()
+
+	numIterations = numIterations or self.iterationCount
+	printf("Starting benchmark %s for %d iterations ", bold(self.label), numIterations)
 
 	local startTime = uv.hrtime()
 	for i = 1, numIterations, 1 do
