@@ -1,4 +1,3 @@
-local env = require("env")
 local uv = require("uv")
 local bundle = require("luvi").bundle
 
@@ -44,7 +43,7 @@ end
 
 local env = setmetatable({}, {
 	__pairs = function(table)
-		local keys = env.keys(true)
+		local keys = uv.os_environ(true)
 		local index = 0
 		return function()
 			index = index + 1
@@ -55,14 +54,14 @@ local env = setmetatable({}, {
 		end
 	end,
 	__index = function(_, name)
-		local value = env.get(name)
+		local value = uv.os_getenv(name)
 		return value
 	end,
 	__newindex = function(_, name, value)
 		if value then
-			env.set(name, value)
+			uv.os_setenv(name, value)
 		else
-			env.unset(name)
+			uv.os_unsetenv(name)
 		end
 	end,
 })
