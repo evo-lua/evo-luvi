@@ -88,8 +88,8 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 		return
 	end
 
-	parser:ResetInternalState() -- Prepare for new requests, if the parser is to be re-used (keep-alive enabled)
 	self:HTTP_REQUEST_RECEIVED(client, request)
+	parser:ResetInternalState() -- Prepare for new requests, if the parser is to be re-used (keep-alive enabled)
 end
 
 function HttpServer:OnUpgradeRequestReceived(client)

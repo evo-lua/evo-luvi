@@ -1,8 +1,18 @@
+local ffi = require("ffi")
+
 local ipairs = ipairs
 local setmetatable = setmetatable
 local table_concat = table.concat
 
-local HttpRequest = {}
+local HttpRequest = {
+	cdefs = [[
+		typedef struct HttpRequest {
+			void* methodStringBuffer;
+		}
+	]],
+}
+
+ffi.cdef(HttpRequest.cdefs)
 
 function HttpRequest:Construct(requestObject)
 	requestObject = requestObject
@@ -21,6 +31,14 @@ end
 
 HttpRequest.__call = HttpRequest.Construct
 HttpRequest.__index = HttpRequest
+
+function HttpRequest:Reset()
+	self.method = ""
+	self.requestedURL = ""
+	self.versionString = ""
+	self.headers = {}
+	self.body = ""
+end
 
 function HttpRequest:ToString()
 	local tokens = {}

@@ -153,7 +153,7 @@ end
 function IncrementalHttpRequestParser:ResetInternalState()
 	DEBUG("Resetting internal parser state")
 	llhttp_reset(self.state)
-	self.bufferedRequest = HttpRequest()
+	self.bufferedRequest:Reset()
 	self.isBufferReady = false
 	self.lastReceivedHeaderKey = self.lastReceivedHeaderKey:reset()
 	self.lastReceivedHeaderValue = self.lastReceivedHeaderValue:reset()
