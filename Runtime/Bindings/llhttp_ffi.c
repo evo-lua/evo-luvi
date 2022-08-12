@@ -2,6 +2,8 @@
 // TODO remove //printf
 #include <stdio.h>
 
+#include <lj_buf.h>
+
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
 	void (*llhttp_reset)(llhttp_t* parser);
@@ -25,6 +27,7 @@ struct static_llhttp_exports_table {
 };
 
 struct http_request {
+	// SBuf* url_token_buffer;
 };
 
 struct http_response {
@@ -35,9 +38,8 @@ struct http_message {
 
 // int (*llhttp_data_cb)(llhttp_t* parser_state, const char *at, size_t length);
 
-// Note: Parameters at & length are useless for llhttp_cb, do not use them in non-llhttp_data_cb callbacks
 // llhttp info callbacks
-int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t length)
+int on_header_value_complete(llhttp_t* parser_state)
 {
 	// printf("[C] llhttp called on_header_value_complete with token %.*s\n", length, at);
 
@@ -56,7 +58,7 @@ int on_header_value_complete(llhttp_t* parser_state, const char* at, size_t leng
 	return HPE_OK;
 }
 
-int on_message_complete(llhttp_t* parser_state, const char* at, size_t length)
+int on_message_complete(llhttp_t* parser_state)
 {
 	// printf("[C] llhttp called on_message_complete with token %.*s\n", length, at);
 	//  DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
