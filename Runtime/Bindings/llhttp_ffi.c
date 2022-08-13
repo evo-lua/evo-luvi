@@ -26,9 +26,9 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 };
 
-struct http_request {
-	// SBuf* url_token_buffer;
-};
+typedef struct http_request_t {
+	SBuf* url_token_buffer;
+} http_request;
 
 struct http_response {
 };
@@ -103,7 +103,13 @@ int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
-	// printf("[C] llhttp called on_body with token %.*s\n", length, at);
+	printf("[C] llhttp called on_body with token %.*s\n", (int) length, at);
+	http_request* buffered_request = (http_request*) parser_state->data;
+
+	lj_buf_putmem(buffered_request->url_token_buffer, at, length);
+
+	printf("lj)buf_putmem done\n");
+
 	return HPE_OK;
 }
 
