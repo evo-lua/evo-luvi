@@ -103,8 +103,8 @@ int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
-	printf("[C] llhttp called on_body with token %.*s\n", (int) length, at);
-	http_request* buffered_request = (http_request*) parser_state->data;
+	printf("[C] llhttp called on_body with token %.*s\n", (int)length, at);
+	http_request* buffered_request = (http_request*)parser_state->data;
 
 	lj_buf_putmem(buffered_request->url_token_buffer, at, length);
 

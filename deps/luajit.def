@@ -1,0 +1,3 @@
+LIBRARY luajit
+EXPORTS
+	lj_buf_putmem
