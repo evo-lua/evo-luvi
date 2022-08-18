@@ -219,8 +219,18 @@ if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   set(EXTRA_LIBS ${EXTRA_LIBS} rt)
 endif()
 
-target_link_libraries(luvi ${LUVI_LIBRARIES} ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LUAJIT_LIBRARIES})
-# set_target_properties(luvi PROPERTIES ENABLE_EXPORTS ON)
+# set(LUAJIT_LIBRARIES ${LUAJIT_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/deps/luajit.def)
+# add_library(luajit-5.1 STATIC ${SRC_LJCORE} ${DEPS} )
+# set(CMAKE_C_VISIBILITY_PRESET visible)
+
+# add_library(luajit
+# 	${LUAJIT_LIBRARIES}
+# 	# ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.def
+# )
+# list(APPEND EXTRA_LIBS ${LUAJIT_LIBRARIES})
+
+target_link_libraries(luvi ${LUVI_LIBRARIES} ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} luajit luajit-5.1)
+# target_link_libraries(luvi )
 
 ###############################################################################
 ## Installation Targets
