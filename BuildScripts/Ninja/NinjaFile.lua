@@ -1,6 +1,5 @@
 local ipairs = ipairs
 local table_concat = table.concat
-local table_remove = table.remove
 
 local DEFAULT_REQUIRED_VERSION = "1.11"
 local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
@@ -8,10 +7,10 @@ local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
 local NinjaFile = {
 	requiredVersion = DEFAULT_REQUIRED_VERSION,
 	buildDirectory = DEFAULT_BUILD_DIRECTORY_NAME,
-	-- Untested (NYI)
 	ruleDeclarations = {},
 	buildEdges = {},
 	variables = {},
+	-- Untested (NYI)
 	defaultTargets = {},
 	subninjas = {},
 	includes = {},
@@ -59,7 +58,6 @@ function NinjaFile:ToString()
 	end
 
 	for index, buildEdge in ipairs(self.buildEdges) do
-		print(index, buildEdge)
 		fileContents[#fileContents+1] = "build " .. buildEdge.target ..": " .. table_concat(buildEdge.statementTokens, " ")
 		for _, variable in ipairs(buildEdge.variableOverrides) do
 			fileContents[#fileContents+1] = "  " .. variable.name .. " = " .. variable.declarationLine
