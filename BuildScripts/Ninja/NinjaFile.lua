@@ -51,7 +51,7 @@ function NinjaFile:ToString()
 		local ruleName = ruleInfo.name
 		fileContents[#fileContents+1] = "rule " .. ruleName
 
-		-- Use indices instead of key, value pairs here to make the output deterministic (and therefore testable)
+		-- Use indices instead of key-value pairs here to make the output deterministic (and therefore testable)
 		for _, lineInfo in ipairs(ruleInfo) do
 			local fieldName = lineInfo.name
 			local ruleString = table_concat(lineInfo, " ")
