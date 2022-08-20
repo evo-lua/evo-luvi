@@ -17,4 +17,12 @@ describe("NinjaFile", function()
 	describe("Save", function()
 
 	end)
+
+	describe("ToString", function()
+		local ninjaFile = NinjaFile()
+
+		local stringifiedNinjaFile = ninjaFile:ToString()
+		local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT
+		assertEquals(stringifiedNinjaFile, expectedFileContents)
+	end)
 end)
