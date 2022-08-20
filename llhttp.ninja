@@ -1,0 +1,14 @@
+ninja_required_version = 1.11
+
+root_dir = deps/llhttp-ffi/llhttp
+source_dir = $root_dir/src
+include_dir = $root_dir/include
+
+build $builddir/api.o: compile $source_dir/api.c
+  includes = -I$include_dir
+build $builddir/http.o: compile $source_dir/http.c
+  includes = -I$include_dir
+build $builddir/llhttp.o: compile $source_dir/llhttp.c
+  includes = -I$include_dir
+
+build $builddir/libllhttp.a: ar $builddir/api.o $builddir/http.o $builddir/llhttp.o
