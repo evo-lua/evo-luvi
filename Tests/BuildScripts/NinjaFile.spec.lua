@@ -15,13 +15,27 @@ describe("NinjaFile", function()
 	end)
 
 	describe("Save", function()
-		local ninjaFile = NinjaFile()
-		-- TODO
+
+		local testFilePath = path.join("Tests", "Fixtures", "temp.ninja")
+		before(function()
+			assertFalse(C_FileSystem.Exists(testFilePath))
+		end)
+
+		after(function()
+			C_FileSystem.Delete(testFilePath)
+			assertFalse(C_FileSystem.Exists(testFilePath))
+		end)
+
+		it("should write the serialized file contents to the given file location", function()
+			local ninjaFile = NinjaFile()
+			local expectedFileContents = ninjaFile:ToString()
+
+			ninjaFile:Save(testFilePath)
+
+			local actualFileContents = C_FileSystem.ReadFile(testFilePath)
+			assertEquals(actualFileContents, expectedFileContents)
+		end)
 	end)
-
-	describe("AddVariable", function() end)
-
-	describe("AddRule", function() end)
 
 	describe("ToString", function()
 
