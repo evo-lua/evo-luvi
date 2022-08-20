@@ -40,7 +40,7 @@ describe("NinjaFile", function()
 			ninjaFile.variables = { -- NinjaFile:AddVariable("root_dir", "file/path")
 				{
 					name = "root_dir",
-					declarationLine = "file/path",
+					declarationLine = "file/path", -- TBD tokens?
 				}
 			}
 
@@ -83,7 +83,30 @@ describe("NinjaFile", function()
 		end)
 
 		it("should include a section for the build edges if any have been added", function()
+			local ninjaFile = NinjaFile()
 
+			local buildEdge = {
+				target = "target.o",
+				statementTokens = {
+					"compile", "target.c",
+				},
+				variableOverrides = {
+					name = "includes",
+					declarationLine = "-Iinclude_dir", -- TBD tokens?
+				}
+			}
+
+			ninjaFile.buildEdges = { -- NinjaFile:AddBuildEdge("target.o", "target.c", overrides)
+				buildEdge,
+			}
+
+			local stringifiedNinjaFile = ninjaFile:ToString()
+			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
+			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
+			.. "build target.o: compile target.c" .. "\n" ..
+			"  " .. "includes = -Iinclude_dirs"
+
+			assertEquals(stringifiedNinjaFile, expectedFileContents)
 
 			-- TODO Remove
 			ninjaFile:Save("test.ninja")
