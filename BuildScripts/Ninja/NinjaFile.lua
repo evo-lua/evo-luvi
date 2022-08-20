@@ -85,7 +85,6 @@ function NinjaFile:AddRule(name, ruleInfo)
 end
 
 function NinjaFile:AddBuildEdge(target, dependencyTokens, variableOverrides)
-
 	self.buildEdges[#self.buildEdges+1] = {
 		target = target,
 		dependencyTokens = dependencyTokens,
