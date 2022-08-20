@@ -47,7 +47,6 @@ function NinjaFile:ToString()
 	end
 
 	for index, ruleInfo in ipairs(self.ruleDeclarations) do
-
 		local ruleName = ruleInfo.name
 		fileContents[#fileContents+1] = "rule " .. ruleName
 
@@ -56,6 +55,14 @@ function NinjaFile:ToString()
 			local fieldName = lineInfo.name
 			local ruleString = table_concat(lineInfo, " ")
 			fileContents[#fileContents+1] = "  " .. fieldName .. " = " .. ruleString
+		end
+	end
+
+	for index, buildEdge in ipairs(self.buildEdges) do
+		print(index, buildEdge)
+		fileContents[#fileContents+1] = "build " .. buildEdge.target ..": " .. table_concat(buildEdge.statementTokens, " ")
+		for _, variable in ipairs(buildEdge.variableOverrides) do
+			fileContents[#fileContents+1] = "  " .. variable.name .. " = " .. variable.declarationLine
 		end
 	end
 
