@@ -44,7 +44,7 @@ describe("NinjaFile", function()
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
-			 .. "ninja_required_version = " .. ninjaFile.requiredVersion
+			 .. "ninja_required_version = " .. ninjaFile.requiredVersion .. "\n"
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
 
@@ -56,7 +56,7 @@ describe("NinjaFile", function()
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
-			.. "root_dir = " .. "file/path"
+			.. "root_dir = " .. "file/path" .. "\n"
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
@@ -80,7 +80,7 @@ describe("NinjaFile", function()
 			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in -o $out".. "\n" ..
 			"  " .. "description = CC $out".. "\n" ..
 			"  " .. "depfile = $out.d".. "\n" ..
-			"  " .. "deps = gcc"
+			"  " .. "deps = gcc" .. "\n"
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
@@ -102,7 +102,7 @@ describe("NinjaFile", function()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
 			.. "build target.o: compile target.c" .. "\n" ..
-			"  " .. "includes = -Iinclude_dir"
+			"  " .. "includes = -Iinclude_dir" .. "\n"
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
