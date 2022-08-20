@@ -1,0 +1,106 @@
+# ninja -t graph | dot -Tpng -ograph.png
+ninja_required_version = 1.3
+
+project_root = .
+root = . # TBD
+builddir = ninjabuild
+build_dir = ninjabuild # TBD
+cc = gcc
+ar = ar
+cflags = -g -Wall -Wextra -Wno-deprecated -Wno-missing-field-initializers -Wno-unused-parameter -fno-exceptions -fvisibility=hidden -O2
+ldflags = -L$builddir
+include_dirs = -Ideps/luv/deps/luajit/src -Ideps/luv/src -Ideps/llhttp-ffi/llhttp/include -Ideps/luv/deps/lua-compat-5.3 -Ideps/luv/deps/lua-compat-5.3/c-api -Ideps/luv/src
+
+rule compile
+  command = $cc -MMD -MT $out -MF $out.d $cflags -c $in $include_dirs -o $out
+  description = CC $out # TBD
+  depfile = $out.d
+  deps = gcc
+
+rule ar
+  command = rm -f $out && $ar crs $out $in
+  description = AR $out # TBD
+
+rule link
+  command = $cc $ldflags -o $out $in $libs
+  description = LINK $out # TBD
+
+
+compiler_flags = -Wl,-E -Werror -O3 $include_dirs
+linker_flags = -lc -lm -ldl
+
+rule make
+  command = cd $in && make && cd $project_root
+  description = Building from existing Makefile
+
+rule cmake
+  command = cd $in && cmake -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=OFF . && cmake --build . && cd $project_root
+  description = Building from existing CMakeLists.txt
+
+rule cc
+  command = gcc -c $in -o$out $compiler_flags
+  description = Compiling C source $in
+
+#    $SRC_DIR/luvi_compat.c $SRC_DIR/main.c $LUV_DIR/libluv.a $LUV_DIR/deps/libuv/libuv_a.a $COMPAT_DIR/c-api/compat-5.3.c $LUAJIT_TARGET $LLHTTP_DIR/libllhttp.a $COMPILED_LUA_SCRIPTS -ldl -lm -pthread -o evo
+
+# deprecated
+rule ld
+  command = gcc $in $linker_flags $libs -o $out
+  description = Linking object file $in
+
+build deps/luv/deps/luajit/src/libluajit.a: make deps/luv/deps/luajit
+
+build deps/llhttp-ffi/llhttp/liblllhttp.a: cmake deps/llhttp-ffi/llhttp/
+
+build deps/luv/libluv.a: link deps/luv/src/luv.o
+  libs = -Ldeps/luv/deps/luajit/src/libluajit.a
+build deps/luv/src/luv.o: compile deps/luv/src/luv.c
+
+#build deps/luv/libuv_a.a: cmake deps/luv
+# TODO move libuv to libuv.ninja, etc.
+  # TODO WIN32
+uv_sources = src/fs-poll.c $
+    src/idna.c $
+    src/inet.c $
+    src/random.c $
+    src/strscpy.c $
+    src/strtok.c $
+    src/threadpool.c $
+    src/timer.c $
+    src/uv-common.c $
+    src/uv-data-getter-setters.c $
+    src/version.c $
+  src/unix/async.c $
+  src/unix/core.c $
+  src/unix/dl.c $
+  src/unix/fs.c $
+  src/unix/getaddrinfo.c $
+  src/unix/getnameinfo.c $
+  src/unix/loop-watcher.c $
+  src/unix/loop.c $
+  src/unix/pipe.c $
+  src/unix/poll.c $
+  src/unix/process.c $
+  src/unix/random-devurandom.c $
+  src/unix/signal.c $
+  src/unix/stream.c $
+  src/unix/tcp.c $
+  src/unix/thread.c $
+  src/unix/tty.c $
+  src/unix/udp.c $
+  src/unix/linux-core.c $
+  src/unix/linux-inotify.c $
+  src/unix/linux-syscalls.c $
+  src/unix/procfs-exepath.c $
+  src/unix/random-getrandom.c $
+  src/unix/random-sysctl-linux.c $
+  src/unix/epoll.c $
+build deps/luv/libuv_a.a: compile ${uv_sources}
+
+c_root = Runtime
+c_sources = $c_root/main.c
+
+build evo-luvi.o: compile $c_sources
+build $builddir/libluvi.a: link deps/luv/deps/luajit/src/libluajit.a deps/luv/libluv_a.a deps/luv/libluv.a
+build evo-luvi: link evo-luvi.o | $builddir/libluvi.a
+  libs = -Ldeps/luv/libluv.a -Ldeps/luv/libuv_a.a -Ldeps/luv/deps/luajit/src/libluajit.a
