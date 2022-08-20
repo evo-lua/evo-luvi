@@ -1,0 +1,3 @@
+local NinjaFileWriter = {}
+
+return NinjaFileWriter
