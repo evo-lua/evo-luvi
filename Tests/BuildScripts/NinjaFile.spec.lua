@@ -49,9 +49,6 @@ describe("NinjaFile", function()
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
 			.. "root_dir = " .. "file/path"
 
-			-- TODO Remove
-			ninjaFile:Save("test.ninja")
-
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
 
