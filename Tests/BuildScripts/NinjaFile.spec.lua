@@ -15,7 +15,9 @@ describe("NinjaFile", function()
 	end)
 
 	describe("Save", function()
-
+		local ninjaFile = NinjaFile()
+		-- TODO Remove
+		ninjaFile:Save("test.ninja")
 	end)
 
 	describe("ToString", function()
