@@ -60,7 +60,7 @@ function NinjaFile:ToString()
 	end
 
 	for index, buildEdge in ipairs(self.buildEdges) do
-		fileContents[#fileContents+1] = "build " .. buildEdge.target ..": " .. table_concat(buildEdge.statementTokens, " ")
+		fileContents[#fileContents+1] = "build " .. buildEdge.target ..": " .. table_concat(buildEdge.dependencyTokens, " ")
 		for _, variable in ipairs(buildEdge.variableOverrides) do
 			fileContents[#fileContents+1] = "  " .. variable.name .. " = " .. variable.declarationLine
 		end
@@ -78,10 +78,18 @@ end
 
 
 function NinjaFile:AddRule(name, ruleInfo)
-	dump(self)
 	self.ruleDeclarations[#self.ruleDeclarations+1] = {
 		name = name,
 		unpack(ruleInfo),
+	}
+end
+
+function NinjaFile:AddBuildEdge(target, dependencyTokens, variableOverrides)
+
+	self.buildEdges[#self.buildEdges+1] = {
+		target = target,
+		dependencyTokens = dependencyTokens,
+		variableOverrides = variableOverrides,
 	}
 end
 
