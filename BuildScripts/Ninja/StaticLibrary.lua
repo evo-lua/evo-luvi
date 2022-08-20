@@ -43,6 +43,8 @@ function StaticLibrary:CreateBuildFile()
 	end
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 
+	-- TODO ar command
+
 	local compileCommandRule = {
 		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
 		{ name = "description", "Compiling", "$out" },
@@ -59,6 +61,8 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave
 
 	for _, sourceFile in ipairs(self.sources) do
+
+		--TODO link objects to static library via AR
 		local extension = path.extname(sourceFile)
 		local fileName = path.basename(sourceFile)
 		if extension == ".c" then
