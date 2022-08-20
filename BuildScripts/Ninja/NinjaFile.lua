@@ -7,7 +7,7 @@ local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
 
 local NinjaFile = {
 	requiredVersion = DEFAULT_REQUIRED_VERSION,
-	buildDirectory = DEFAULT_BUILD_DIRECTORY_NAME, -- TODO builddir
+	buildDirectory = DEFAULT_BUILD_DIRECTORY_NAME,
 	-- Untested (NYI)
 	defaultTargets = {},
 	subninjas = {},

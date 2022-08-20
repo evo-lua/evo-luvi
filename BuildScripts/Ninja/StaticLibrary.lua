@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local path_basename = path.basename
 
 local GCC_INCLUDE_FLAG = "-I"
 
@@ -36,6 +37,8 @@ end
 
 function StaticLibrary:CreateBuildFile()
 	local ninjaFile = NinjaFile()
+
+	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 
 	local includeFlags = ""
 	for _, includeDir in ipairs(self.includeDirectories) do
@@ -76,12 +79,12 @@ function StaticLibrary:CreateBuildFile()
 					declarationLine = "$include_dirs",
 				}
 			}
-			ninjaFile:AddBuildEdge(fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge("$builddir/" .. fileName .. ".o", dependencyTokens, overrides)
 		elseif extension == ".lua" then
 			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
-			ninjaFile:AddBuildEdge(fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge("$builddir/" .. fileName .. ".o", dependencyTokens, overrides)
 		else
 			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
 		end
@@ -89,12 +92,12 @@ function StaticLibrary:CreateBuildFile()
 
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
-		local objectFileName = sourceFile .. ".o"
+		local objectFileName = "$builddir/" .. path_basename(sourceFile) .. ".o"
 		buildCommandTokens[#buildCommandTokens+1] = objectFileName
 	end
 
 	local libraryName = (ffi.os == "Windows") and (self.name .. ".dll") or ("lib" .. self.name .. ".a")
-	ninjaFile:AddBuildEdge(libraryName, buildCommandTokens)
+	ninjaFile:AddBuildEdge("$builddir/" .. libraryName, buildCommandTokens)
 
 	return ninjaFile
 end
