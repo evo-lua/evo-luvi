@@ -25,8 +25,10 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 	lua_newtable(L);
 #ifdef LUVI_VERSION
 	lua_pushstring(L, "" LUVI_VERSION "");
-	lua_setfield(L, -2, "version");
+#else
+	lua_pushstring(L, "v0.0.0-untagged-dev");
 #endif
+	lua_setfield(L, -2, "version");
 	lua_newtable(L);
 #ifdef WITH_OPENSSL
 	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
