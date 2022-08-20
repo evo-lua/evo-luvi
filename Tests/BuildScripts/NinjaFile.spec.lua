@@ -87,12 +87,12 @@ describe("NinjaFile", function()
 
 			local buildEdge = {
 				target = "target.o",
-				statementTokens = {
-					"compile", "target.c",
-				},
+				statementTokens = {	"compile", "target.c" },
 				variableOverrides = {
-					name = "includes",
-					declarationLine = "-Iinclude_dir", -- TBD tokens?
+					{
+						name = "includes",
+						declarationLine = "-Iinclude_dir", -- TBD tokens?
+					}
 				}
 			}
 
@@ -104,12 +104,9 @@ describe("NinjaFile", function()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
 			.. "build target.o: compile target.c" .. "\n" ..
-			"  " .. "includes = -Iinclude_dirs"
+			"  " .. "includes = -Iinclude_dir"
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
-
-			-- TODO Remove
-			ninjaFile:Save("test.ninja")
 		end)
 	end)
 end)
