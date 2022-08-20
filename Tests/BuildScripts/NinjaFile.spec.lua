@@ -79,11 +79,14 @@ describe("NinjaFile", function()
 			"  " .. "depfile = $out.d".. "\n" ..
 			"  " .. "deps = gcc"
 
-			-- TODO Remove
-			ninjaFile:Save("test.ninja")
-
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
 
+		it("should include a section for the build edges if any have been added", function()
+
+
+			-- TODO Remove
+			ninjaFile:Save("test.ninja")
+		end)
 	end)
 end)
