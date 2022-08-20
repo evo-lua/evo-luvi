@@ -34,7 +34,7 @@ end
 
 function NinjaFile:Save(filePath)
 	local fileContents = self:ToString()
-	C_FileSystem.WriteFile(filePath, fileContents .. "\n")
+	C_FileSystem.WriteFile(filePath, fileContents)
 end
 
 function NinjaFile:ToString()
@@ -66,7 +66,7 @@ function NinjaFile:ToString()
 		end
 	end
 
-	return table_concat(fileContents, "\n")
+	return table_concat(fileContents, "\n") .. "\n"
 end
 
 function NinjaFile:AddVariable(name, declarationLine)
