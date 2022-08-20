@@ -76,7 +76,6 @@ function NinjaFile:AddVariable(name, declarationLine)
 	}
 end
 
-
 function NinjaFile:AddRule(name, ruleInfo)
 	self.ruleDeclarations[#self.ruleDeclarations+1] = {
 		name = name,
