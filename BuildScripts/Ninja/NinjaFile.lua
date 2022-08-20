@@ -1,3 +1,4 @@
+local ipairs = ipairs
 local table_concat = table.concat
 
 local DEFAULT_REQUIRED_VERSION = "1.11"
@@ -38,7 +39,11 @@ function NinjaFile:ToString()
 	local fileContents = {}
 
 	fileContents[#fileContents+1] = NinjaFile.AUTOGENERATION_HEADER_TEXT
-	-- fileContents[#fileContents+1] = "" -- Ninja expects a trailing newlne (empty line)
+	fileContents[#fileContents+1] = "ninja_required_version = " .. self.requiredVersion
+
+	for index, variable in ipairs(self.variables) do
+		fileContents[#fileContents+1] = variable.name .. " = " .. variable.declarationLine
+	end
 
 	return table_concat(fileContents, "\n")
 end
