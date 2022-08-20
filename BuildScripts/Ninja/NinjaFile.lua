@@ -31,13 +31,14 @@ end
 
 function NinjaFile:Save(filePath)
 	local fileContents = self:ToString()
-	C_FileSystem.WriteFile(filePath, fileContents)
+	C_FileSystem.WriteFile(filePath, fileContents .. "\n")
 end
 
 function NinjaFile:ToString()
 	local fileContents = {}
 
 	fileContents[#fileContents+1] = NinjaFile.AUTOGENERATION_HEADER_TEXT
+	-- fileContents[#fileContents+1] = "" -- Ninja expects a trailing newlne (empty line)
 
 	return table_concat(fileContents, "\n")
 end
