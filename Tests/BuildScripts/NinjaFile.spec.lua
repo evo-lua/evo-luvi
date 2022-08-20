@@ -51,16 +51,13 @@ describe("NinjaFile", function()
 			local ninjaFile = NinjaFile()
 
 			local ruleInfo = {
-				name = "compile",
 				{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "-o", "$out" },
 				{ name = "description", "CC", "$out" },
 				{ name = "depfile", "$out.d" },
 				{ name = "deps", "gcc" },
 			}
 
-			ninjaFile.ruleDeclarations = { -- NinjaFile:AddRule("compile", ruleInfo)
-				ruleInfo,
-			}
+			ninjaFile:AddRule("compile", ruleInfo)
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
