@@ -43,26 +43,29 @@ function StaticLibrary:CreateBuildFile()
 	end
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 
-	-- TODO ar command
 
 	local compileCommandRule = {
 		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
-		{ name = "description", "Compiling", "$out" },
+		{ name = "description", "Compiling", "$in" },
 		{ name = "depfile", "$out.d" },
 		{ name = "deps", "gcc" },
 	}
-		ninjaFile:AddRule("compile", compileCommandRule)
+	ninjaFile:AddRule("compile", compileCommandRule)
 
 	local bytecodeGenerationCommandRule = {
 		{ name = "command", "luajit", "-b", "$in", "$out", },
-		{ name = "description", "Generating optimized bytecode", "$out" },
+		{ name = "description", "Saving optimized bytecode for", "$in" },
 		{ name = "deps", "luajit" },
 	}
 	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave
 
-	for _, sourceFile in ipairs(self.sources) do
+	local archiveCommandRule = {
+		{ name = "command", "rm", "-f", "$out", "&&", "ar", "crs", "$out", "$in"},
+		{ name = "description", "Creating archive", "$out" },
+	}
+	ninjaFile:AddRule("archive", archiveCommandRule)
 
-		--TODO link objects to static library via AR
+	for _, sourceFile in ipairs(self.sources) do
 		local extension = path.extname(sourceFile)
 		local fileName = path.basename(sourceFile)
 		if extension == ".c" then
@@ -73,7 +76,6 @@ function StaticLibrary:CreateBuildFile()
 					declarationLine = "$include_dirs",
 				}
 			}
-
 			ninjaFile:AddBuildEdge(fileName .. ".o", dependencyTokens, overrides)
 		elseif extension == ".lua" then
 			local dependencyTokens = { "bcsave", sourceFile }
@@ -84,6 +86,15 @@ function StaticLibrary:CreateBuildFile()
 			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
 		end
 	end
+
+	local buildCommandTokens = { "archive" }
+	for _, sourceFile in ipairs(self.sources) do
+		local objectFileName = sourceFile .. ".o"
+		buildCommandTokens[#buildCommandTokens+1] = objectFileName
+	end
+
+	local libraryName = (ffi.os == "Windows") and (self.name .. ".dll") or ("lib" .. self.name .. ".a")
+	ninjaFile:AddBuildEdge(libraryName, buildCommandTokens)
 
 	return ninjaFile
 end
