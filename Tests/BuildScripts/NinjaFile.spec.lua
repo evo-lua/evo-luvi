@@ -37,12 +37,7 @@ describe("NinjaFile", function()
 		it("should include a section for the variable declarations if any have been added", function()
 			local ninjaFile = NinjaFile()
 
-			ninjaFile.variables = { -- NinjaFile:AddVariable("root_dir", "file/path")
-				{
-					name = "root_dir",
-					declarationLine = "file/path", -- TBD tokens?
-				}
-			}
+			ninjaFile:AddVariable("root_dir", "file/path")
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
