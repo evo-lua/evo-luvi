@@ -29,6 +29,11 @@ function NinjaFile:Construct()
 	return instance
 end
 
+function NinjaFile:Save(filePath)
+	local fileContents = self:ToString()
+	C_FileSystem.WriteFile(filePath, fileContents)
+end
+
 function NinjaFile:ToString()
 	local fileContents = {}
 
