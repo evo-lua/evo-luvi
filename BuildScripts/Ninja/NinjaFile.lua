@@ -1,5 +1,6 @@
 local ipairs = ipairs
 local table_concat = table.concat
+local table_remove = table.remove
 
 local DEFAULT_REQUIRED_VERSION = "1.11"
 local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
@@ -43,6 +44,19 @@ function NinjaFile:ToString()
 
 	for index, variable in ipairs(self.variables) do
 		fileContents[#fileContents+1] = variable.name .. " = " .. variable.declarationLine
+	end
+
+	for index, ruleInfo in ipairs(self.ruleDeclarations) do
+
+		local ruleName = ruleInfo.name
+		fileContents[#fileContents+1] = "rule " .. ruleName
+
+		-- Use indices instead of key, value pairs here to make the output deterministic (and therefore testable)
+		for _, lineInfo in ipairs(ruleInfo) do
+			local fieldName = lineInfo.name
+			local ruleString = table_concat(lineInfo, " ")
+			fileContents[#fileContents+1] = "  " .. fieldName .. " = " .. ruleString
+		end
 	end
 
 	return table_concat(fileContents, "\n")
