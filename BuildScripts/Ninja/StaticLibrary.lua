@@ -44,7 +44,7 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 
 	local compileCommandRule = {
-		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "-o", "$out" },
+		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
 		{ name = "description", "Compiling", "$out" },
 		{ name = "depfile", "$out.d" },
 		{ name = "deps", "gcc" },
@@ -62,17 +62,17 @@ function StaticLibrary:CreateBuildFile()
 		local extension = path.extname(sourceFile)
 		local fileName = path.basename(sourceFile)
 		if extension == ".c" then
-			local dependencyTokens = { "compile", fileName }
+			local dependencyTokens = { "compile", sourceFile }
 			local overrides = {
 				{
 					name = "includes",
-					declarationLine = "-Iinclude_dir",
+					declarationLine = "$include_dirs",
 				}
 			}
 
 			ninjaFile:AddBuildEdge(fileName .. ".o", dependencyTokens, overrides)
 		elseif extension == ".lua" then
-			local dependencyTokens = { "bcsave", fileName }
+			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
 			ninjaFile:AddBuildEdge(fileName .. ".o", dependencyTokens, overrides)
