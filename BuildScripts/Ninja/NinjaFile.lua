@@ -1,5 +1,6 @@
 local ipairs = ipairs
 local table_concat = table.concat
+local unpack = unpack
 
 local DEFAULT_REQUIRED_VERSION = "1.11"
 local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
@@ -70,9 +71,18 @@ end
 
 function NinjaFile:AddVariable(name, declarationLine)
 	self.variables[#self.variables+1] = {
-			name = name,
-			declarationLine = declarationLine,
-		}
+		name = name,
+		declarationLine = declarationLine,
+	}
+end
+
+
+function NinjaFile:AddRule(name, ruleInfo)
+	dump(self)
+	self.ruleDeclarations[#self.ruleDeclarations+1] = {
+		name = name,
+		unpack(ruleInfo),
+	}
 end
 
 NinjaFile.__call = NinjaFile.Construct
