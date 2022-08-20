@@ -16,9 +16,12 @@ describe("NinjaFile", function()
 
 	describe("Save", function()
 		local ninjaFile = NinjaFile()
-		-- TODO Remove
-		-- ninjaFile:Save("test.ninja")
+		-- TODO
 	end)
+
+	describe("AddVariable", function() end)
+
+	describe("AddRule", function() end)
 
 	describe("ToString", function()
 
@@ -34,17 +37,47 @@ describe("NinjaFile", function()
 		it("should include a section for the variable declarations if any have been added", function()
 			local ninjaFile = NinjaFile()
 
-			ninjaFile.variables = { -- NinjaFile:AddVariable("root_dir", "deps/llhttp-ffi/llhttp")
+			ninjaFile.variables = { -- NinjaFile:AddVariable("root_dir", "file/path")
 				{
 					name = "root_dir",
-					declarationLine = "deps/llhttp-ffi/llhttp",
+					declarationLine = "file/path",
 				}
 			}
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
-			.. "root_dir = " .. "deps/llhttp-ffi/llhttp"
+			.. "root_dir = " .. "file/path"
+
+			-- TODO Remove
+			ninjaFile:Save("test.ninja")
+
+			assertEquals(stringifiedNinjaFile, expectedFileContents)
+		end)
+
+		it("should include a section for the rule declarations if any have been added", function()
+			local ninjaFile = NinjaFile()
+
+			local ruleInfo = {
+				name = "compile",
+				{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "-o", "$out" },
+				{ name = "description", "CC", "$out" },
+				{ name = "depfile", "$out.d" },
+				{ name = "deps", "gcc" },
+			}
+
+			ninjaFile.ruleDeclarations = { -- NinjaFile:AddRule("compile", ruleInfo)
+				ruleInfo,
+			}
+
+			local stringifiedNinjaFile = ninjaFile:ToString()
+			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
+			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
+			.. "rule compile" .. "\n" ..
+			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in -o $out".. "\n" ..
+			"  " .. "description = CC $out".. "\n" ..
+			"  " .. "depfile = $out.d".. "\n" ..
+			"  " .. "deps = gcc"
 
 			-- TODO Remove
 			ninjaFile:Save("test.ninja")
