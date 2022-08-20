@@ -1,0 +1,3 @@
+local StaticLibrary = {}
+
+return StaticLibrary
