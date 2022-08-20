@@ -74,20 +74,15 @@ describe("NinjaFile", function()
 		it("should include a section for the build edges if any have been added", function()
 			local ninjaFile = NinjaFile()
 
-			local buildEdge = {
-				target = "target.o",
-				statementTokens = {	"compile", "target.c" },
-				variableOverrides = {
-					{
-						name = "includes",
-						declarationLine = "-Iinclude_dir", -- TBD tokens?
-					}
+			local dependencyTokens = { "compile", "target.c" }
+			local overrides = {
+				{
+					name = "includes",
+					declarationLine = "-Iinclude_dir",
 				}
 			}
 
-			ninjaFile.buildEdges = { -- NinjaFile:AddBuildEdge("target.o", "target.c", overrides)
-				buildEdge,
-			}
+			ninjaFile:AddBuildEdge("target.o", dependencyTokens, overrides)
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
