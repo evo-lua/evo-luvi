@@ -2,6 +2,7 @@ local ffi = require("ffi")
 local uv = require("uv")
 
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
+local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
 
 local path_basename = path.basename
 local path_extname = path.extname
@@ -54,17 +55,11 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 	ninjaFile:AddVariable("cwd", uv.cwd())
 
-	local gccBuildRule = GnuCompilerCollectionRule()
-	local compileCommandRule = gccBuildRule
-
+	local compileCommandRule = GnuCompilerCollectionRule()
 	ninjaFile:AddRule("compile", compileCommandRule)
 
-	local bytecodeGenerationCommandRule = {
-		{ name = "command", "luajit", "-b", "$in", "$out", },
-		{ name = "description", "Saving optimized bytecode for", "$in" },
-		{ name = "deps", "luajit" },
-	}
-	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave
+	local bytecodeGenerationCommandRule = BytecodeGenerationRule()
+	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave, hence the name
 
 	local archiveCommandRule = {
 		{ name = "command", "ar", "crs", "$out", "$in"},
