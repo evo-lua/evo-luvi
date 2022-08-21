@@ -1,0 +1,3 @@
+local ExternalCMakeProjectMixin = {}
+
+return ExternalCMakeProjectMixin
