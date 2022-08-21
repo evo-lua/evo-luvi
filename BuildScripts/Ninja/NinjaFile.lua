@@ -5,7 +5,7 @@ local unpack = unpack
 local uv = require("uv")
 
 local DEFAULT_REQUIRED_VERSION = "1.11"
-local DEFAULT_BUILD_DIRECTORY_NAME = path.join(uv.cwd(), "ninjabuild")
+local DEFAULT_BUILD_DIRECTORY_NAME = path.join(uv.cwd(), "ninjabuild") -- Must use absolute paths for out-of-source builds
 
 local NinjaFile = {
 	requiredVersion = DEFAULT_REQUIRED_VERSION,
