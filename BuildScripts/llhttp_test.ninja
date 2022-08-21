@@ -15,10 +15,10 @@ rule bcsave
 rule archive
   command = rm -f $out && ar crs $out $in
   description = Creating archive $out
-build $builddir/api.c.o: compile ../deps/llhttp-ffi/llhttp/src/api.c
+build $builddir/llhttp/api.c.o: compile ../deps/llhttp-ffi/llhttp/src/api.c
   includes = $include_dirs
-build $builddir/http.c.o: compile ../deps/llhttp-ffi/llhttp/src/http.c
+build $builddir/llhttp/http.c.o: compile ../deps/llhttp-ffi/llhttp/src/http.c
   includes = $include_dirs
-build $builddir/llhttp.c.o: compile ../deps/llhttp-ffi/llhttp/src/llhttp.c
+build $builddir/llhttp/llhttp.c.o: compile ../deps/llhttp-ffi/llhttp/src/llhttp.c
   includes = $include_dirs
-build $builddir/libllhttp.a: archive $builddir/api.c.o $builddir/http.c.o $builddir/llhttp.c.o
+build $builddir/llhttp/libllhttp.a: archive llhttp/$builddir/api.c.o llhttp/$builddir/http.c.o llhttp/$builddir/llhttp.c.o
