@@ -3,6 +3,7 @@
 ninja_required_version = 1.11
 builddir = ninjabuild
 include_dirs = -I..\deps\llhttp-ffi\llhttp\include 
+cwd = E:\GitHub\evo-lua\evo-luvi\BuildScripts
 rule compile
   command = gcc -MMD -MT $out -MF $out.d -c $in $include_dirs -o $out
   description = Compiling $in
