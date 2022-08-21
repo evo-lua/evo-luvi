@@ -48,12 +48,8 @@ function StaticLibrary:CreateBuildFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 
-	local includeFlags = ""
-	for _, includeDir in ipairs(self.includeDirectories) do
-		includeFlags = includeFlags .. GCC_INCLUDE_FLAG .. includeDir .. " "
-	end
-	ninjaFile:AddVariable("include_dirs", includeFlags)
-	ninjaFile:AddVariable("cwd", uv.cwd())
+	ninjaFile:AddVariable("include_dirs", self:GetIncludeFlags())
+	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
 	local compileCommandRule = GnuCompilerCollectionRule()
 	ninjaFile:AddRule("compile", compileCommandRule)
@@ -112,6 +108,14 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), buildCommandTokens)
 
 	return ninjaFile
+end
+
+function StaticLibrary:GetIncludeFlags()
+	local includeFlags = ""
+	for _, includeDir in ipairs(self.includeDirectories) do
+		includeFlags = includeFlags .. GCC_INCLUDE_FLAG .. includeDir .. " "
+	end
+	return includeFlags
 end
 
 return StaticLibrary
