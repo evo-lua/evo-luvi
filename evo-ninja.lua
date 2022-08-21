@@ -31,4 +31,4 @@ end
 print("Processing build configuration...")
 CreateNinjaBuildFile("evo")
 
-printf("All done! To build the runtime, type %s", transform.green("ninja -C ninjabuild"))
+printf("All done! To build the runtime, type %s", transform.green("ninja -C " .. NINJA_BUILD_DIR))
