@@ -1,4 +1,7 @@
 
+local path_join = path.join
+
+local Executable = import("../Ninja/Executable.lua")
 local evo = Executable("evo")
 
 evo:AddIncludeDirectory(path_join("Runtime"))
@@ -46,7 +49,7 @@ local sources = {
 -- ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 }
 evo:AddFiles(sources)
-evo:AddDependency(llhttp)
+-- evo:AddDependency(llhttp)
 -- evo:AddDependency(luajit)
 -- evo:AddDependency()
 -- evo:AddDependency(libuv)
@@ -54,3 +57,5 @@ evo:AddDependency(llhttp)
 -- local llhttp = StaticLibrary("crypto")
 -- local llhttp = StaticLibrary("luv")
 -- local llhttp = StaticLibrary("libuv")
+
+return evo
