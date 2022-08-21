@@ -7,7 +7,7 @@ local externalBuildTargets = {
 	"llhttp",
 }
 
-print("Processing build configuration for external projects...")
+print("Processing build configuration...")
 
 local function CreateNinjaBuildFile(targetID)
 	printf("Creating build file for target: %s", targetID)
@@ -28,7 +28,6 @@ for index, targetID in ipairs(externalBuildTargets) do
 	CreateNinjaBuildFile(targetID)
 end
 
-print("Processing build configuration...")
 CreateNinjaBuildFile("evo")
 
 printf("All done! To build the runtime, type %s", transform.green("ninja -C " .. NINJA_BUILD_DIR))
