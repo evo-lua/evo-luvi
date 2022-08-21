@@ -31,7 +31,7 @@ function StaticLibrary:AddIncludeDirectory(directoryPath)
 	self.includeDirectories[#self.includeDirectories+1] = directoryPath
 end
 
-function StaticLibrary:AddBuildTargets(sourceFilePaths)
+function StaticLibrary:AddFiles(sourceFilePaths)
 	for _, sourceFilePath in ipairs(sourceFilePaths) do
 		self.sources[#self.sources+1] = sourceFilePath
 	end
