@@ -7,3 +7,4 @@ luvi
 *.o
 *.log
 .ninja_log
+*.lib
