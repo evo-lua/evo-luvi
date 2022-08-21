@@ -1,6 +1,6 @@
 
 local NinjaFile = import("../../BuildScripts/Ninja/NinjaFile.lua")
-local GnuCompilerCollection = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollection.lua")
+local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
 
 describe("NinjaFile", function()
 	describe("Construct", function()
@@ -66,7 +66,7 @@ describe("NinjaFile", function()
 		it("should include a section for the rule declarations if any have been added", function()
 			local ninjaFile = NinjaFile()
 
-			local gccBuildRule = GnuCompilerCollection()
+			local gccBuildRule = GnuCompilerCollectionRule()
 
 			ninjaFile:AddRule("compile", gccBuildRule)
 
