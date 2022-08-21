@@ -3,15 +3,15 @@ local uv = require("uv")
 
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
+local BuildTargetMixin = import("./BuildTargetMixin.lua")
+local NinjaFile = import("../Ninja/NinjaFile.lua")
 
 local path_basename = path.basename
 local path_extname = path.extname
-local path_dirname = path.dirname
 local path_join = path.join
 
-local GCC_INCLUDE_FLAG = "-I"
 
-local NinjaFile = import("../Ninja/NinjaFile.lua")
+
 
 local StaticLibrary = {
 	fileExtension = (ffi.os == "Windows") and "lib" or "a"
@@ -19,8 +19,6 @@ local StaticLibrary = {
 
 function StaticLibrary:Construct(name)
 	local instance = {
-		includeDirectories = {},
-		sources = {},
 		name = name,
 	}
 
@@ -33,15 +31,7 @@ end
 StaticLibrary.__call = StaticLibrary.Construct
 setmetatable(StaticLibrary, StaticLibrary)
 
-function StaticLibrary:AddIncludeDirectory(directoryPath)
-	self.includeDirectories[#self.includeDirectories+1] = directoryPath
-end
-
-function StaticLibrary:AddFiles(sourceFilePaths)
-	for _, sourceFilePath in ipairs(sourceFilePaths) do
-		self.sources[#self.sources+1] = sourceFilePath
-	end
-end
+mixin(StaticLibrary, BuildTargetMixin)
 
 function StaticLibrary:CreateBuildFile()
 	local ninjaFile = NinjaFile()
@@ -110,12 +100,6 @@ function StaticLibrary:CreateBuildFile()
 	return ninjaFile
 end
 
-function StaticLibrary:GetIncludeFlags()
-	local includeFlags = ""
-	for _, includeDir in ipairs(self.includeDirectories) do
-		includeFlags = includeFlags .. GCC_INCLUDE_FLAG .. includeDir .. " "
-	end
-	return includeFlags
-end
+
 
 return StaticLibrary
