@@ -1,3 +1,0 @@
-local NinjaFileWriter = {}
-
-return NinjaFileWriter
