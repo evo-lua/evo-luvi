@@ -102,7 +102,6 @@ function NinjaFile:AddInclude(targetID)
 end
 
 NinjaFile.__call = NinjaFile.Construct
-NinjaFile.__tostring = NinjaFile.ToString
 setmetatable(NinjaFile, NinjaFile)
 
 return NinjaFile
