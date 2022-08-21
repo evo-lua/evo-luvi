@@ -67,15 +67,14 @@ describe("NinjaFile", function()
 			local ninjaFile = NinjaFile()
 
 			local gccBuildRule = GnuCompilerCollectionRule()
-
 			ninjaFile:AddRule("compile", gccBuildRule)
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
 			.. "rule compile" .. "\n" ..
-			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in -o $out".. "\n" ..
-			"  " .. "description = CC $out".. "\n" ..
+			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in $include_dirs -o $out".. "\n" ..
+			"  " .. "description = Compiling $out".. "\n" ..
 			"  " .. "depfile = $out.d".. "\n" ..
 			"  " .. "deps = gcc" .. "\n"
 

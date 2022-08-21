@@ -1,6 +1,8 @@
 local ffi = require("ffi")
 local uv = require("uv")
 
+local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
+
 local path_basename = path.basename
 local path_extname = path.extname
 local path_dirname = path.dirname
@@ -52,12 +54,9 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 	ninjaFile:AddVariable("cwd", uv.cwd())
 
-	local compileCommandRule = {
-		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
-		{ name = "description", "Compiling", "$in" },
-		{ name = "depfile", "$out.d" },
-		{ name = "deps", "gcc" },
-	}
+	local gccBuildRule = GnuCompilerCollectionRule()
+	local compileCommandRule = gccBuildRule
+
 	ninjaFile:AddRule("compile", compileCommandRule)
 
 	local bytecodeGenerationCommandRule = {
