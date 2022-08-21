@@ -1,5 +1,6 @@
 local ffi = require("ffi")
 local path_basename = path.basename
+local path_extname = path.extname
 
 local GCC_INCLUDE_FLAG = "-I"
 
@@ -46,7 +47,6 @@ function StaticLibrary:CreateBuildFile()
 	end
 	ninjaFile:AddVariable("include_dirs", includeFlags)
 
-
 	local compileCommandRule = {
 		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
 		{ name = "description", "Compiling", "$in" },
@@ -69,8 +69,8 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddRule("archive", archiveCommandRule)
 
 	for _, sourceFile in ipairs(self.sources) do
-		local extension = path.extname(sourceFile)
-		local fileName = path.basename(sourceFile)
+		local extension = path_extname(sourceFile)
+		local fileName = path_basename(sourceFile)
 		if extension == ".c" then
 			local dependencyTokens = { "compile", sourceFile }
 			local overrides = {
@@ -79,12 +79,12 @@ function StaticLibrary:CreateBuildFile()
 					declarationLine = "$include_dirs",
 				}
 			}
-			ninjaFile:AddBuildEdge("$builddir/" .. fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. fileName .. ".o", dependencyTokens, overrides)
 		elseif extension == ".lua" then
 			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
-			ninjaFile:AddBuildEdge("$builddir/" .. fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. fileName .. ".o", dependencyTokens, overrides)
 		else
 			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
 		end
@@ -93,11 +93,12 @@ function StaticLibrary:CreateBuildFile()
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
 		local objectFileName = "$builddir/" .. path_basename(sourceFile) .. ".o"
-		buildCommandTokens[#buildCommandTokens+1] = objectFileName
+
+		buildCommandTokens[#buildCommandTokens+1] = self.name .. "/" .. objectFileName
 	end
 
 	local libraryName = (ffi.os == "Windows") and (self.name .. ".dll") or ("lib" .. self.name .. ".a")
-	ninjaFile:AddBuildEdge("$builddir/" .. libraryName, buildCommandTokens)
+	ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. libraryName, buildCommandTokens)
 
 	return ninjaFile
 end
