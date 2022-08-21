@@ -7,4 +7,5 @@ luvi
 *.o
 *.log
 .ninja_log
+ninjabuild/
 *.lib
