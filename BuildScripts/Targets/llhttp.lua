@@ -14,6 +14,6 @@ local sources = {
 }
 
 llhttp:AddIncludeDirectory(includeDirectory)
-llhttp:AddBuildTargets(sources)
+llhttp:AddFiles(sources)
 
 return llhttp
