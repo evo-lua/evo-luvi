@@ -45,7 +45,7 @@ local sources = {
 -- ${lpeg_re_lua}
 -- ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 }
-evo:AddBuildTargets(sources)
+evo:AddFiles(sources)
 evo:AddDependency(llhttp)
 -- evo:AddDependency(luajit)
 -- evo:AddDependency()
