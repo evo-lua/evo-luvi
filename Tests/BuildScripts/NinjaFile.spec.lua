@@ -111,7 +111,7 @@ describe("NinjaFile", function()
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
-			.. "include another_project" .. "\n"
+			.. "include another_project.ninja" .. "\n"
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)

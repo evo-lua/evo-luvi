@@ -69,7 +69,7 @@ function NinjaFile:ToString()
 	end
 
 	for index, targetID in ipairs(self.includes) do
-		fileContents[#fileContents+1] = "include " .. targetID
+		fileContents[#fileContents+1] = "include " .. targetID .. ".ninja"
 	end
 
 	return table_concat(fileContents, "\n") .. "\n"

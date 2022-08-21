@@ -25,7 +25,7 @@ function BuildTargetMixin:GetIncludeFlags()
 end
 
 function BuildTargetMixin:AddDependency(targetID)
-	self.dependencies[targetID] = true
+	self.dependencies[#self.dependencies+1] = targetID
 end
 
 return BuildTargetMixin

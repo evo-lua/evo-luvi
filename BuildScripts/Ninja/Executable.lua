@@ -28,11 +28,7 @@ mixin(Executable, BuildTargetMixin)
 function Executable:CreateBuildFile()
 	local ninjaFile = NinjaFile()
 
-	for targetID, hasNinjaBuildFile in ipairs(self.dependencies) do
-		if not hasNinjaBuildFile then
-			error(format("Cannot include target %s (not a ninja build file)", targetID))
-		end
-
+	for index, targetID in ipairs(self.dependencies) do
 		ninjaFile:AddInclude(targetID)
 	end
 
