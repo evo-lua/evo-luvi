@@ -1,6 +1,7 @@
 local BuildTargetMixin = {
 	includeDirectories = {},
 	sources = {},
+	dependencies = {},
 }
 
 local GCC_INCLUDE_FLAG = "-I"
@@ -21,6 +22,10 @@ function BuildTargetMixin:GetIncludeFlags()
 		includeFlags = includeFlags .. GCC_INCLUDE_FLAG .. includeDir .. " "
 	end
 	return includeFlags
+end
+
+function BuildTargetMixin:AddDependency(targetID)
+	self.dependencies[targetID] = true
 end
 
 return BuildTargetMixin

@@ -102,5 +102,18 @@ describe("NinjaFile", function()
 
 			assertEquals(stringifiedNinjaFile, expectedFileContents)
 		end)
+
+		it("should include a section for included files if any have been added", function()
+			local ninjaFile = NinjaFile()
+
+			ninjaFile:AddInclude("another_project")
+
+			local stringifiedNinjaFile = ninjaFile:ToString()
+			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
+			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
+			.. "include another_project" .. "\n"
+
+			assertEquals(stringifiedNinjaFile, expectedFileContents)
+		end)
 	end)
 end)

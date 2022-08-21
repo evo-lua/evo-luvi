@@ -49,7 +49,7 @@ local sources = {
 -- ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 }
 evo:AddFiles(sources)
--- evo:AddDependency(llhttp)
+evo:AddDependency("llhttp")
 -- evo:AddDependency(luajit)
 -- evo:AddDependency()
 -- evo:AddDependency(libuv)

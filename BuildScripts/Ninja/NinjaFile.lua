@@ -10,10 +10,10 @@ local DEFAULT_BUILD_DIRECTORY_NAME = path.join(uv.cwd(), "ninjabuild") -- Must u
 local NinjaFile = {
 	requiredVersion = DEFAULT_REQUIRED_VERSION,
 	buildDirectory = DEFAULT_BUILD_DIRECTORY_NAME,
+	includes = {},
 	-- Untested (NYI)
 	defaultTargets = {},
 	subninjas = {},
-	includes = {},
 	pool = {},
 }
 
@@ -68,6 +68,10 @@ function NinjaFile:ToString()
 		end
 	end
 
+	for index, targetID in ipairs(self.includes) do
+		fileContents[#fileContents+1] = "include " .. targetID
+	end
+
 	return table_concat(fileContents, "\n") .. "\n"
 end
 
@@ -91,6 +95,10 @@ function NinjaFile:AddBuildEdge(target, dependencyTokens, variableOverrides)
 		dependencyTokens = dependencyTokens,
 		variableOverrides = variableOverrides or {},
 	}
+end
+
+function NinjaFile:AddInclude(targetID)
+	self.includes[#self.includes+1] = targetID
 end
 
 NinjaFile.__call = NinjaFile.Construct
