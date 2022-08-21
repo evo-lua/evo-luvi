@@ -11,6 +11,7 @@ local sources = {
 	path_join("..", "deps", "llhttp-ffi", "llhttp", "src", "api.c"),
 	path_join("..", "deps", "llhttp-ffi", "llhttp", "src", "http.c"),
 	path_join("..", "deps", "llhttp-ffi", "llhttp", "src", "llhttp.c"),
+	-- path_join("..", "deps", "llhttp-ffi", "llhttp", "Makefile"),
 }
 
 llhttp:AddIncludeDirectory(includeDirectory)
