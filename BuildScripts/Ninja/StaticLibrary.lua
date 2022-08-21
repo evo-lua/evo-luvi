@@ -48,7 +48,7 @@ function StaticLibrary:CreateBuildFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 
-	ninjaFile:AddVariable("include_dirs", self:GetIncludeFlags())
+	ninjaFile:AddVariable("include_flags", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
 	local compileCommandRule = GnuCompilerCollectionRule()
@@ -77,7 +77,7 @@ function StaticLibrary:CreateBuildFile()
 			local overrides = {
 				{
 					name = "includes",
-					declarationLine = "$include_dirs",
+					declarationLine = "$include_flags",
 				}
 			}
 			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
