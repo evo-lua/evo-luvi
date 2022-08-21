@@ -1,4 +1,6 @@
+
 local NinjaFile = import("../../BuildScripts/Ninja/NinjaFile.lua")
+local GnuCompilerCollection = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollection.lua")
 
 describe("NinjaFile", function()
 	describe("Construct", function()
@@ -64,14 +66,9 @@ describe("NinjaFile", function()
 		it("should include a section for the rule declarations if any have been added", function()
 			local ninjaFile = NinjaFile()
 
-			local ruleInfo = {
-				{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "-o", "$out" },
-				{ name = "description", "CC", "$out" },
-				{ name = "depfile", "$out.d" },
-				{ name = "deps", "gcc" },
-			}
+			local gccBuildRule = GnuCompilerCollection()
 
-			ninjaFile:AddRule("compile", ruleInfo)
+			ninjaFile:AddRule("compile", gccBuildRule)
 
 			local stringifiedNinjaFile = ninjaFile:ToString()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
