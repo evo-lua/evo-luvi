@@ -9,10 +9,10 @@ cc = gcc
 ar = ar
 cflags = -g -Wall -Wextra -Wno-deprecated -Wno-missing-field-initializers -Wno-unused-parameter -fno-exceptions -fvisibility=hidden -O2
 ldflags = -L$builddir
-include_dirs = -Ideps/luv/deps/luajit/src -Ideps/luv/src -Ideps/llhttp-ffi/llhttp/include -Ideps/luv/deps/lua-compat-5.3 -Ideps/luv/deps/lua-compat-5.3/c-api -Ideps/luv/src
+include_flags = -Ideps/luv/deps/luajit/src -Ideps/luv/src -Ideps/llhttp-ffi/llhttp/include -Ideps/luv/deps/lua-compat-5.3 -Ideps/luv/deps/lua-compat-5.3/c-api -Ideps/luv/src
 
 rule compile
-  command = $cc -MMD -MT $out -MF $out.d $cflags -c $in $include_dirs -o $out
+  command = $cc -MMD -MT $out -MF $out.d $cflags -c $in $include_flags -o $out
   description = CC $out # TBD
   depfile = $out.d
   deps = gcc
@@ -26,7 +26,7 @@ rule link
   description = LINK $out # TBD
 
 
-compiler_flags = -Wl,-E -Werror -O3 $include_dirs
+compiler_flags = -Wl,-E -Werror -O3 $include_flags
 linker_flags = -lc -lm -ldl
 
 rule make
