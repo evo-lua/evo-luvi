@@ -10,7 +10,7 @@ cflags = -g -Wall -Wextra -Wno-deprecated -Wno-missing-field-initializers -Wno-u
 ldflags = -L$builddir
 
 rule compile
-  command = $c_compiler -MMD -MT $out -MF $out.d $cflags -c $in $include_dirs -o $out $includes
+  command = $c_compiler -MMD -MT $out -MF $out.d $cflags -c $in $include_flags -o $out $includes
   description = Compiling $out
   depfile = $out.d
   deps = gcc
