@@ -92,9 +92,8 @@ function StaticLibrary:CreateBuildFile()
 
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
-		local objectFileName = "$builddir/" .. path_basename(sourceFile) .. ".o"
-
-		buildCommandTokens[#buildCommandTokens+1] = self.name .. "/" .. objectFileName
+		local objectFileName = path_basename(sourceFile) .. ".o"
+		buildCommandTokens[#buildCommandTokens+1] = "$builddir/" .. self.name .. "/" .. objectFileName
 	end
 
 	local libraryName = (ffi.os == "Windows") and (self.name .. ".dll") or ("lib" .. self.name .. ".a")
