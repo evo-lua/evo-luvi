@@ -1,6 +1,7 @@
 local ffi = require("ffi")
 local path_basename = path.basename
 local path_extname = path.extname
+local path_join = path.join
 
 local GCC_INCLUDE_FLAG = "-I"
 
@@ -63,7 +64,7 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave
 
 	local archiveCommandRule = {
-		{ name = "command", "rm", "-f", "$out", "&&", "ar", "crs", "$out", "$in"},
+		{ name = "command", "ar", "crs", "$out", "$in"},
 		{ name = "description", "Creating archive", "$out" },
 	}
 	ninjaFile:AddRule("archive", archiveCommandRule)
@@ -79,12 +80,12 @@ function StaticLibrary:CreateBuildFile()
 					declarationLine = "$include_dirs",
 				}
 			}
-			ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
 		elseif extension == ".lua" then
 			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
-			ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. fileName .. ".o", dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
 		else
 			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
 		end
@@ -93,11 +94,11 @@ function StaticLibrary:CreateBuildFile()
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
 		local objectFileName = path_basename(sourceFile) .. ".o"
-		buildCommandTokens[#buildCommandTokens+1] = "$builddir/" .. self.name .. "/" .. objectFileName
+		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.name, objectFileName)
 	end
 
-	local libraryName = (ffi.os == "Windows") and (self.name .. ".dll") or ("lib" .. self.name .. ".a")
-	ninjaFile:AddBuildEdge("$builddir/" .. self.name .. "/" .. libraryName, buildCommandTokens)
+	local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a")
+	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), buildCommandTokens)
 
 	return ninjaFile
 end
