@@ -2,8 +2,10 @@ local ipairs = ipairs
 local table_concat = table.concat
 local unpack = unpack
 
+local uv = require("uv")
+
 local DEFAULT_REQUIRED_VERSION = "1.11"
-local DEFAULT_BUILD_DIRECTORY_NAME = "ninjabuild"
+local DEFAULT_BUILD_DIRECTORY_NAME = path.join(uv.cwd(), "ninjabuild")
 
 local NinjaFile = {
 	requiredVersion = DEFAULT_REQUIRED_VERSION,

@@ -18,3 +18,5 @@ for index, targetID in ipairs(externalBuildTargets) do
 	buildFile:Save(outputFilePath)
 	printf("-> Configuration saved as %s", outputFilePath)
 end
+
+printf("All done! To build the runtime, type %s", transform.green("ninja -C ninjabuild"))
