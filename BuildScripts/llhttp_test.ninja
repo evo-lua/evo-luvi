@@ -2,7 +2,7 @@
 # Editing this file is pointless; update the build definitions instead :)
 ninja_required_version = 1.11
 builddir = ninjabuild
-include_dirs = -I../deps/llhttp-ffi/llhttp/include 
+include_dirs = -I..\deps\llhttp-ffi\llhttp\include 
 rule compile
   command = gcc -MMD -MT $out -MF $out.d -c $in $include_dirs -o $out
   description = Compiling $in
@@ -21,4 +21,4 @@ build $builddir/llhttp/http.c.o: compile ../deps/llhttp-ffi/llhttp/src/http.c
   includes = $include_dirs
 build $builddir/llhttp/llhttp.c.o: compile ../deps/llhttp-ffi/llhttp/src/llhttp.c
   includes = $include_dirs
-build $builddir/llhttp/libllhttp.a: archive llhttp/$builddir/api.c.o llhttp/$builddir/http.c.o llhttp/$builddir/llhttp.c.o
+build $builddir/llhttp/llhttp.dll: archive $builddir/llhttp/api.c.o $builddir/llhttp/http.c.o $builddir/llhttp/llhttp.c.o
