@@ -1,6 +1,9 @@
 local ffi = require("ffi")
+local uv = require("uv")
+
 local path_basename = path.basename
 local path_extname = path.extname
+local path_dirname = path.dirname
 local path_join = path.join
 
 local GCC_INCLUDE_FLAG = "-I"
@@ -47,6 +50,7 @@ function StaticLibrary:CreateBuildFile()
 		includeFlags = includeFlags .. GCC_INCLUDE_FLAG .. includeDir .. " "
 	end
 	ninjaFile:AddVariable("include_dirs", includeFlags)
+	ninjaFile:AddVariable("cwd", uv.cwd())
 
 	local compileCommandRule = {
 		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$include_dirs", "-o", "$out" },
@@ -69,6 +73,12 @@ function StaticLibrary:CreateBuildFile()
 	}
 	ninjaFile:AddRule("archive", archiveCommandRule)
 
+	-- local makeCommandRule = {
+	-- 	{ name = "command", "cd", "$in", "&&", "make", "&&", "cd", "&&", "$cwd"},
+	-- 	{ name = "description", "Running Makefile build in directory", "$out" },
+	-- }
+	-- ninjaFile:AddRule("make", makeCommandRule)
+
 	for _, sourceFile in ipairs(self.sources) do
 		local extension = path_extname(sourceFile)
 		local fileName = path_basename(sourceFile)
@@ -85,7 +95,14 @@ function StaticLibrary:CreateBuildFile()
 			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
-			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
+			local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a") -- TODO DRY
+			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), dependencyTokens, overrides)
+		-- elseif fileName == "Makefile" then
+		-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
+		-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.name) }
+		-- 	local overrides = {	}
+
+		-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName), dependencyTokens, overrides)
 		else
 			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
 		end
@@ -97,7 +114,7 @@ function StaticLibrary:CreateBuildFile()
 		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.name, objectFileName)
 	end
 
-	local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a")
+	local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a") -- TODO DRY
 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), buildCommandTokens)
 
 	return ninjaFile
