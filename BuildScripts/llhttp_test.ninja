@@ -13,12 +13,12 @@ rule bcsave
   description = Saving optimized bytecode for $in
   deps = luajit
 rule archive
-  command = rm -f $out && ar crs $out $in
+  command = ar crs $out $in
   description = Creating archive $out
-build $builddir/llhttp/api.c.o: compile ../deps/llhttp-ffi/llhttp/src/api.c
+build $builddir\llhttp\api.c.o: compile ..\deps\llhttp-ffi\llhttp\src\api.c
   includes = $include_dirs
-build $builddir/llhttp/http.c.o: compile ../deps/llhttp-ffi/llhttp/src/http.c
+build $builddir\llhttp\http.c.o: compile ..\deps\llhttp-ffi\llhttp\src\http.c
   includes = $include_dirs
-build $builddir/llhttp/llhttp.c.o: compile ../deps/llhttp-ffi/llhttp/src/llhttp.c
+build $builddir\llhttp\llhttp.c.o: compile ..\deps\llhttp-ffi\llhttp\src\llhttp.c
   includes = $include_dirs
-build $builddir/llhttp/llhttp.dll: archive $builddir/llhttp/api.c.o $builddir/llhttp/http.c.o $builddir/llhttp/llhttp.c.o
+build $builddir\llhttp\llhttp.lib: archive $builddir\llhttp\api.c.o $builddir\llhttp\http.c.o $builddir\llhttp\llhttp.c.o
