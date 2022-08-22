@@ -1,6 +1,8 @@
 local ffi = require("ffi")
 local uv = require("uv")
 
+local ipairs = ipairs
+
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
 local GnuArchiveCreationRule = import("./BuildRules/GnuArchiveCreationRule.lua")
@@ -56,7 +58,7 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_flags", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
-	-- Rules should be iterated in order so that the build file output is deterministic and testable
+	-- Rules should be iterated in order so that the file output is deterministic and testable
 	local buildRules = self:GetBuildRules()
 	for index, name in ipairs(buildRules) do
 		local ruleInfo = buildRules[name]
