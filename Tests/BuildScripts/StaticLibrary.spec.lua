@@ -53,6 +53,17 @@ describe("StaticLibrary", function()
 
 		-- build edges
 
-		-- rules
+		it("should add declarations for all default build rules to the generated build file", function()
+			local target = StaticLibrary("mylib")
+			local ninjaFile = target:CreateBuildFile()
+
+			dump(ninjaFile)
+			assertEquals(type(ninjaFile.ruleDeclarations.compile), "table")
+			assertEquals(type(ninjaFile.ruleDeclarations.bcsave), "table")
+			assertEquals(type(ninjaFile.ruleDeclarations.archive), "table")
+			assertEquals(type(ninjaFile.ruleDeclarations.make), "table")
+			assertEquals(type(ninjaFile.ruleDeclarations.cmake), "table")
+
+		end)
 	end)
 end)

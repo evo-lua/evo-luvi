@@ -50,13 +50,13 @@ function NinjaFile:ToString()
 		fileContents[#fileContents+1] = variableName .. " = " .. declarationLine
 	end
 
-	for index, ruleInfo in ipairs(self.ruleDeclarations) do
-		local ruleName = ruleInfo.name
+	for index, ruleName in ipairs(self.ruleDeclarations) do
+		local ruleInfo = self.ruleDeclarations[ruleName]
 		fileContents[#fileContents+1] = "rule " .. ruleName
 
 		-- Use indices instead of key-value pairs here to make the output deterministic (and therefore testable)
-		for _, lineInfo in ipairs(ruleInfo) do
-			local fieldName = lineInfo.name
+		for _, fieldName in ipairs(ruleInfo) do
+			local lineInfo = ruleInfo[fieldName]
 			local ruleString = table_concat(lineInfo, " ")
 			fileContents[#fileContents+1] = "  " .. fieldName .. " = " .. ruleString
 		end
@@ -84,10 +84,12 @@ end
 function NinjaFile:AddRule(name, ruleInfo)
 	-- self.ruleDeclarations[#self.ruleDeclarations+1] = name
 	-- self.ruleDeclarations[name] = unpack(ruleInfo)
-	self.ruleDeclarations[#self.ruleDeclarations+1] = {
-		name = name,
-		unpack(ruleInfo),
-	}
+	self.ruleDeclarations[#self.ruleDeclarations+1] = name
+	self.ruleDeclarations[name] = ruleInfo
+	-- {
+	-- 	name = name,
+	-- 	unpack(ruleInfo),
+	-- }
 end
 
 function NinjaFile:AddBuildEdge(target, dependencyTokens, variableOverrides)

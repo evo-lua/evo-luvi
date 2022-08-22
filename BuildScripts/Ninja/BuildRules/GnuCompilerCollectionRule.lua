@@ -1,11 +1,11 @@
 local GnuCompilerCollectionRule = {}
 
 function GnuCompilerCollectionRule:Construct()
-	return {
-		{ name = "command", "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$includes", "-o", "$out" },
-		{ name = "description", "Compiling", "$in" },
-		{ name = "depfile", "$out.d" },
-		{ name = "deps", "gcc" },
+	return { "command", "description", "depfile", "deps",
+	command = { "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$includes", "-o", "$out" },
+	description =	{"Compiling", "$in" },
+	depfile =	{ "$out.d" },
+	deps =	{ "gcc" },
 	}
 end
 

@@ -1,9 +1,9 @@
 local GnuLinkageEditorRule = {}
 
 function GnuLinkageEditorRule:Construct()
-	return {
-		{ name = "command", "gcc", "$in", "$libs", "-o", "$out" },
-		{ name = "description", "Linking", "$in" },
+	return { "command", "description",
+		command = { "gcc", "$in", "$libs", "-o", "$out" },
+		description = { "Linking", "$in" },
 	}
 end
 

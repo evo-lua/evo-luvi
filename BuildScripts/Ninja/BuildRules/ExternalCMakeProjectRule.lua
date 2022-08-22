@@ -1,9 +1,9 @@
 local ExternalMakefileProjectRule = {}
 
 function ExternalMakefileProjectRule:Construct()
-	return {
-			{ name = "command", "cmake", "--build", "$out"},
-			{ name = "description", "External CMake build in directory", "$out" },
+	return {"command", "description",
+	command ={ "cmake", "--build", "$out"},
+	description = {"External CMake build in directory", "$out" },
 		}
 end
 

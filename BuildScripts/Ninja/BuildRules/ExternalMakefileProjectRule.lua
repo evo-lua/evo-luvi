@@ -1,9 +1,9 @@
 local ExternalMakefileProjectRule = {}
 
 function ExternalMakefileProjectRule:Construct()
-	return {
-			{ name = "command", "cd", "$in", "&&", "make", "&&", "cd", "&&", "$cwd"},
-			{ name = "description", "External Makefile build in directory", "$out" },
+	return {"command", "description",
+	command=	{"cd", "$in", "&&", "make", "&&", "cd", "&&", "$cwd"},
+description =			{ "External Makefile build in directory", "$out" },
 		}
 end
 

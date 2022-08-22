@@ -1,10 +1,10 @@
 local BytecodeGenerationRule = {}
 
 function BytecodeGenerationRule:Construct()
-	return {
-		{ name = "command", "luajit", "-b", "$in", "$out", },
-		{ name = "description", "Saving bytecode for", "$in" },
-		{ name = "deps", "luajit" },
+	return {"command", "description", "deps",
+		command = { "luajit", "-b", "$in", "$out", }, -- TODO preprend $jitdir
+		description = { "Saving bytecode for", "$in" },
+		deps = { "luajit" }, -- TODO preprend $jitdir
 	}
 end
 

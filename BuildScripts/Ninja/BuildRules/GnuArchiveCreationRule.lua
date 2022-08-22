@@ -1,9 +1,9 @@
 local GnuArchiveCreationRule = {}
 
 function GnuArchiveCreationRule:Construct()
-	return {
-		{ name = "command", "ar", "crs", "$out", "$in"},
-		{ name = "description", "Creating archive", "$out" },
+	return {"command", "description",
+	command={"ar", "crs", "$out", "$in"},
+	description = { "Creating archive", "$out" },
 	}
 end
 
