@@ -40,6 +40,12 @@ function StaticLibrary:GetBuildRules()
 		archive = GnuArchiveCreationRule(),
 		make = ExternalMakefileProjectRule(),
 		cmake = ExternalCMakeProjectRule(),
+		-- Rules should be iterated in order so that the build file output becomes deterministic and testable
+		"compile",
+		"bcsave",
+		"archive",
+		"make",
+		"cmake",
 	}
 end
 
@@ -51,6 +57,9 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_flags", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
+	for index, name in ipairs(self:GetBuildRules()) do
+
+	end
 	local compileCommandRule = GnuCompilerCollectionRule()
 	ninjaFile:AddRule("compile", compileCommandRule)
 

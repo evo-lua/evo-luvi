@@ -30,9 +30,14 @@ describe("Executable", function()
 			local expectedBuildRules = {
 				compile = GnuCompilerCollectionRule(),
 				bcsave = BytecodeGenerationRule(),
-				archive = GnuLinkageEditorRule(),
+				link = GnuLinkageEditorRule(),
 				make = ExternalMakefileProjectRule(),
 				cmake = ExternalCMakeProjectRule(),
+				"compile",
+				"bcsave",
+				"link",
+				"make",
+				"cmake",
 			}
 			assertEquals(target:GetBuildRules(), expectedBuildRules)
 		end)

@@ -31,6 +31,11 @@ describe("StaticLibrary", function()
 				archive = GnuArchiveCreationRule(),
 				make = ExternalMakefileProjectRule(),
 				cmake = ExternalCMakeProjectRule(),
+				"compile",
+				"bcsave",
+				"archive",
+				"make",
+				"cmake",
 			}
 			assertEquals(target:GetBuildRules(), expectedBuildRules)
 		end)

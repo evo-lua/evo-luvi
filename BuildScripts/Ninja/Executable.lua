@@ -34,9 +34,14 @@ function Executable:GetBuildRules()
 	return {
 		compile = GnuCompilerCollectionRule(),
 		bcsave = BytecodeGenerationRule(),
-		archive = GnuLinkageEditorRule(),
+		link = GnuLinkageEditorRule(),
 		make = ExternalMakefileProjectRule(),
 		cmake = ExternalCMakeProjectRule(),
+		"compile",
+		"bcsave",
+		"link",
+		"make",
+		"cmake",
 	}
 end
 
