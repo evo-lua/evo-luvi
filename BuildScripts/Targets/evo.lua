@@ -4,8 +4,6 @@ local path_join = path.join
 local Executable = import("../Ninja/Executable.lua")
 local evo = Executable("evo")
 
-evo:AddIncludeDirectory(path_join("Runtime"))
-
 local sources = {
 	path_join("Runtime", "main.c"),
 	path_join("Runtime", "luvi_compat.c"),
@@ -48,8 +46,9 @@ local sources = {
 -- ${lpeg_re_lua}
 -- ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 }
-evo:AddFiles(sources)
 evo:AddDependency("llhttp")
+evo:AddFiles(sources)
+evo:AddIncludeDirectory(path_join("Runtime"))
 -- evo:AddDependency(luajit)
 -- evo:AddDependency()
 -- evo:AddDependency(libuv)
