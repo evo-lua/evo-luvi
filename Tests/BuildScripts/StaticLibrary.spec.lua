@@ -8,6 +8,8 @@ local ExternalCMakeProjectRule = import("../../BuildScripts/Ninja/BuildRules/Ext
 local ffi = require("ffi")
 local isWindows = (ffi.os == "Windows")
 
+local path_join = path.join
+
 describe("StaticLibrary", function()
 	describe("GetName", function()
 		it("should return an executable name following the OS conventions", function()
@@ -87,6 +89,29 @@ describe("StaticLibrary", function()
 
 			local expectedErrorMessage = "Failed to create build edge for input Some/directory/invalid.png (unsupported file type: *.png)"
 			assertThrows(codeUnderTest, expectedErrorMessage)
+		end)
+
+
+		it("should return a build edge connecting the library with the input file when a C file was passed", function()
+			local target = StaticLibrary("mylib")
+			local sourcePath = path_join("Some", "directory", "something.c")
+
+			local path, tokens, overrides = target:CreateBuildEdge(sourcePath)
+
+			assertEquals(path, path_join("$builddir", "mylib", "something.c.o"))
+			assertEquals(tokens, { "compile", sourcePath })
+			assertEquals(overrides, {{ name = "includes", declarationLine = "$includes"}})
+		end)
+
+		it("should return a build edge connecting the library with the input file when a Lua file was passed", function()
+			local target = StaticLibrary("mylib")
+			local sourcePath = path_join("Some", "directory", "something.lua")
+
+			local path, tokens, overrides = target:CreateBuildEdge(sourcePath)
+
+			assertEquals(path, path_join("$builddir", "mylib", "something.lua.o"))
+			assertEquals(tokens, { "bcsave", sourcePath})
+			assertEquals(overrides, {})
 		end)
 	end)
 end)

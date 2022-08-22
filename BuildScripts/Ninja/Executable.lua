@@ -12,11 +12,11 @@ local Executable = {
 	fileExtension = (ffi.os == "Windows") and "exe" or ""
 }
 
-function Executable:Construct(name)
+function Executable:Construct(targetID)
 	local instance = {
 		includeDirectories = {},
 		sources = {},
-		name = name,
+		targetID = targetID,
 	}
 
 	instance.__index = self
@@ -59,10 +59,10 @@ end
 
 function Executable:GetName()
 	if self.fileExtension == "" then
-		return self.name
+		return self.targetID
 	end
 
-	return self.name .. "." .. self.fileExtension
+	return self.targetID .. "." .. self.fileExtension
 end
 
 return Executable

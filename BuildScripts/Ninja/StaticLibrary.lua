@@ -19,9 +19,9 @@ local StaticLibrary = {
 	fileExtension = (ffi.os == "Windows") and "lib" or "a"
 }
 
-function StaticLibrary:Construct(name)
+function StaticLibrary:Construct(targetID)
 	local instance = {
-		name = name,
+		targetID = targetID,
 	}
 
 	instance.__index = self
@@ -62,18 +62,18 @@ function StaticLibrary:CreateBuildEdge(sourceFile)
 				declarationLine = "$includes",
 			}
 		}
-		return path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides
+		return path_join("$builddir", self.targetID, fileName .. ".o"), dependencyTokens, overrides
 	elseif extension == ".lua" then
 		local dependencyTokens = { "bcsave", sourceFile }
 		local overrides = {	}
 
-		return path_join("$builddir", self.name, self:GetName()), dependencyTokens, overrides
+		return path_join("$builddir", self.targetID, fileName .. ".o"), dependencyTokens, overrides
 	-- elseif fileName == "Makefile" then
 	-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
-	-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.name) }
+	-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.targetID) }
 	-- 	local overrides = {	}
 
-	-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName), dependencyTokens, overrides)
+	-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, fileName), dependencyTokens, overrides)
 	else
 		error(format("Failed to create build edge for input %s (unsupported file type: *%s)", sourceFile, extension), 0)
 	end
@@ -102,19 +102,19 @@ function StaticLibrary:CreateBuildFile()
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
 		local objectFileName = path_basename(sourceFile) .. ".o"
-		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.name, objectFileName)
+		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.targetID, objectFileName)
 	end
-	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, self:GetName()), buildCommandTokens)
+	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens)
 
 	return ninjaFile
 end
 
 function StaticLibrary:GetName()
 	if self.fileExtension == "lib" then
-		return self.name .. "." .. self.fileExtension
+		return self.targetID .. "." .. self.fileExtension
 	end
 
-	return "lib" .. self.name .. "." .. self.fileExtension
+	return "lib" .. self.targetID .. "." .. self.fileExtension
 end
 
 return StaticLibrary
