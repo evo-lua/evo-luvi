@@ -50,6 +50,35 @@ function StaticLibrary:GetBuildRules()
 	}
 end
 
+function StaticLibrary:CreateBuildEdge(sourceFile)
+
+	local extension = path_extname(sourceFile)
+	local fileName = path_basename(sourceFile)
+	if extension == ".c" then
+		local dependencyTokens = { "compile", sourceFile }
+		local overrides = {
+			{
+				name = "includes",
+				declarationLine = "$includes",
+			}
+		}
+		return path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides
+	elseif extension == ".lua" then
+		local dependencyTokens = { "bcsave", sourceFile }
+		local overrides = {	}
+
+		return path_join("$builddir", self.name, self:GetName()), dependencyTokens, overrides
+	-- elseif fileName == "Makefile" then
+	-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
+	-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.name) }
+	-- 	local overrides = {	}
+
+	-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName), dependencyTokens, overrides)
+	else
+		error(format("Failed to create build edge for input %s (unsupported file type: *%s)", sourceFile, extension), 0)
+	end
+end
+
 function StaticLibrary:CreateBuildFile()
 	local ninjaFile = NinjaFile()
 
@@ -66,31 +95,8 @@ function StaticLibrary:CreateBuildFile()
 	end
 
 	for _, sourceFile in ipairs(self.sources) do
-		local extension = path_extname(sourceFile)
-		local fileName = path_basename(sourceFile)
-		if extension == ".c" then
-			local dependencyTokens = { "compile", sourceFile }
-			local overrides = {
-				{
-					name = "includes",
-					declarationLine = "$includes",
-				}
-			}
-			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
-		elseif extension == ".lua" then
-			local dependencyTokens = { "bcsave", sourceFile }
-			local overrides = {	}
-
-			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, self:GetName()), dependencyTokens, overrides)
-		-- elseif fileName == "Makefile" then
-		-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
-		-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.name) }
-		-- 	local overrides = {	}
-
-		-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName), dependencyTokens, overrides)
-		else
-			error(format("Cannot generate object files for sources of type %s (only C and Lua files are currently supported)", extension), 0)
-		end
+		local name, dependencyTokens, variableOverrides = self:CreateBuildEdge(sourceFile)
+		ninjaFile:AddBuildEdge(name, dependencyTokens, variableOverrides)
 	end
 
 	local buildCommandTokens = { "archive" }

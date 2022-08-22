@@ -77,4 +77,16 @@ describe("StaticLibrary", function()
 
 		end)
 	end)
+
+	describe("CreateBuildEdge", function()
+		it("should raise an error if an unsupported file type was passed", function()
+			local target = StaticLibrary("mylib")
+			local function codeUnderTest()
+				target:CreateBuildEdge("Some/directory/invalid.png")
+			end
+
+			local expectedErrorMessage = "Failed to create build edge for input Some/directory/invalid.png (unsupported file type: *.png)"
+			assertThrows(codeUnderTest, expectedErrorMessage)
+		end)
+	end)
 end)
