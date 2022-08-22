@@ -51,13 +51,24 @@ describe("StaticLibrary", function()
 			assertEquals(type(ninjaFile.variables.includes), "string")
 		end)
 
-		-- build edges
+		it("should add build edges for all sources to the generated build file", function()
+			local target = StaticLibrary("mylib")
+			local ninjaFile = target:CreateBuildFile()
+			assertEquals(#ninjaFile.buildEdges, 1) -- The library itself
+
+			target:AddFile("hello.c")
+			ninjaFile = target:CreateBuildFile()
+			assertEquals(#ninjaFile.buildEdges, 2) -- The library and the added file (.c to .o)
+
+			target:AddFiles({ "test.c", "asdf.lua" })
+			ninjaFile = target:CreateBuildFile()
+			assertEquals(#ninjaFile.buildEdges, 4) -- One edge per newly-added file (plus the modified archive command)
+		end)
 
 		it("should add declarations for all default build rules to the generated build file", function()
 			local target = StaticLibrary("mylib")
 			local ninjaFile = target:CreateBuildFile()
 
-			dump(ninjaFile)
 			assertEquals(type(ninjaFile.ruleDeclarations.compile), "table")
 			assertEquals(type(ninjaFile.ruleDeclarations.bcsave), "table")
 			assertEquals(type(ninjaFile.ruleDeclarations.archive), "table")

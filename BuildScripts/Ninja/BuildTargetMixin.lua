@@ -12,9 +12,14 @@ function BuildTargetMixin:AddIncludeDirectory(directoryPath)
 end
 
 -- TODO Test
+function BuildTargetMixin:AddFile(sourceFilePath)
+	self.sources[#self.sources+1] = sourceFilePath
+end
+
+-- TODO Test
 function BuildTargetMixin:AddFiles(sourceFilePaths)
 	for _, sourceFilePath in ipairs(sourceFilePaths) do
-		self.sources[#self.sources+1] = sourceFilePath
+		self:AddFile(sourceFilePath)
 	end
 end
 
