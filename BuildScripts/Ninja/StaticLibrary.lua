@@ -40,7 +40,6 @@ function StaticLibrary:GetBuildRules()
 		archive = GnuArchiveCreationRule(),
 		make = ExternalMakefileProjectRule(),
 		cmake = ExternalCMakeProjectRule(),
-		-- Rules should be iterated in order so that the build file output becomes deterministic and testable
 		"compile",
 		"bcsave",
 		"archive",
@@ -57,20 +56,12 @@ function StaticLibrary:CreateBuildFile()
 	ninjaFile:AddVariable("include_flags", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
-	for index, name in ipairs(self:GetBuildRules()) do
-
+	-- Rules should be iterated in order so that the build file output is deterministic and testable
+	local buildRules = self:GetBuildRules()
+	for index, name in ipairs(buildRules) do
+		local ruleInfo = buildRules[name]
+		ninjaFile:AddRule(name, ruleInfo)
 	end
-	local compileCommandRule = GnuCompilerCollectionRule()
-	ninjaFile:AddRule("compile", compileCommandRule)
-
-	local bytecodeGenerationCommandRule = BytecodeGenerationRule()
-	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave, hence the name
-
-	local archiveCommandRule = GnuArchiveCreationRule()
-	ninjaFile:AddRule("archive", archiveCommandRule)
-
-	-- local makeCommandRule =
-	-- ninjaFile:AddRule("make", makeCommandRule)
 
 	for _, sourceFile in ipairs(self.sources) do
 		local extension = path_extname(sourceFile)
