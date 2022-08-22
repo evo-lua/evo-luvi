@@ -81,8 +81,7 @@ function StaticLibrary:CreateBuildFile()
 			local dependencyTokens = { "bcsave", sourceFile }
 			local overrides = {	}
 
-			local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a") -- TODO DRY
-			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), dependencyTokens, overrides)
+			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, self:GetName()), dependencyTokens, overrides)
 		-- elseif fileName == "Makefile" then
 		-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
 		-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.name) }
@@ -99,9 +98,7 @@ function StaticLibrary:CreateBuildFile()
 		local objectFileName = path_basename(sourceFile) .. ".o"
 		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.name, objectFileName)
 	end
-
-	local libraryName = (ffi.os == "Windows") and (self.name .. ".lib") or ("lib" .. self.name .. ".a") -- TODO DRY
-	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, libraryName), buildCommandTokens)
+	ninjaFile:AddBuildEdge(path_join("$builddir", self.name, self:GetName()), buildCommandTokens)
 
 	return ninjaFile
 end
