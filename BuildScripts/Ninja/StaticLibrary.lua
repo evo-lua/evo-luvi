@@ -4,6 +4,8 @@ local uv = require("uv")
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
 local GnuArchiveCreationRule = import("./BuildRules/GnuArchiveCreationRule.lua")
+local ExternalMakefileProjectRule = import("./BuildRules/ExternalMakefileProjectRule.lua")
+local ExternalCMakeProjectRule = import("./BuildRules/ExternalCMakeProjectRule.lua")
 local BuildTargetMixin = import("./BuildTargetMixin.lua")
 local NinjaFile = import("../Ninja/NinjaFile.lua")
 
@@ -36,6 +38,8 @@ function StaticLibrary:GetBuildRules()
 		compile = GnuCompilerCollectionRule(),
 		bcsave = BytecodeGenerationRule(),
 		archive = GnuArchiveCreationRule(),
+		make = ExternalMakefileProjectRule(),
+		cmake = ExternalCMakeProjectRule(),
 	}
 end
 
@@ -56,10 +60,7 @@ function StaticLibrary:CreateBuildFile()
 	local archiveCommandRule = GnuArchiveCreationRule()
 	ninjaFile:AddRule("archive", archiveCommandRule)
 
-	-- local makeCommandRule = {
-	-- 	{ name = "command", "cd", "$in", "&&", "make", "&&", "cd", "&&", "$cwd"},
-	-- 	{ name = "description", "Running Makefile build in directory", "$out" },
-	-- }
+	-- local makeCommandRule =
 	-- ninjaFile:AddRule("make", makeCommandRule)
 
 	for _, sourceFile in ipairs(self.sources) do

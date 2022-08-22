@@ -2,6 +2,8 @@ local StaticLibrary = import("../../BuildScripts/Ninja/StaticLibrary.lua")
 local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("../../BuildScripts/Ninja/BuildRules/BytecodeGenerationRule.lua")
 local GnuArchiveCreationRule = import("../../BuildScripts/Ninja/BuildRules/GnuArchiveCreationRule.lua")
+local ExternalMakefileProjectRule = import("../../BuildScripts/Ninja/BuildRules/ExternalMakefileProjectRule.lua")
+local ExternalCMakeProjectRule = import("../../BuildScripts/Ninja/BuildRules/ExternalCMakeProjectRule.lua")
 
 local ffi = require("ffi")
 local isWindows = (ffi.os == "Windows")
@@ -27,6 +29,8 @@ describe("StaticLibrary", function()
 				compile = GnuCompilerCollectionRule(),
 				bcsave = BytecodeGenerationRule(),
 				archive = GnuArchiveCreationRule(),
+				make = ExternalMakefileProjectRule(),
+				cmake = ExternalCMakeProjectRule(),
 			}
 			assertEquals(target:GetBuildRules(), expectedBuildRules)
 		end)

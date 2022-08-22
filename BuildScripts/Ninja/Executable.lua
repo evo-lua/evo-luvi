@@ -3,6 +3,8 @@ local ffi = require("ffi")
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
 local GnuLinkageEditorRule = import("./BuildRules/GnuLinkageEditorRule.lua")
+local ExternalMakefileProjectRule = import("./BuildRules/ExternalMakefileProjectRule.lua")
+local ExternalCMakeProjectRule = import("./BuildRules/ExternalCMakeProjectRule.lua")
 local BuildTargetMixin = import("./BuildTargetMixin.lua")
 local NinjaFile = import("../Ninja/NinjaFile.lua")
 
@@ -33,6 +35,8 @@ function Executable:GetBuildRules()
 		compile = GnuCompilerCollectionRule(),
 		bcsave = BytecodeGenerationRule(),
 		archive = GnuLinkageEditorRule(),
+		make = ExternalMakefileProjectRule(),
+		cmake = ExternalCMakeProjectRule(),
 	}
 end
 
