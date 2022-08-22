@@ -10,9 +10,6 @@ local path_basename = path.basename
 local path_extname = path.extname
 local path_join = path.join
 
-
-
-
 local StaticLibrary = {
 	fileExtension = (ffi.os == "Windows") and "lib" or "a"
 }

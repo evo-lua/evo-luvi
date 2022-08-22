@@ -35,4 +35,12 @@ function Executable:CreateBuildFile()
 	return ninjaFile
 end
 
+function Executable:GetName()
+	if self.fileExtension == "" then
+		return self.name
+	end
+
+	return self.name .. "." .. self.fileExtension
+end
+
 return Executable

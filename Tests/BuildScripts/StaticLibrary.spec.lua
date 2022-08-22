@@ -1,0 +1,5 @@
+describe("StaticLibrary", function()
+	describe("GetName", function() end)
+	describe("GetFileExtension", function() end)
+	describe("CreateBuildFile", function() end)
+end)
