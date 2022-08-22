@@ -1,3 +1,0 @@
-local ExternalMakefileProjectMixin = {}
-
-return ExternalMakefileProjectMixin
