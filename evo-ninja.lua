@@ -7,6 +7,10 @@ local externalBuildTargets = {
 	"llhttp",
 }
 
+if not C_FileSystem.IsDirectory(NINJA_BUILD_DIR) then
+	C_FileSystem.MakeDirectory(NINJA_BUILD_DIR)
+end
+
 print("Processing build configuration...")
 
 local function CreateNinjaBuildFile(targetID)
