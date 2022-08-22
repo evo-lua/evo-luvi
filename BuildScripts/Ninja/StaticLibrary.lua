@@ -97,6 +97,12 @@ function StaticLibrary:CreateBuildFile()
 	return ninjaFile
 end
 
+function StaticLibrary:GetName()
+	if self.fileExtension == "lib" then
+		return self.name .. "." .. self.fileExtension
+	end
 
+	return "lib" .. self.name .. "." .. self.fileExtension
+end
 
 return StaticLibrary
