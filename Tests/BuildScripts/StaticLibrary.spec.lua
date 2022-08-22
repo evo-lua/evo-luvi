@@ -20,7 +20,7 @@ describe("StaticLibrary", function()
 	end)
 
 	describe("GetBuildRules", function()
-		it("should return a set of build rules for the default GCC and LuaJIT toolchain", function()
+		it("should return a set of build rules for the default GCC/LuaJIT toolchain", function()
 			local target = StaticLibrary("mylib")
 
 			local expectedBuildRules = {
