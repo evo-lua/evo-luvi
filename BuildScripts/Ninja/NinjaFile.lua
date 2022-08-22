@@ -45,8 +45,9 @@ function NinjaFile:ToString()
 	fileContents[#fileContents+1] = NinjaFile.AUTOGENERATION_HEADER_TEXT
 	fileContents[#fileContents+1] = "ninja_required_version = " .. self.requiredVersion
 
-	for index, variable in ipairs(self.variables) do
-		fileContents[#fileContents+1] = variable.name .. " = " .. variable.declarationLine
+	for index, variableName in ipairs(self.variables) do
+		local declarationLine = self.variables[variableName]
+		fileContents[#fileContents+1] = variableName .. " = " .. declarationLine
 	end
 
 	for index, ruleInfo in ipairs(self.ruleDeclarations) do
@@ -76,13 +77,13 @@ function NinjaFile:ToString()
 end
 
 function NinjaFile:AddVariable(name, declarationLine)
-	self.variables[#self.variables+1] = {
-		name = name,
-		declarationLine = declarationLine,
-	}
+	self.variables[#self.variables+1] = name
+	self.variables[name] = declarationLine
 end
 
 function NinjaFile:AddRule(name, ruleInfo)
+	-- self.ruleDeclarations[#self.ruleDeclarations+1] = name
+	-- self.ruleDeclarations[name] = unpack(ruleInfo)
 	self.ruleDeclarations[#self.ruleDeclarations+1] = {
 		name = name,
 		unpack(ruleInfo),

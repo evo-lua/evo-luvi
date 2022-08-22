@@ -73,7 +73,7 @@ describe("NinjaFile", function()
 			local expectedFileContents = ninjaFile.AUTOGENERATION_HEADER_TEXT .. "\n"
 			.. "ninja_required_version = " .. ninjaFile.requiredVersion  .. "\n"
 			.. "rule compile" .. "\n" ..
-			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in $include_flags -o $out".. "\n" ..
+			"  " .. "command = gcc -MMD -MT $out -MF $out.d -c $in $includes -o $out".. "\n" ..
 			"  " .. "description = Compiling $in".. "\n" ..
 			"  " .. "depfile = $out.d".. "\n" ..
 			"  " .. "deps = gcc" .. "\n"

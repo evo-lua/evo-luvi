@@ -42,11 +42,17 @@ describe("StaticLibrary", function()
 	end)
 
 	describe("CreateBuildFile", function()
-		it("should add the default build rules to the generated file", function()
+		it("should add declarations for all default variables to the generated build file", function()
 			local target = StaticLibrary("mylib")
 			local ninjaFile = target:CreateBuildFile()
-			dump(ninjaFile)
-			assertEquals(ninjaFile, {})
+
+			assertEquals(type(ninjaFile.variables.cwd), "string")
+			assertEquals(type(ninjaFile.variables.builddir), "string")
+			assertEquals(type(ninjaFile.variables.includes), "string")
 		end)
+
+		-- build edges
+
+		-- rules
 	end)
 end)

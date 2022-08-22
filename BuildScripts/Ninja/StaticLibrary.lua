@@ -55,7 +55,7 @@ function StaticLibrary:CreateBuildFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 
-	ninjaFile:AddVariable("include_flags", self:GetIncludeFlags())
+	ninjaFile:AddVariable("includes", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
 	-- Rules should be iterated in order so that the file output is deterministic and testable
@@ -73,7 +73,7 @@ function StaticLibrary:CreateBuildFile()
 			local overrides = {
 				{
 					name = "includes",
-					declarationLine = "$include_flags",
+					declarationLine = "$includes",
 				}
 			}
 			ninjaFile:AddBuildEdge(path_join("$builddir", self.name, fileName .. ".o"), dependencyTokens, overrides)
