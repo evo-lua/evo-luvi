@@ -1,4 +1,7 @@
 local StaticLibrary = import("../../BuildScripts/Ninja/StaticLibrary.lua")
+local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
+local BytecodeGenerationRule = import("../../BuildScripts/Ninja/BuildRules/BytecodeGenerationRule.lua")
+local GnuArchiveCreationRule = import("../../BuildScripts/Ninja/BuildRules/GnuArchiveCreationRule.lua")
 
 local ffi = require("ffi")
 local isWindows = (ffi.os == "Windows")
@@ -13,6 +16,19 @@ describe("StaticLibrary", function()
 			else
 				assertEquals(target:GetName(), "libhello.a")
 			end
+		end)
+	end)
+
+	describe("GetBuildRules", function()
+		it("should return a set of build rules for the default GCC and LuaJIT toolchain", function()
+			local target = StaticLibrary("mylib")
+
+			local expectedBuildRules = {
+				compile = GnuCompilerCollectionRule(),
+				bcsave = BytecodeGenerationRule(),
+				archive = GnuArchiveCreationRule(),
+			}
+			assertEquals(target:GetBuildRules(), expectedBuildRules)
 		end)
 	end)
 

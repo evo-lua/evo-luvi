@@ -3,6 +3,7 @@ local uv = require("uv")
 
 local GnuCompilerCollectionRule = import("./BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("./BuildRules/BytecodeGenerationRule.lua")
+local GnuArchiveCreationRule = import("./BuildRules/GnuArchiveCreationRule.lua")
 local BuildTargetMixin = import("./BuildTargetMixin.lua")
 local NinjaFile = import("../Ninja/NinjaFile.lua")
 
@@ -30,6 +31,14 @@ setmetatable(StaticLibrary, StaticLibrary)
 
 mixin(StaticLibrary, BuildTargetMixin)
 
+function StaticLibrary:GetBuildRules()
+	return {
+		compile = GnuCompilerCollectionRule(),
+		bcsave = BytecodeGenerationRule(),
+		archive = GnuArchiveCreationRule(),
+	}
+end
+
 function StaticLibrary:CreateBuildFile()
 	local ninjaFile = NinjaFile()
 
@@ -44,10 +53,7 @@ function StaticLibrary:CreateBuildFile()
 	local bytecodeGenerationCommandRule = BytecodeGenerationRule()
 	ninjaFile:AddRule("bcsave", bytecodeGenerationCommandRule) -- Utilizes jit.bcsave, hence the name
 
-	local archiveCommandRule = {
-		{ name = "command", "ar", "crs", "$out", "$in"},
-		{ name = "description", "Creating archive", "$out" },
-	}
+	local archiveCommandRule = GnuArchiveCreationRule()
 	ninjaFile:AddRule("archive", archiveCommandRule)
 
 	-- local makeCommandRule = {

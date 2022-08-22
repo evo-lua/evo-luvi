@@ -1,5 +1,9 @@
 local Executable = import("../../BuildScripts/Ninja/Executable.lua")
 
+local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
+local BytecodeGenerationRule = import("../../BuildScripts/Ninja/BuildRules/BytecodeGenerationRule.lua")
+local GnuLinkageEditorRule = import("../../BuildScripts/Ninja/BuildRules/GnuLinkageEditorRule.lua")
+
 local ffi = require("ffi")
 local isWindows = (ffi.os == "Windows")
 
@@ -17,5 +21,19 @@ describe("Executable", function()
 		end)
 	end)
 
+	describe("GetBuildRules", function()
+		it("should return a set of build rules for the default GCC and LuaJIT toolchain", function()
+			local target = Executable("myapp")
+
+			local expectedBuildRules = {
+				compile = GnuCompilerCollectionRule(),
+				bcsave = BytecodeGenerationRule(),
+				archive = GnuLinkageEditorRule(),
+			}
+			assertEquals(target:GetBuildRules(), expectedBuildRules)
+		end)
+	end)
+
+	describe("GetBuildEdges", function() end)
 	describe("CreateBuildFile", function() end)
 end)
