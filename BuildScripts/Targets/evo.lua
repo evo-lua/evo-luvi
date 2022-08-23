@@ -46,7 +46,8 @@ local sources = {
 -- ${lpeg_re_lua}
 -- ${LLHTTP_FFI_SOURCE_DIRECTORY}/llhttp.lua
 }
-evo:AddDependency("llhttp")
+local llhttp = import("./llhttp.lua")
+evo:AddDependency(llhttp)
 evo:AddFiles(sources)
 evo:AddIncludeDirectory(path_join("Runtime"))
 -- evo:AddDependency(luajit)
