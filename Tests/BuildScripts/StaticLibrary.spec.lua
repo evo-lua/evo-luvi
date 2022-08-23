@@ -80,11 +80,11 @@ describe("StaticLibrary", function()
 		end)
 	end)
 
-	describe("CreateBuildEdge", function()
+	describe("CreateCompilerBuildEdge", function()
 		it("should raise an error if an unsupported file type was passed", function()
 			local target = StaticLibrary("mylib")
 			local function codeUnderTest()
-				target:CreateBuildEdge("Some/directory/invalid.png")
+				target:CreateCompilerBuildEdge("Some/directory/invalid.png")
 			end
 
 			local expectedErrorMessage = "Failed to create build edge for input Some/directory/invalid.png (unsupported file type: *.png)"
@@ -96,7 +96,7 @@ describe("StaticLibrary", function()
 			local target = StaticLibrary("mylib")
 			local sourcePath = path_join("Some", "directory", "something.c")
 
-			local path, tokens, overrides = target:CreateBuildEdge(sourcePath)
+			local path, tokens, overrides = target:CreateCompilerBuildEdge(sourcePath)
 
 			assertEquals(path, path_join("$builddir", "mylib", "something.c.o"))
 			assertEquals(tokens, { "compile", sourcePath })
@@ -107,11 +107,33 @@ describe("StaticLibrary", function()
 			local target = StaticLibrary("mylib")
 			local sourcePath = path_join("Some", "directory", "something.lua")
 
-			local path, tokens, overrides = target:CreateBuildEdge(sourcePath)
+			local path, tokens, overrides = target:CreateCompilerBuildEdge(sourcePath)
 
 			assertEquals(path, path_join("$builddir", "mylib", "something.lua.o"))
 			assertEquals(tokens, { "bcsave", sourcePath})
 			assertEquals(overrides, {})
+		end)
+
+		it("should return nil when a Makefile was passed", function()
+			local target = StaticLibrary("mylib")
+			local sourcePath = path_join("Some", "directory", "Makefile")
+
+			local path, tokens, overrides = target:CreateCompilerBuildEdge(sourcePath)
+
+			assertEquals(path, nil)
+			assertEquals(tokens, nil)
+			assertEquals(overrides, nil)
+		end)
+
+		it("should return nil when a CMakeLists.txt file was passed", function()
+			local target = StaticLibrary("mylib")
+			local sourcePath = path_join("Some", "directory", "CMakeLists.txt")
+
+			local path, tokens, overrides = target:CreateCompilerBuildEdge(sourcePath)
+
+			assertEquals(path, nil)
+			assertEquals(tokens, nil)
+			assertEquals(overrides, nil)
 		end)
 	end)
 end)

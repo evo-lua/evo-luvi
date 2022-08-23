@@ -50,7 +50,7 @@ function StaticLibrary:GetBuildRules()
 	}
 end
 
-function StaticLibrary:CreateBuildEdge(sourceFile)
+function StaticLibrary:CreateCompilerBuildEdge(sourceFile)
 
 	local extension = path_extname(sourceFile)
 	local fileName = path_basename(sourceFile)
@@ -68,12 +68,15 @@ function StaticLibrary:CreateBuildEdge(sourceFile)
 		local overrides = {	}
 
 		return path_join("$builddir", self.targetID, fileName .. ".o"), dependencyTokens, overrides
-	-- elseif fileName == "Makefile" then
-	-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
-	-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.targetID) }
+	elseif fileName == "Makefile" then
+		-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
+		-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.targetID) }
 	-- 	local overrides = {	}
 
 	-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, fileName), dependencyTokens, overrides)
+		return
+	elseif fileName == "CMakeLists.txt" then
+		return
 	else
 		error(format("Failed to create build edge for input %s (unsupported file type: *%s)", sourceFile, extension), 0)
 	end
@@ -95,8 +98,11 @@ function StaticLibrary:CreateBuildFile()
 	end
 
 	for _, sourceFile in ipairs(self.sources) do
-		local name, dependencyTokens, variableOverrides = self:CreateBuildEdge(sourceFile)
-		ninjaFile:AddBuildEdge(name, dependencyTokens, variableOverrides)
+		local name, dependencyTokens, variableOverrides = self:CreateCompilerBuildEdge(sourceFile)
+		-- External projects are built using their own build mechanism, so we don't need to track intermediate (object) files
+		if name and dependencyTokens and variableOverrides then
+			ninjaFile:AddBuildEdge(name, dependencyTokens, variableOverrides)
+		end
 	end
 
 	local buildCommandTokens = { "archive" }
