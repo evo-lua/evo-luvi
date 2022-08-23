@@ -46,14 +46,35 @@ function Executable:GetBuildRules()
 	}
 end
 
+local table_concat = table.concat
+local path_join = path.join
+
 -- TODO tests
+function Executable:CreateArchiveBuildEdge() -- TODO DRY
+	local buildCommandTokens = { "archive" }
+	for _, sourceFile in ipairs(self.sources) do
+		local objectFileName = path_basename(sourceFile) .. ".o"
+		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.targetID, objectFileName)
+	end
+
+	return path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens, {}
+end
+	-- TODO tests
 function Executable:CreateBuildFile()
 	local ninjaFile = NinjaFile()
 
-	for index, targetID in ipairs(self.dependencies) do
-		ninjaFile:AddInclude(targetID)
+	local dependencyObjectNames = {}
+	dependencyObjectNames[#dependencyObjectNames+1] = "compile"
+	for index, sourceFilePath in ipairs(self.sources) do
+		-- ninjaFile:AddInclude(sourceFilePath .. ".o")
 	end
-	-- Rest NYI
+
+	for index, target in ipairs(self.dependencies) do
+		-- dependencyObjectNames[#dependencyObjectNames+1] = target:GetName() -- todo use objects, not deps
+	end
+
+	-- local libsString = table_concat()
+	-- ninjaFile:AddBuildEdge(path_join("$builddir", self:GetName()), dependencyObjectNames, { name = "libs", dependentLine  = "-L" .. }) -- tbd link libs override?
 
 	return ninjaFile
 end
