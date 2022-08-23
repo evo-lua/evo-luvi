@@ -29,8 +29,8 @@ function BuildTargetMixin:GetIncludeFlags()
 end
 
 -- TODO Test
-function BuildTargetMixin:AddDependency(targetID)
-	self.dependencies[#self.dependencies+1] = targetID
+function BuildTargetMixin:AddDependency(target)
+	self.dependencies[#self.dependencies+1] = target
 end
 
 return BuildTargetMixin
