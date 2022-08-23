@@ -54,8 +54,8 @@ function StaticLibrary:GetBuildRules()
 	}
 end
 -- TODO test
-function StaticLibrary:IsExternalMakefileProject(sourceFile)
-	if (path_basename(sourceFile) == "Makefile") then
+function StaticLibrary:IsExternalMakefileProject()
+	if #self.sources == 1 and (path_basename(self.sources[1]) == "Makefile") then
 		return true
 	end
 
@@ -63,8 +63,8 @@ function StaticLibrary:IsExternalMakefileProject(sourceFile)
 end
 
 -- TODO test
-function StaticLibrary:IsExternalCMakeProject(sourceFile)
-	if path_basename(sourceFile) == "CMakeLists.txt" then
+function StaticLibrary:IsExternalCMakeProject()
+	if #self.sources == 1 and path_basename(self.sources[1]) == "CMakeLists.txt" then
 		return true
 	end
 
@@ -72,8 +72,8 @@ function StaticLibrary:IsExternalCMakeProject(sourceFile)
 end
 
 	-- TODO test
-function StaticLibrary:IsExternalProject(sourceFile)
-	return self:IsExternalMakefileProject(sourceFile) or self:IsExternalCMakeProject(sourceFile)
+function StaticLibrary:IsExternalProject()
+	return self:IsExternalMakefileProject() or self:IsExternalCMakeProject()
 end
 
 -- local path_resolve = path.posix.resolve -- ninja can't deal with windows paths
@@ -97,7 +97,7 @@ function StaticLibrary:CreateArchiveBuildEdge()
 		return
 	end
 
-	if #self.sources == 1 and self:IsExternalProject(self.sources[1]) then return end
+	if self:IsExternalProject() then return end
 
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
@@ -110,7 +110,7 @@ end
 
 function StaticLibrary:CreateCompilerBuildEdge(sourceFile)
 
-	if self:IsExternalProject(sourceFile) then
+	if self:IsExternalProject() then
 		return
 	end
 
@@ -174,8 +174,8 @@ function StaticLibrary:CreateBuildFile()
 		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
 	end
 
-	-- TODO test
-	if #self.sources == 1 and self:IsExternalProject(self.sources[1]) then
+	-- TODO tes
+	if self:IsExternalProject() then
 		path, buildCommandTokens, overrides = self:GetExternalProjectBuildEdge()
 		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
 	end
