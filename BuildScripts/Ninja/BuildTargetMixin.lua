@@ -1,8 +1,4 @@
-local BuildTargetMixin = {
-	includeDirectories = {},
-	sources = {},
-	dependencies = {},
-}
+local BuildTargetMixin = {}
 
 local GCC_INCLUDE_FLAG = "-I"
 

@@ -22,6 +22,9 @@ local StaticLibrary = {
 function StaticLibrary:Construct(targetID)
 	local instance = {
 		targetID = targetID,
+		includeDirectories = {},
+		sources = {},
+		dependencies = {},
 	}
 
 	instance.__index = self
@@ -48,6 +51,26 @@ function StaticLibrary:GetBuildRules()
 		"make",
 		"cmake",
 	}
+end
+
+function StaticLibrary:CreateArchiveBuildEdge()
+
+	if #self.sources == 0 then
+		return
+	end
+
+	if #self.sources == 1 and ((path_basename(self.sources[1]) == "Makefile") or (path_basename(self.sources[1]) == "CMakeLists.txt")) then
+		-- External project; we don't need to build it ourselves (no build edges are needed except for the final output)
+		return
+	end
+
+	local buildCommandTokens = { "archive" }
+	for _, sourceFile in ipairs(self.sources) do
+		local objectFileName = path_basename(sourceFile) .. ".o"
+		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.targetID, objectFileName)
+	end
+
+	return path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens, {}
 end
 
 function StaticLibrary:CreateCompilerBuildEdge(sourceFile)
@@ -105,12 +128,11 @@ function StaticLibrary:CreateBuildFile()
 		end
 	end
 
-	local buildCommandTokens = { "archive" }
-	for _, sourceFile in ipairs(self.sources) do
-		local objectFileName = path_basename(sourceFile) .. ".o"
-		buildCommandTokens[#buildCommandTokens+1] = path_join("$builddir", self.targetID, objectFileName)
+	local path, buildCommandTokens, overrides = self:CreateArchiveBuildEdge()
+	if path and buildCommandTokens and overrides then
+		-- External projects should provide their own build mechanism, so we don't need to create the archive manually
+		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
 	end
-	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens)
 
 	return ninjaFile
 end

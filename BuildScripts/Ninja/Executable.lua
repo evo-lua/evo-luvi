@@ -14,9 +14,10 @@ local Executable = {
 
 function Executable:Construct(targetID)
 	local instance = {
+		targetID = targetID,
 		includeDirectories = {},
 		sources = {},
-		targetID = targetID,
+		dependencies = {},
 	}
 
 	instance.__index = self
