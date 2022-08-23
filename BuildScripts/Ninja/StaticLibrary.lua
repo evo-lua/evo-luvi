@@ -12,6 +12,7 @@ local BuildTargetMixin = import("./BuildTargetMixin.lua")
 local NinjaFile = import("../Ninja/NinjaFile.lua")
 
 local path_basename = path.basename
+local path_dirname = path.dirname
 local path_extname = path.extname
 local path_join = path.join
 
@@ -52,6 +53,43 @@ function StaticLibrary:GetBuildRules()
 		"cmake",
 	}
 end
+-- TODO test
+function StaticLibrary:IsExternalMakefileProject()
+	if #self.sources == 1 and (path_basename(self.sources[1]) == "Makefile") then
+		return true
+	end
+
+	return false
+end
+
+-- TODO test
+function StaticLibrary:IsExternalCMakeProject()
+	if #self.sources == 1 and path_basename(self.sources[1]) == "CMakeLists.txt" then
+		return true
+	end
+
+	return false
+end
+
+	-- TODO test
+function StaticLibrary:IsExternalProject()
+	return self:IsExternalMakefileProject() or self:IsExternalCMakeProject()
+end
+
+-- local path_resolve = path.posix.resolve -- ninja can't deal with windows paths
+
+-- TODO test
+function StaticLibrary:GetExternalProjectBuildEdge()
+	local parentDirectory = path_dirname(self.sources[1])
+	if self:IsExternalMakefileProject() then
+		-- local buildCommandTokens = {"cd", parentDirectory, "&&", "make", "&&", "cd", "$cwd"}
+		local buildCommandTokens = {"make", path_join("$builddir", parentDirectory, self:GetName()) }
+		return path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens, {}
+	elseif self:IsExternalCMakeProject() then
+		local buildCommandTokens = {"cmake", parentDirectory}
+		return path_join("$builddir", self.targetID, self:GetName()), buildCommandTokens, {}
+	end
+end
 
 function StaticLibrary:CreateArchiveBuildEdge()
 
@@ -59,10 +97,7 @@ function StaticLibrary:CreateArchiveBuildEdge()
 		return
 	end
 
-	if #self.sources == 1 and ((path_basename(self.sources[1]) == "Makefile") or (path_basename(self.sources[1]) == "CMakeLists.txt")) then
-		-- External project; we don't need to build it ourselves (no build edges are needed except for the final output)
-		return
-	end
+	if self:IsExternalProject() then return end
 
 	local buildCommandTokens = { "archive" }
 	for _, sourceFile in ipairs(self.sources) do
@@ -74,6 +109,10 @@ function StaticLibrary:CreateArchiveBuildEdge()
 end
 
 function StaticLibrary:CreateCompilerBuildEdge(sourceFile)
+
+	if self:IsExternalProject() then
+		return
+	end
 
 	local extension = path_extname(sourceFile)
 	local fileName = path_basename(sourceFile)
@@ -91,15 +130,15 @@ function StaticLibrary:CreateCompilerBuildEdge(sourceFile)
 		local overrides = {	}
 
 		return path_join("$builddir", self.targetID, fileName .. ".o"), dependencyTokens, overrides
-	elseif fileName == "Makefile" then
-		-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
-		-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.targetID) }
-	-- 	local overrides = {	}
+	-- elseif fileName == "Makefile" then
+	-- 	-- 	local MOVE_COMMAND = (ffi.os == "Windows") and "move" or "mv"
+	-- 	-- 	local dependencyTokens = { "make", path_dirname(sourceFile), "&&", MOVE_COMMAND, "$out", path_join("$builddir", self.targetID) }
+	-- -- 	local overrides = {	}
 
-	-- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, fileName), dependencyTokens, overrides)
-		return
-	elseif fileName == "CMakeLists.txt" then
-		return
+	-- -- 	ninjaFile:AddBuildEdge(path_join("$builddir", self.targetID, fileName), dependencyTokens, overrides)
+	-- 	return
+	-- elseif fileName == "CMakeLists.txt" then
+	-- 	return
 	else
 		error(format("Failed to create build edge for input %s (unsupported file type: *%s)", sourceFile, extension), 0)
 	end
@@ -110,6 +149,7 @@ function StaticLibrary:CreateBuildFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 
+	ninjaFile:AddVariable("target", self.targetID) -- TODO test
 	ninjaFile:AddVariable("includes", self:GetIncludeFlags())
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
@@ -131,6 +171,12 @@ function StaticLibrary:CreateBuildFile()
 	local path, buildCommandTokens, overrides = self:CreateArchiveBuildEdge()
 	if path and buildCommandTokens and overrides then
 		-- External projects should provide their own build mechanism, so we don't need to create the archive manually
+		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
+	end
+
+	-- TODO tes
+	if self:IsExternalProject() then
+		path, buildCommandTokens, overrides = self:GetExternalProjectBuildEdge()
 		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
 	end
 
