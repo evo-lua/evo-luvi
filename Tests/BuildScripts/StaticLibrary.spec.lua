@@ -1,3 +1,5 @@
+local NINJA_BUILD_DIR = "ninjabuild"
+
 local StaticLibrary = import("../../BuildScripts/Ninja/StaticLibrary.lua")
 local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
 local BytecodeGenerationRule = import("../../BuildScripts/Ninja/BuildRules/BytecodeGenerationRule.lua")
@@ -5,6 +7,7 @@ local GnuArchiveCreationRule = import("../../BuildScripts/Ninja/BuildRules/GnuAr
 local ExternalMakefileProjectRule = import("../../BuildScripts/Ninja/BuildRules/ExternalMakefileProjectRule.lua")
 local ExternalCMakeProjectRule = import("../../BuildScripts/Ninja/BuildRules/ExternalCMakeProjectRule.lua")
 
+local uv = require("uv")
 local ffi = require("ffi")
 local isWindows = (ffi.os == "Windows")
 
@@ -48,9 +51,10 @@ describe("StaticLibrary", function()
 			local target = StaticLibrary("mylib")
 			local ninjaFile = target:CreateBuildFile()
 
-			assertEquals(type(ninjaFile.variables.cwd), "string")
-			assertEquals(type(ninjaFile.variables.builddir), "string")
-			assertEquals(type(ninjaFile.variables.includes), "string")
+			assertEquals(ninjaFile.variables.builddir, path_join(uv.cwd(), NINJA_BUILD_DIR))
+			assertEquals(ninjaFile.variables.cwd, uv.cwd())
+			assertEquals(ninjaFile.variables.target, "mylib")
+			assertEquals(ninjaFile.variables.includes, "")
 		end)
 
 		it("should add build edges for all sources to the generated build file", function()
