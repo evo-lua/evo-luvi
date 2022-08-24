@@ -25,7 +25,7 @@ local function CreateNinjaBuildFile(targetID)
 		outputFilePath = path_join(NINJA_BUILD_DIR, DEFAULT_BUILD_FILE)
 	end
 	buildFile:Save(outputFilePath)
-	printf("-> Configuration saved as %s", outputFilePath)
+	printf("-> Build file saved as %s", outputFilePath)
 end
 
 for index, targetID in ipairs(externalBuildTargets) do
