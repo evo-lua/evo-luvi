@@ -12,7 +12,7 @@ local path_join = path.join
 
 describe("StaticLibrary", function()
 	describe("GetName", function()
-		it("should return an executable name following the OS conventions", function()
+		it("should return a library name according to the OS conventions", function()
 
 			local target = StaticLibrary("hello")
 			if isWindows then
