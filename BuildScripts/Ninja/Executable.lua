@@ -70,7 +70,7 @@ function Executable:CreateBuildFile()
 	end
 
 	for index, target in ipairs(self.dependencies) do
-		-- dependencyObjectNames[#dependencyObjectNames+1] = target:GetName() -- todo use objects, not deps
+		dependencyObjectNames[#dependencyObjectNames+1] = target:GetName()
 	end
 
 	-- local libsString = table_concat()

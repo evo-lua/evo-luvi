@@ -148,10 +148,9 @@ function StaticLibrary:CreateBuildFile()
 	local ninjaFile = NinjaFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
-
+	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 	ninjaFile:AddVariable("target", self.targetID) -- TODO test
 	ninjaFile:AddVariable("includes", self:GetIncludeFlags())
-	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
 
 	-- Rules should be iterated in order so that the file output is deterministic and testable
 	local buildRules = self:GetBuildRules()
