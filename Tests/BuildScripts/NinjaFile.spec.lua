@@ -1,5 +1,5 @@
 
-local NinjaFile = import("../../BuildScripts/Ninja/NinjaFile.lua")
+local NinjaFile = import("../../BuildSystem/Ninja/NinjaFile.lua")
 local GnuCompilerCollectionRule = import("../../BuildScripts/Ninja/BuildRules/GnuCompilerCollectionRule.lua")
 
 describe("NinjaFile", function()
