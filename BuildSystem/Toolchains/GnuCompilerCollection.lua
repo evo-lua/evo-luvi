@@ -9,10 +9,10 @@ end
 
 function GnuCompilerCollection:GetCompileCommand()
 	return { "command", "description", "depfile", "deps",
-	command = { "gcc", "-MMD", "-MT", "$out", "-MF", "$out.d", "-c", "$in", "$includes", "-o", "$out" },
-	description =	{"Compiling", "$in" },
-	depfile =	{ "$out.d" },
-	deps =	{ "gcc" },
+	command = "gcc -MMD -MT $out -MF $out.d -c $in $includes -o $out",
+	description = "Compiling $in",
+	depfile = "$out.d",
+	deps = "gcc",
 	}
 end
 

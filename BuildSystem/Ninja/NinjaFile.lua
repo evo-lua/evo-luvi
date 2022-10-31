@@ -46,14 +46,14 @@ function NinjaFile:ToString()
 	end
 
 	for index, ruleName in ipairs(self.ruleDeclarations) do
-		local ruleInfo = self.ruleDeclarations[ruleName]
+		local buildCommand = self.ruleDeclarations[ruleName]
 		fileContents[#fileContents+1] = "rule " .. ruleName
 
 		-- Use indices instead of key-value pairs here to make the output deterministic (and therefore testable)
-		for _, fieldName in ipairs(ruleInfo) do
-			local lineInfo = ruleInfo[fieldName]
-			local ruleString = table_concat(lineInfo, " ")
-			fileContents[#fileContents+1] = "  " .. fieldName .. " = " .. ruleString
+		for _, propertyName in ipairs(buildCommand) do
+			local propertyValue = buildCommand[propertyName]
+			local ruleString = propertyValue
+			fileContents[#fileContents+1] = "  " .. propertyName .. " = " .. ruleString
 		end
 	end
 

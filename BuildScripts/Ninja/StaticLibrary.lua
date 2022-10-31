@@ -149,8 +149,14 @@ function StaticLibrary:CreateBuildFile()
 
 	ninjaFile:AddVariable("builddir", ninjaFile.buildDirectory)
 	ninjaFile:AddVariable("cwd", uv.cwd()) -- Useful for cd commands
-	ninjaFile:AddVariable("target", self.targetID) -- TODO test
+	ninjaFile:AddVariable("target", self.targetID)
 	ninjaFile:AddVariable("includes", self:GetIncludeFlags())
+
+	-- TODO test
+	if self:IsExternalProject() then
+		local path, buildCommandTokens, overrides = self:GetExternalProjectBuildEdge()
+		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
+	end
 
 	-- Rules should be iterated in order so that the file output is deterministic and testable
 	local buildRules = self:GetBuildRules()
@@ -170,12 +176,6 @@ function StaticLibrary:CreateBuildFile()
 	local path, buildCommandTokens, overrides = self:CreateArchiveBuildEdge()
 	if path and buildCommandTokens and overrides then
 		-- External projects should provide their own build mechanism, so we don't need to create the archive manually
-		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
-	end
-
-	-- TODO tes
-	if self:IsExternalProject() then
-		path, buildCommandTokens, overrides = self:GetExternalProjectBuildEdge()
 		ninjaFile:AddBuildEdge(path, buildCommandTokens, overrides)
 	end
 
