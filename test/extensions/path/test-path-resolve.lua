@@ -6,12 +6,14 @@ local uv = require("uv")
 -- JavaScript is truly a thing of beauty...
 local uv = require("uv")
 local posixyCwd = (ffi.os == "Windows")
-		and ((function()
-			-- cwd will have backslashes, but the posix version must always return slashes (even on Windows systems)
-			local _ = uv.cwd():gsub(path.win32.separator, path.posix.separator)
-			local posixPath = _:sub(_:find(path.posix.separator), #_)
-			return posixPath
-		end)())
+		and (
+			(function()
+				-- cwd will have backslashes, but the posix version must always return slashes (even on Windows systems)
+				local _ = uv.cwd():gsub(path.win32.separator, path.posix.separator)
+				local posixPath = _:sub(_:find(path.posix.separator), #_)
+				return posixPath
+			end)()
+		)
 	or uv.cwd()
 
 local windowsCwd = (function()
