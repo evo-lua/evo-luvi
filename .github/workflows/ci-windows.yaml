@@ -32,6 +32,9 @@ jobs:
       - name: Run unit tests
         run: ./evo-luvi test.lua
 
+      - name: Run examples # These examples are synced with the documentation and must always work
+        run: ./evo-luvi run-examples.lua
+
       - name: Run acceptance tests
         run: ./evo-luvi scenarios.lua
 
