@@ -149,7 +149,7 @@ if(WIN32)
   endif()
   add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS )
 
-  add_library (luvi_renamed Runtime/luvi_renamed.c)
+#   add_library (luvi_renamed Runtime/luvi_renamed.c) # TODO Remove, fails ninja builds and has no tests/demonstrated use cases
 endif()
 
 if(UNIX)
@@ -229,7 +229,7 @@ endif()
 # )
 # list(APPEND EXTRA_LIBS ${LUAJIT_LIBRARIES})
 
-target_link_libraries(luvi ${LUVI_LIBRARIES} ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} luajit luajit-5.1)
+target_link_libraries(luvi ${LUVI_LIBRARIES} ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 # target_link_libraries(luvi )
 
 ###############################################################################
