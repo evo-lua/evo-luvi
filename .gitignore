@@ -1,4 +1,5 @@
 build*/
+cmakebuild*/
 luvi-src.tar.gz
 *.exe
 evo
