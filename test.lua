@@ -18,6 +18,7 @@ local testCases = {
 	"Tests/Extensions/string.spec.lua",
 	"Tests/Extensions/table.spec.lua",
 	"Tests/Extensions/transform.spec.lua",
+	"Tests/Extensions/utf8.spec.lua",
 	"Tests/Extensions/uv.spec.lua",
 }
 
