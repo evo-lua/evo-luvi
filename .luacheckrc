@@ -53,6 +53,7 @@ globals = {
 	"import",
 	"mixin",
 	"path",
+	"utf8", -- Provided by lua-compat-5.3 when using 5.1/LuaJIT
 	"transform",
 
 	-- evo APIs
