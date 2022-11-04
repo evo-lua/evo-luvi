@@ -74,6 +74,10 @@ Luvi:LoadExtensionModules()
 local CLI = require("CLI")
 
 function Luvi:LuaMain(commandLineArgumentsPassedFromC)
+	self:FixLpegVersionString()
+	self:FixPcreVersionString()
+	self:FixMinizVersionString()
+
 	self.commandLineArguments = commandLineArgumentsPassedFromC
 	_G.arg = commandLineArgumentsPassedFromC -- Mimick the standard arg global to avoid confusing users
 
@@ -83,6 +87,33 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 	end
 
 	return self:StartCommandLineParser()
+end
+
+-- LPEG doesn't offer a C API, and fiddling with the Lua stack is annoying enough, so let's just do this here
+function Luvi:FixLpegVersionString()
+	local success, lpeg = pcall(require, "lpeg")
+
+	if success and lpeg and lpeg.version then
+		local lpegVersionString = string.match(lpeg.version, "%d+.%d+.%d+")
+		require("luvi").options.lpeg = lpegVersionString -- This only affects the --version output
+		lpeg.version = lpegVersionString -- We don't want the prefix in the API either, as it isn't very useful
+	end
+end
+
+-- Lrexlib has a separate version from the embedded PCRE2, so we display both (to help debug issues)
+function Luvi:FixPcreVersionString()
+	local success, regex = pcall(require, "regex")
+
+	if success and regex and regex.version() and regex._VERSION then
+		local pcreVersionString = regex.version()
+		local lrexlibVersion = regex._VERSION
+		require("luvi").options.pcre2 = pcreVersionString .. ", " .. lrexlibVersion -- This only affects the --version output
+	end
+end
+
+-- There's actually a C API for this, but the miniz bindings don't have a header to include, so might as well do it here instead
+function Luvi:FixMinizVersionString()
+	require("luvi").options.miniz = miniz.version() -- This only affects the --version output
 end
 
 function Luvi:StartBundledApp()
