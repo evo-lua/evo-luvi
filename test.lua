@@ -21,6 +21,7 @@ local testCases = {
 	"Tests/Extensions/miniz.spec.lua",
 	"Tests/Extensions/mixin.spec.lua",
 	"Tests/Extensions/openssl.spec.lua",
+	"Tests/Extensions/regex.spec.lua",
 	"Tests/Extensions/string.spec.lua",
 	"Tests/Extensions/table.spec.lua",
 	"Tests/Extensions/transform.spec.lua",

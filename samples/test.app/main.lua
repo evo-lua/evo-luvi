@@ -246,17 +246,6 @@ if options.zlib then
 	assert(inflated == tozblob, "inflated data doesn't match original")
 end
 
-if options.rex then
-	local rex = require("rex")
-	local string = "The red frog sits on the blue box in the green well."
-	local colors = {}
-	for color in rex.gmatch(string, "(red|blue|green)") do
-		colors[#colors + 1] = color
-	end
-	p(colors)
-	assert(#colors == 3)
-end
-
 print("All tests pass!\n")
 
 require("uv").run()
