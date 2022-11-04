@@ -14,6 +14,7 @@ local testCases = {
 	"Tests/Extensions/assertFunctionCalls.spec.lua",
 	"Tests/Extensions/assertThrows.spec.lua",
 	"Tests/Extensions/llhttp.spec.lua",
+	"Tests/Extensions/lpeg.spec.lua",
 	"Tests/Extensions/mixin.spec.lua",
 	"Tests/Extensions/openssl.spec.lua",
 	"Tests/Extensions/string.spec.lua",
