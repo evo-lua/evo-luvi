@@ -25,3 +25,6 @@
 [submodule "deps/openssl"]
 	path = deps/openssl
 	url = https://github.com/openssl/openssl.git
+[submodule "deps/pcre2"]
+	path = deps/pcre2
+	url = https://github.com/PCRE2Project/pcre2.git
