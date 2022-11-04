@@ -18,7 +18,7 @@
 	url = https://github.com/luvit/pcre.git
 [submodule "deps/lpeg"]
 	path = deps/lpeg
-	url = https://github.com/luvit/lpeg.git
+	url = https://github.com/roberto-ieru/LPeg.git
 [submodule "deps/llhttp-ffi"]
 	path = deps/llhttp-ffi
 	url = https://github.com/evo-lua/llhttp-ffi.git
