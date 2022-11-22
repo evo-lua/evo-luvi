@@ -16,6 +16,7 @@
  */
 
 #include "./luvi.h"
+#include "Bindings/llhttp_ffi.h"
 
 LUALIB_API int luaopen_luvi(lua_State* L)
 {

@@ -1,4 +1,5 @@
 #include "llhttp.h"
+#include "lua.h"
 
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
