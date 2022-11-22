@@ -16,6 +16,7 @@
  */
 
 #include "./luvi.h"
+#include "Bindings/llhttp_ffi.h"
 
 #ifndef LUVI_VERSION
 #define LUVI_VERSION "dev-untagged"

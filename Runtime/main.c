@@ -17,9 +17,9 @@
 
 #define LUA_LIB
 #include "luv.h"
-#include "Bindings/llhttp_ffi.c"
 #include "luvi.c"
 #include "luvi.h"
+#include "Bindings/llhttp_ffi.h"
 #ifndef MINIZ_NO_STDIO
 #define MINIZ_NO_STDIO
 #endif
