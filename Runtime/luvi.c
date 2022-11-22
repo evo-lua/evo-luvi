@@ -32,8 +32,24 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 		SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
 	lua_pushstring(L, buffer);
 	lua_setfield(L, -2, "ssl");
-	lua_pushstring(L, pcre_version());
-	lua_setfield(L, -2, "rex");
+
+	// This seems rather messy, but the PCRE2 API doesn't offer a better way for accessing the version AFAICT
+	int requiredBufferSizeInBytes = pcre2_config(PCRE2_CONFIG_VERSION, NULL);
+	char* versionString = (char*)malloc(requiredBufferSizeInBytes * sizeof(char));
+	if (versionString == NULL) { // OOM? Unlikely to ever happen, but still...
+		lua_pushstring(L, "?");
+	} else {
+		int success = pcre2_config(PCRE2_CONFIG_VERSION, versionString);
+
+		if (!success)
+			lua_pushstring(L, "???"); // Even less likely to happen, but better safe than sorry?
+		else
+			lua_pushstring(L, versionString);
+
+		free(versionString);
+	}
+	lua_setfield(L, -2, "pcre2");
+
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");
 

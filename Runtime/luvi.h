@@ -39,9 +39,8 @@
 
 #include "openssl.h"
 
-#ifndef PCRE2_CODE_UNIT_WIDTH
-#define PCRE2_CODE_UNIT_WIDTH 8
-#endif
+#include "pcre2.h"
+
 #include "zlib.h"
 LUALIB_API int luaopen_zlib(lua_State* const L);
 int luaopen_lpeg(lua_State* L);
