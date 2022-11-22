@@ -25,11 +25,9 @@
 #endif
 #include "Bindings/lminiz.c"
 #include "Bindings/snapshot.c"
+
 #ifdef WITH_PCRE
 int luaopen_rex_pcre(lua_State* L);
-#endif
-#ifdef WITH_PLAIN_LUA
-#include "../deps/bit.c"
 #endif
 
 #ifdef WITH_CUSTOM
@@ -125,19 +123,6 @@ static lua_State* vm_acquire()
 	// Store zlib module definition at preload.zlib
 	lua_pushcfunction(L, luaopen_zlib);
 	lua_setfield(L, -2, "zlib");
-#endif
-
-#ifdef WITH_PLAIN_LUA
-	{
-		LUALIB_API int luaopen_init(lua_State * L);
-		LUALIB_API int luaopen_luvipath(lua_State * L);
-		lua_pushcfunction(L, luaopen_init);
-		lua_setfield(L, -2, "init");
-		lua_pushcfunction(L, luaopen_luvipath);
-		lua_setfield(L, -2, "luvipath");
-		luaL_requiref(L, "bit", luaopen_bit, 1);
-		lua_pop(L, 1);
-	}
 #endif
 
 #ifdef WITH_CUSTOM
