@@ -22,3 +22,6 @@
 [submodule "deps/llhttp-ffi"]
 	path = deps/llhttp-ffi
 	url = https://github.com/evo-lua/llhttp-ffi.git
+[submodule "deps/openssl"]
+	path = deps/openssl
+	url = https://github.com/openssl/openssl.git
