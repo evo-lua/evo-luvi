@@ -26,9 +26,7 @@
 #include "Bindings/lminiz.c"
 #include "Bindings/snapshot.c"
 
-#ifdef WITH_PCRE
 int luaopen_rex_pcre(lua_State* L);
-#endif
 
 #ifdef WITH_CUSTOM
 int luvi_custom(lua_State* L);
@@ -99,31 +97,23 @@ static lua_State* vm_acquire()
 	lua_pushcfunction(L, luaopen_snapshot);
 	lua_setfield(L, -2, "snapshot");
 
-#ifdef WITH_LPEG
 	lua_pushcfunction(L, luaopen_lpeg);
 	lua_setfield(L, -2, "lpeg");
-#endif
 
-#ifdef WITH_PCRE
 	lua_pushcfunction(L, luaopen_rex_pcre);
 	lua_setfield(L, -2, "rex");
-#endif
 
 	// Store luvi module definition at preload.luvi
 	lua_pushcfunction(L, luaopen_luvi);
 	lua_setfield(L, -2, "luvi");
 
-#ifdef WITH_OPENSSL
 	// Store openssl module definition at preload.openssl
 	lua_pushcfunction(L, luaopen_openssl);
 	lua_setfield(L, -2, "openssl");
-#endif
 
-#ifdef WITH_ZLIB
 	// Store zlib module definition at preload.zlib
 	lua_pushcfunction(L, luaopen_zlib);
 	lua_setfield(L, -2, "zlib");
-#endif
 
 #ifdef WITH_CUSTOM
 	luvi_custom(L);

@@ -23,27 +23,20 @@
 
 LUALIB_API int luaopen_luvi(lua_State* L)
 {
-#if defined(WITH_OPENSSL) || defined(WITH_PCRE)
 	char buffer[1024];
-#endif
 	lua_newtable(L);
 	lua_pushstring(L, "" LUVI_VERSION "");
 	lua_setfield(L, -2, "version");
 	lua_newtable(L);
-#ifdef WITH_OPENSSL
 	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
 		SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
 	lua_pushstring(L, buffer);
 	lua_setfield(L, -2, "ssl");
-#endif
-#ifdef WITH_PCRE
 	lua_pushstring(L, pcre_version());
 	lua_setfield(L, -2, "rex");
-#endif
-#ifdef WITH_ZLIB
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");
-#endif
+
 	lua_pushstring(L, llhttp_get_version_string());
 	lua_setfield(L, -2, "llhttp");
 	lua_pushstring(L, uv_version_string());

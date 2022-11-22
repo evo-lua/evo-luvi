@@ -37,19 +37,14 @@
 #include "compat-5.3.h"
 #endif
 
-#ifdef WITH_OPENSSL
 #include "openssl.h"
+
+#ifndef PCRE2_CODE_UNIT_WIDTH
+#define PCRE2_CODE_UNIT_WIDTH 8
 #endif
-#ifdef WITH_PCRE
-#include "pcre.h"
-#endif
-#ifdef WITH_ZLIB
 #include "zlib.h"
 LUALIB_API int luaopen_zlib(lua_State* const L);
-#endif
-#ifdef WITH_LPEG
 int luaopen_lpeg(lua_State* L);
-#endif
 
 void luvi_openlibs(lua_State* L);
 #endif
