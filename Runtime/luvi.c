@@ -17,16 +17,18 @@
 
 #include "./luvi.h"
 
+#ifndef LUVI_VERSION
+#define LUVI_VERSION "dev-untagged"
+#endif
+
 LUALIB_API int luaopen_luvi(lua_State* L)
 {
 #if defined(WITH_OPENSSL) || defined(WITH_PCRE)
 	char buffer[1024];
 #endif
 	lua_newtable(L);
-#ifdef LUVI_VERSION
 	lua_pushstring(L, "" LUVI_VERSION "");
 	lua_setfield(L, -2, "version");
-#endif
 	lua_newtable(L);
 #ifdef WITH_OPENSSL
 	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
