@@ -1,4 +1,4 @@
-describe("Extensions: uv library", function()
+describe("uv", function()
 	describe("errors", function()
 		it("should export human-readable error messages for all libuv error constants", function()
 			local expectedErrorConstants = {
