@@ -1,6 +1,9 @@
-build*/
+ninjabuild*/
 luvi-src.tar.gz
 *.exe
 evo
 evo-luvi
 luvi
+.ninja_deps
+.ninja_log
+build.ninja
