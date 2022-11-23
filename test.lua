@@ -1,6 +1,7 @@
 local testCases = {
 	"Runtime/LuaEnvironment/CLI.spec.lua",
 	"Tests/Runtime/LuviAppBundle.spec.lua",
+	"Tests/Runtime/API/BuildTools/C_BuildTools.spec.lua",
 	"Tests/Runtime/API/EventSystem/EventListenerMixin.spec.lua",
 	"Tests/Runtime/API/EventSystem/C_EventSystem.spec.lua",
 	"Tests/Runtime/API/FileSystem/C_FileSystem.spec.lua",
