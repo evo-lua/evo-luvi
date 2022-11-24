@@ -1,362 +1,64 @@
-# About this Project
+# About
 
-This is a modified version of the [Luvi](https://github.com/luvit/luvi) Lua runtime, primarily with the goal of iterating on various ideas and seeing how it will turn out.
+This is a modified version of the [Luvi](https://github.com/luvit/luvi) Lua runtime, primarily with the goal of iterating on various ideas and experimentating in an isolated environment.
+
+The runtime is built to serve my own needs first and foremost, which may or may not be of interest to anyone else.  It's a work-in-progress and likely never finished.
 
 If you aren't familiar: Luvi provides a Lua environment based on the [LuaJIT](luajit.org/) compiler, with builtin C libraries like [libuv](https://libuv.org), [OpenSSL](https://openssl.org/) and [miniz](https://github.com/richgel999/miniz).
-
-It also includes facilities to create self-contained executables from your Lua scripts and serves as a foundation for the [luvit](https://github.com/luvit/luvit) runtime.
-
-Experimental changes living in this fork:
-
-* Streamlined builds (regular-amd64 luvi for WIN/OSX/UNIX)
-* Added standardized interface for Lua extensions (and primitives required by them)
-* Added builtin path resolution (ported code from [V8](https://v8.dev/) & [NodeJS](https://nodejs.org/))
-* Integrated [inspect.lua](https://github.com/kikito/inspect.lua) as a builtin extension to aid debugging
-* Added test suite for primitives and extensions (as a Luvi bundle)
-* An independent ``import`` utility to load Lua modules by relative paths or from within a ``.evo`` module folder, using GitHub-style package organization (``@owner/packageName`` syntax similar to [npm scopes](https://docs.npmjs.com/misc/scope/))
-
-Whether these are good ideas, only time will tell :)
+Luvi also includes facilities to create self-contained executables from your Lua scripts and serves as a foundation for the [luvit](https://github.com/luvit/luvit) runtime, which are inherited by this variant.
 
 ---
 
-## Original Luvi README (unchanged)
-
-[![Linux Build Status](https://github.com/luvit/luvi/actions/workflows/ci.yml/badge.svg)](https://github.com/luvit/luvi/actions/workflows/ci.yml)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/h643wg5hkwsnu0wd/branch/master?svg=true)](https://ci.appveyor.com/project/racker-buildbot/luvi/branch/master)
-[![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/luvit/luvi.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/luvit/luvi/context:cpp)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/luvit/luvi.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/luvit/luvi/alerts)
-
-A project in-between [luv][] and [luvit][].
-
-The goal of this is to make building [luvit][] and [derivatives][] much easier.
-
-## Workflow
-
-Luvi has a somewhat unique, but very easy workflow for creating self-contained binaries on systems that don't have a
-compiler.
-
-```sh
-# Make a folder
-git init myapp
-# Write the app
-vim myapp/main.lua
-# Run the app
-luvi myapp
-# Build the binary when done
-luvi myapp -o mybinary
-# Run the new self-contained binary
-./mybinary
-# Deploy / Publish / Profit!
-```
-
-## Main API
-
-Your `main.lua` is run in a mostly stock [luajit][] environment with a few extra things added. This means you can use
-the luajit [extensions][] including `DLUAJIT_ENABLE_LUA52COMPAT` features, which we turn on.
-
-### Libuv is baked in
+For more information, see the [Luvi README](https://github.com/luvit/luvi)
 
-The "uv" module contains bindings to [libuv][] as defined in the [luv][] project. Simply `require("uv")` to access it.
+Not all sections still apply to this fork, but the foundations are the same.
 
-Use this for file I/O, network I/O, timers, or various interfaces with the operating system. This lets you write fast
-non-blocking network servers or frameworks. The APIs in [luv][] mirror what's in [libuv][] allowing you to add
-whatever API sugar you want on top be it callbacks, coroutines, or whatever.
+## Changes from Luvi
 
-Just be sure to call `uv.run()` and the end of your script to start the event loop if you want to actually wait for any
-events to happen.
+Evo (formerly evo-luvi) differs in various ways from the original luvi runtime.
 
-```lua
-local uv = require('uv')
+Here are the high-level differences (list is not exhaustive):
 
-local function setTimeout(timeout, callback)
-    local timer = uv.new_timer()
-    local function ontimeout()
-        print("ontimeout", self)
-        uv.timer_stop(timer)
-        uv.close(timer)
-        callback(self)
-    end
-    uv.timer_start(timer, timeout, 0, ontimeout)
-    return timer
-end
+* Path resolution is built in (via ported code from [V8](https://v8.dev/) & [NodeJS](https://nodejs.org/))
+* A new ``import`` mechanism to load Lua modules by relative paths or from within a ``.evo`` module folder, using GitHub-style package organization (``@owner/packageName`` syntax similar to [npm scopes](https://docs.npmjs.com/misc/scope/))
+* Includes [inspect.lua](https://github.com/kikito/inspect.lua) as a builtin extension to aid debugging
+* Primarily uses the [Ninja build system](https://github.com/ninja-build/ninja) instead of a jungle of CMake files
+* Many new APIs, globals, and other utilities (added on an as-needed basis)
+* Focus on tests and refactoring to pay off some technical debt
 
-setTimeout(1000, function ()
-    print("This happens later")
-end)
+Whether these and other changes are good ideas, only time will tell :)
 
-print("This happens first")
-
--- This blocks till the timer is done
-uv.run()
-```
-
-### Integration with C's main function
-
-The raw `argc` and `argv` from C side is exposed as a **zero** indexed lua table of strings at `args`.
-
-```lua
-print("Your arguments were", args)
-```
+## Compatibility
 
-The "env" module provides read/write access to your local environment variables via `env.keys`, `env.get`, `env.put`,
-`env.set`, and `env.unset`.
-
-```lua
-local env = require('env')
-
--- Convert the module to a mutable magic table.
-local environment = setmetatable({}, {
-    __pairs = function (table)
-        local keys = env.keys()
-        local index = 0
-        return function (...)
-            index = index + 1
-            local name = keys[index]
-            if name then
-                return name, table[name]
-            end
-        end
-    end,
-    __index = function (table, name)
-        return env.get(name)
-    end,
-    __newindex = function (table, name, value)
-        if value then
-            env.set(name, value, 1)
-        else
-            env.unset(name)
-        end
-    end
-}))
-```
+Evo is **fully compatible** with:
 
-If you return an integer from `main.lua` it will be your program's exit code.
+* PUC Lua 5.1
+* LuaJIT (latest)
 
-### Bundle I/O
+It is **generally incompatible** with:
 
-If you're running from a unzipped folder on disk or a zipped bundle appended to the binary, the I/O to read from this
-is the same. This is exposed as the `bundle` property in the "luvi" module.
+* PUC Lua 5.2, 5.3, or 5.4 (though some 5.2 and 5.3 APIs are supported)
+* Any LuaJIT fork that strays too far from upstream (it's dangerous out there!)
+* Embedded Lua(u) environments, like those found in games (ROBLOX, WOW, ...)
 
-```lua
-local bundle = require("luvi").bundle
-local files = bundle.readdir("")
-```
+The primary platforms I am officially supporting are those I actively use:
 
-#### bundle.stat(path)
+* Windows 10 (or higher, x64 only)
+* Linux (Ubuntu-like, on x64 desktop)
+* Mac OS is also covered via the CI, but I don't have one anymore
 
-Load metadata about a file in the bundle. This includes `type` ("file" or
-"directory"), `mtime` (in ms since epoch), and `size` (in bytes).
+Things should still work on other platforms, if supported by all dependencies, but YMMV and there may be unforeseen issues (aren't there always?).
 
-If the file doesn't exist, it returns `nil`.
+## More Documentation
 
-#### bundle.readdir(path)
+The documentation website (work in progress) can be found here:
 
-Read a directory. Returns a list of filenames in the directory.
+* [https://evo-lua.github.io/](https://evo-lua.github.io/)
 
-If the directory doesn't exist, it return `nil`.
+If something's outdated, wrong, or missing, please open an issue [here](https://github.com/evo-lua/evo-lua.github.io)!
 
-#### bundle.readfile(path)
+## Licensing Information
 
-Read the contents of a file. Returns a string if the file exists and `nil` if
-it doesn't.
+See [License.txt](LICENSE.txt) - it's Apache 2.0 (as inherited from Luvi).
 
-### Utils
-
-There is also a "utils" module that has some useful debugging stuff like a colorized
-pretty printer.
-
-```lua
-local uv = require('uv')
-local dump = require('utils').dump
--- Create a global p() function that pretty prints any values
--- to stdout using libuv's APIs
-_G.p = function (...)
-    local n = select('#', ...)
-    local arguments = { ... }
-
-    for i = 1, n do
-        arguments[i] = dump(arguments[i])
-    end
-
-    local toWrite = table.concat(arguments, "\t") .. "\n"
-    uv.write(stdout, toWrite);
-end
-```
-
-[extensions]: http://luajit.org/extensions.html
-[luajit]: http://luajit.org/
-[libuv]: https://github.com/joyent/libuv
-[luv]: https://github.com/luvit/luv
-[luvit]: https://luvit.io/
-[derivatives]: http://virgoagent.com/
-
-## Building from Source
-
-We maintain several [binary releases of luvi](https://github.com/luvit/luvi/releases) to ease bootstrapping of lit and
-luvit apps.
-
-The following platforms are supported:
-
-- Windows (x86_64 / i386)
-- FreeBSD 10.1 (x86_64)
-- Raspberry PI Raspbian (armv6)
-- Raspberry PI 2 Raspbian (armv7)
-- Debian 9 "Stretch" (x86_64)
-- OSX 10.14 "Mojave" (x86_64)
-
-If you want to not wait for pre-built binaries and dive right in, building is based on CMake and is pretty simple.
-
-### Build Dependencies
-
-- Git
-- CMake
-- A C Compiler (visual studio on Windows)
-- Perl (required for OpenSSL)
-- NASM (required for OpenSSL ASM optimizations on Windows)
-
-First clone this repo recursively.
-
-```sh
-git clone --recursive https://github.com/luvit/luvi.git
-```
-
-Then run the makefile inside it. (Note this assumes you have cmake in your path.)
-If you're on windows, there is a `make.bat` file that works mostly like the unix
-`Makefile`.
-
-Prior to building the `luvi` binary you must configure the version of `luvi`
-that you want to build. Currently there are three versions:
-
-- tiny: only the necessities; omits OpenSSL, LPeg, and lrexlib
-- regular: the normal luvit experience; includes OpenSSL, lpeg and lrexlib
-- regular-asm: includes OpenSSL's ASM optimizations
-
-```sh
-cd luvi
-make regular
-make
-make test
-```
-
-When that's done you should have a shiny little binary in `build/luvi`.
-
-```sh
-$ ls -lh build/luvi
--rwxr-xr-x 1 tim tim 948K Nov 20 16:39 build/luvi
-```
-
-## Usage
-
-Run it to see usage information:
-
-```sh
-$ luvi -h
-
-Usage: luvi bundle+ [options] [-- extra args]
-
-  bundle            Path to directory or zip file containing bundle source.
-                    `bundle` can be specified multiple times to layer bundles
-                    on top of eachother.
-  --version         Show luvi version and compiled in options.
-  --output target   Build a luvi app by zipping the bundle and inserting luvi.
-  --main path       Specify a custom main bundle path (normally main.lua)
-  --help            Show this help file.
-  --                All args after this go to the luvi app itself.
-
-Examples:
-
-  # Run an app from disk, but pass in arguments
-  luvi path/to/app -- app args
-
-  # Run from a app zip
-  luvi path/to/app.zip
-
-  # Run an app that layers on top of luvit
-  luvi path/to/app path/to/luvit
-
-  # Bundle an app with luvi to create standalone
-  luvi path/to/app -o target
-  ./target some args
-
-  # Run unit tests for a luvi app using custom main
-  luvi path/to/app -m tests/run.lua
-```
-
-You can run the sample repl app by doing:
-
-```sh
-build/luvi samples/repl.app
-```
-
-Ot the test suite with:
-
-```sh
-build/luvi samples/test.app
-```
-
-## CMake Flags
-
-You can use the predefined makefile targets if you want or use cmake directly
-for more control.
-
-```text
-WithOpenSSL (Default: OFF)      - Enable OpenSSL Support
-WithOpenSSLASM (Default: OFF)   - Enable OpenSSL Assembly Optimizations
-WithSharedOpenSSL (Default: ON) - Use System OpenSSL Library
-                                  Otherwise use static library
-
-OPENSSL_ROOT_DIR                - Override the OpenSSL Root Directory
-OPENSSL_INCLUDE_DIR             - Override the OpenSSL Include Directory
-OPENSSL_LIBRARIES               - Override the OpenSSL Library Path
-```
-
-Example (Static OpenSSL):
-
-```sh
-cmake \
-    -DWithOpenSSL=ON \
-    -DWithSharedOpenSSL=OFF \
-    ..
-```
-
-Example (Shared OpenSSL):
-
-```sh
-cmake \
-    -DWithSharedOpenSSL=ON \
-    -DWithOpenSSL=ON \
-    -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl \
-    -DOPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include \
-    -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib \
-    ..
-```
-
-## Holy Build
-
-Executables across Linux distributions are not largely portable for various
-differences. We can leverage the
-[holy-build-box](https://github.com/phusion/holy-build-box) to create a
-portable executable for i686 and x86_64 environments.
-
-Note: If you are attempting this on OSX, please install GNU tar from homebrew:
-
-```sh
-brew install gnu-tar
-```
-
-To get started:
-
-1. Create a docker machine:
-
-    ```sh
-    docker-machine create --driver vmwarefusion --vmwarefusion-cpu-count 3 holy-build-box
-    eval $(docker-machine env holy-build-box)
-    ```
-
-2. Start the build
-
-    ```sh
-    make linux-build
-    ```
-
-3. Results should be the current working directory.
+Third-party dependencies may have differing (compatible) licenses.
