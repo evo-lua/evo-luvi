@@ -7,11 +7,12 @@ OPENSSL_DIR=deps/openssl
 
 cd $OPENSSL_DIR
 
-./config
+./config no-tests no-shared
 
 make clean
 make -j $NUM_PARALLEL_JOBS
-make test -j $NUM_PARALLEL_JOBS
+# Should probably run those tests for releases at least, but that takes an eternity. Postponed until later...
+# make test -j $NUM_PARALLEL_JOBS
 
 cd -
 
