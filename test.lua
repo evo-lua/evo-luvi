@@ -26,6 +26,7 @@ local testCases = {
 	"Tests/Extensions/transform.spec.lua",
 	"Tests/Extensions/utf8.spec.lua",
 	"Tests/Extensions/uv.spec.lua",
+	"Tests/Extensions/zlib.spec.lua",
 }
 
 C_Testing.CreateUnitTestRunner(testCases)
