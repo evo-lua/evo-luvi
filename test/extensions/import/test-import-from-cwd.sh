@@ -1,3 +1,3 @@
 set -e
-../../../luvi .
-../../../luvi . -- main.lua
+../../../evo .
+../../../evo . -- main.lua

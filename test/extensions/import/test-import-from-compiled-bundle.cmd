@@ -1,4 +1,4 @@
-"../../../luvi.exe" . -o bundle.exe
+"../../../evo.exe" . -o bundle.exe
 IF %ERRORLEVEL% NEQ 0 EXIT /B 1
 
 mkdir temp

@@ -1,3 +1,3 @@
 set -e
-cd .. && ../../luvi import -- import/main.lua
-cd import/subfolder && ../../../../luvi .. -- ../main.lua && cd ..
+cd .. && ../../evo import -- import/main.lua
+cd import/subfolder && ../../../../evo .. -- ../main.lua && cd ..
