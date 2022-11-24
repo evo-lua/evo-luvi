@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+          fetch-depth: "0" # Required so that git describe actually works (and we can embed the version tag)
 
       - name: Install Ninja (via Homebrew)
         run: brew install ninja
