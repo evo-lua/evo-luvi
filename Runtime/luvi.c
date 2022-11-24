@@ -16,6 +16,7 @@
  */
 
 #include "./luvi.h"
+#include "Bindings/llhttp_ffi.h"
 
 #ifndef LUVI_VERSION
 #define LUVI_VERSION "dev-untagged"
@@ -23,27 +24,36 @@
 
 LUALIB_API int luaopen_luvi(lua_State* L)
 {
-#if defined(WITH_OPENSSL) || defined(WITH_PCRE)
 	char buffer[1024];
-#endif
 	lua_newtable(L);
 	lua_pushstring(L, "" LUVI_VERSION "");
 	lua_setfield(L, -2, "version");
 	lua_newtable(L);
-#ifdef WITH_OPENSSL
 	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
 		SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
 	lua_pushstring(L, buffer);
 	lua_setfield(L, -2, "ssl");
-#endif
-#ifdef WITH_PCRE
-	lua_pushstring(L, pcre_version());
-	lua_setfield(L, -2, "rex");
-#endif
-#ifdef WITH_ZLIB
+
+	// This seems rather messy, but the PCRE2 API doesn't offer a better way for accessing the version AFAICT
+	int requiredBufferSizeInBytes = pcre2_config(PCRE2_CONFIG_VERSION, NULL);
+	char* versionString = (char*)malloc(requiredBufferSizeInBytes * sizeof(char));
+	if (versionString == NULL) { // OOM? Unlikely to ever happen, but still...
+		lua_pushstring(L, "?");
+	} else {
+		int success = pcre2_config(PCRE2_CONFIG_VERSION, versionString);
+
+		if (!success)
+			lua_pushstring(L, "???"); // Even less likely to happen, but better safe than sorry?
+		else
+			lua_pushstring(L, versionString);
+
+		free(versionString);
+	}
+	lua_setfield(L, -2, "pcre2");
+
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");
-#endif
+
 	lua_pushstring(L, llhttp_get_version_string());
 	lua_setfield(L, -2, "llhttp");
 	lua_pushstring(L, uv_version_string());

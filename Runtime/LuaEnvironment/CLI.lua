@@ -113,7 +113,7 @@ function CLI:GetVersionText()
 	end
 	local optionsString = table.concat(optionsStringTokens, "\n")
 
-	return string.format("This is evo-luvi %s (powered by %s)", luvi.version, jit.version)
+	return string.format("This is Evo.lua %s (powered by %s)", luvi.version, jit.version)
 		.. "\n\nEmbedded libraries:\n\n"
 		.. optionsString
 		.. "\n"

@@ -1,5 +1,5 @@
 set -e
-../../../luvi . -o bundle
+../../../evo . -o bundle
 mkdir temp
 mv bundle temp
 cd temp
