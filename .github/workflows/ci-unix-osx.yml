@@ -3,10 +3,10 @@ name: Build and Release (Unix/OSX)
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
     branches:
-    - main
+      - main
   create:
     # Any branch or tag
 
@@ -17,85 +17,67 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
-        build_type: [regular-asm]
-        lua_engine: [LuaJIT]
-    env:
-      BUILD_TYPE: ${{ matrix.build_type }}
-      WITH_LUA_ENGINE: ${{ matrix.lua_engine }}
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Check out Git repository (${{ matrix.os }})
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-    - name: Configure
-      run: WITHOUT_AMALG=1 make ${BUILD_TYPE} WITH_LUA_ENGINE=${WITH_LUA_ENGINE}
+      - name: Install Ninja (via Homebrew)
+        run: brew install ninja
+        if: matrix.os == 'macOS-latest'
 
-    - name: Build
-      run: make && cd build && cp luvi ../luvi
+      - name: Install Ninja (via APT)
+        run: sudo apt-get install ninja-build
+        if: matrix.os == 'ubuntu-latest'
 
-    - name: Verify the build
-      run: ./recompile-and-run-all-tests.sh # Won't actually recompile in this case since there were no changes
+      - name: Build luajit (${{ matrix.os }})
+        run: deps/luajit-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Run unit tests
-      run: ./evo-luvi test.lua
+      - name: Build llhttp (${{ matrix.os }})
+        run: deps/llhttp-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Run examples # These examples are synced with the documentation and must always work
-      run: ./evo-luvi run-examples.lua
+      - name: Build openssl (${{ matrix.os }})
+        run: deps/openssl-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Run acceptance tests
-      run: ./evo-luvi scenarios.lua
+      - name: Build lua-openssl (${{ matrix.os }})
+        run: deps/luaopenssl-unixbuild.sh && ls ninjabuild-unix
 
-  deploy-linux:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Build luv and libuv (${{ matrix.os }})
+        run: deps/luv-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Fetch
-      run: git fetch --unshallow --no-recurse-submodules
+      - name: Build zlib (${{ matrix.os }})
+        run: deps/zlib-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Build
-      run: make linux-build && cp luvi-regular-Linux_x86_64 evo-luvi-linux-amd64
+      - name: Build pcre2 (${{ matrix.os }})
+        run: deps/pcre-unixbuild.sh && ls ninjabuild-unix
 
-    - name: Github Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        files: |
-          evo-luvi-linux-amd64
-        draft: false
-        prerelease: false
+      - name: Build runtime (${{ matrix.os }})
+        run: ls && ./unixbuild.sh && ls ninjabuild-unix && cp ninjabuild-unix/evo . && ls
 
-  deploy-macos:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build]
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      # These should be integrated with the unit (or acceptance) test steps, but that's a future concern
+      - name: Run legacy tests (${{ matrix.os }})
+        run: ./run-legacy-tests.sh
 
-    - name: Fetch
-      run: git fetch --unshallow --no-recurse-submodules
+      - name: Run unit tests (${{ matrix.os }})
+        run: ./evo test.lua
 
-    - name: Build
-      run: make travis-publish && cp luvi-regular-Darwin_x86_64 evo-luvi-darwin-amd64
+      # These examples are synced with the documentation and must always work
+      - name: Run examples (${{ matrix.os }})
+        run: ./evo run-examples.lua
 
-    - name: Github Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-      # TBD: The source should probably be released separately, not as part of the OSX build workflow?
-        files: |
-          evo-luvi-source-code-with-dependencies-*.tar.gz
-          evo-luvi-darwin-amd64
-        draft: false
-        prerelease: false
+      - name: Run acceptance tests (${{ matrix.os }})
+        run: ./evo scenarios.lua
+
+      - name: Prepare artifacts (${{ matrix.os }})
+        run: cp evo evo-${{ matrix.os }}-amd64
+
+      - name: Publish new release
+        # Truly "continuous" releases may be overkill here, so better only release tagged versions
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: evo-${{ matrix.os }}-amd64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

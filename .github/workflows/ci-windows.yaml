@@ -12,8 +12,12 @@ on:
 
 jobs:
   build:
-    name: Build for Windows (x64)
+    name: Build for Windows
     runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
 
     steps:
       - name: Check out Git repository
@@ -21,28 +25,53 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Make executable
-      # Adding in directory listings here to aid with debugging build issues in the future
-        run: ./make.bat && dir && cp build/Release/luvi.exe evo-luvi.exe && dir
+      - name: Set up MSYS2 environment
+        uses: msys2/setup-msys2@v2
+        with:
+          install: git make mingw-w64-x86_64-gcc ninja mingw-w64-x86_64-cmake
 
-      # We don't want to deploy a faulty release, so this should fail if the executable is broken
-      - name: Verify the build
-        run: ./recompile-and-run-all-tests.cmd # Won't actually recompile in this case since there were no changes
+      - name: Build luajit (via MSYS2)
+        run: deps/luajit-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build llhttp (via MSYS2)
+        run: deps/llhttp-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build openssl (via MSYS2)
+        run: deps/openssl-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build lua-openssl (via MSYS2)
+        run: deps/luaopenssl-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build luv and libuv (via MSYS2)
+        run: deps/luv-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build zlib (via MSYS2)
+        run: deps/zlib-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build pcre2 (via MSYS2)
+        run: deps/pcre-windowsbuild.sh && ls ninjabuild-windows
+
+      - name: Build runtime
+        run: ls && ./windowsbuild.cmd && ls ninjabuild-windows && cp ninjabuild-windows/evo.exe . && ls
+
+      # These should be integrated with the unit (or acceptance) test steps, but that's a future concern
+      - name: Run legacy tests
+        run: ./run-legacy-tests.cmd
 
       - name: Run unit tests
-        run: ./evo-luvi test.lua
+        run: ./evo test.lua
 
       - name: Run examples # These examples are synced with the documentation and must always work
-        run: ./evo-luvi run-examples.lua
+        run: ./evo run-examples.lua
 
       - name: Run acceptance tests
-        run: ./evo-luvi scenarios.lua
+        run: ./evo scenarios.lua
 
       - name: Publish new release
         # Truly "continuous" releases may be overkill here, so better only release tagged versions
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: evo-luvi.exe
+          files: evo.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
