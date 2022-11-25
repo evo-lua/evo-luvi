@@ -8,3 +8,4 @@ cmake -S $SRC_DIR -B $BUILD_DIR -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_C_COMPI
 cmake --build $BUILD_DIR --clean-first
 
 cp $BUILD_DIR/libz.a $OUT_DIR/zlibstatic.a
+cp $BUILD_DIR/zconf.h $OUT_DIR
