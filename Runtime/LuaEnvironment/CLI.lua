@@ -151,6 +151,6 @@ CLI.COMMAND_HANDLERS = {
 	["--help"] = "help",
 }
 
-CLI.EXECUTABLE_NAME = "evo-luvi"
+CLI.EXECUTABLE_NAME = "evo"
 
 return CLI
