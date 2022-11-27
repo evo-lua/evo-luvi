@@ -32,4 +32,16 @@ describe("llhttp", function()
 			assertEquals(type(llhttp.bindings[functionName]), "cdata", "Should bind function " .. functionName)
 		end
 	end)
+
+	describe("initialize", function()
+		it("should have no effect if the bindings are already initialized", function()
+			-- The runtime already initialized them when assigning the static exports table
+			-- But for the sake of argument, let's pretend it didn't and that this was the first time
+			llhttp.initialize()
+			-- Then this would be the second (actually, it's the third...) time, which should still be a no-op
+			llhttp.initialize()
+			-- No errors so far? Great... But the bindings should also still be available...
+			assertEquals(type(llhttp.bindings), "cdata")
+		end)
+	end)
 end)
