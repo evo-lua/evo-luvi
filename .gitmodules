@@ -16,8 +16,8 @@
 [submodule "deps/lpeg"]
 	path = deps/lpeg
 	url = https://github.com/roberto-ieru/LPeg.git
-[submodule "deps/llhttp-ffi/llhttp"]
-	path = deps/llhttp-ffi/llhttp
+[submodule "deps/llhttp"]
+	path = deps/llhttp
 	url = https://github.com/nodejs/llhttp
 [submodule "deps/openssl"]
 	path = deps/openssl

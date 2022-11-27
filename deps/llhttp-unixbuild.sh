@@ -1,6 +1,6 @@
 echo "Building target llhttp"
 
-SRC_DIR=deps/llhttp-ffi/llhttp
+SRC_DIR=deps/llhttp
 BUILD_DIR=$SRC_DIR/cmakebuild-unix
 OUT_DIR=ninjabuild-unix
 
