@@ -25,6 +25,7 @@ local EvoBuildTarget = {
 		"Runtime/LuaEnvironment/primitives.lua",
 		"Runtime/LuaEnvironment/primitives/aliases.lua",
 		"Runtime/LuaEnvironment/primitives/dump.lua",
+		"Runtime/LuaEnvironment/primitives/extend.lua",
 		"Runtime/LuaEnvironment/primitives/v8_string.lua",
 		"Runtime/LuaEnvironment/primitives/logging.lua",
 		"Runtime/LuaEnvironment/primitives/virtual_file_system.lua",
