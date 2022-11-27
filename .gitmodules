@@ -25,3 +25,6 @@
 [submodule "deps/pcre2"]
 	path = deps/pcre2
 	url = https://github.com/PCRE2Project/pcre2.git
+[submodule "deps/cparser"]
+	path = deps/cparser
+	url = https://github.com/facebookresearch/CParser.git
