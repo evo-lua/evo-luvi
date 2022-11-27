@@ -142,6 +142,9 @@ local function StartMainThread(args)
 	end)
 	local exitCode = mainThread()
 	uv.run()
+
+	C_EventSystem.TriggerEvent("APPLICATION_SHUTDOWN", { exitCode = exitCode })
+
 	return exitCode
 end
 

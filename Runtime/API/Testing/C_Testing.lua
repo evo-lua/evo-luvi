@@ -154,6 +154,8 @@ function C_Testing.CreateUnitTestRunner(testCases)
 		printf(transform.green("✓ %s test complete (%s ms)"), numTestsComplete, durationInMilliseconds)
 	end
 
+	-- Since we're exiting before the runtime's script loader can shut down properly, manually fulfill the contract
+	C_EventSystem.TriggerEvent("APPLICATION_SHUTDOWN", { exitCode = numFailedTests })
 	os.exit(numFailedTests)
 end
 
