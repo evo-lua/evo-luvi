@@ -91,15 +91,18 @@ function TcpClient:Send(chunk)
 	end
 end
 
--- Customizable event handlers: These should be overwritten as needed
-function TcpClient:TCP_SOCKET_ERROR(errorMessage)
-	DEBUG("[TcpClient] TCP_SOCKET_ERROR triggered")
-	ERROR(errorMessage)
+function TcpClient:OnSocketError(errorMessage)
+	self:TCP_SOCKET_ERROR(errorMessage)
 
 	if errorMessage ~= "ECANCELED" then
 		-- If cancelled, the handle was already closed by libuv and this will error
 		self:Disconnect()
 	end
+end
+
+-- Customizable event handlers: These should be overwritten as needed
+function TcpClient:TCP_SOCKET_ERROR(errorMessage)
+	DEBUG("[TcpClient] TCP_SOCKET_ERROR triggered")
 end
 
 function TcpClient:TCP_CONNECTION_ESTABLISHED()
