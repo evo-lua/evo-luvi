@@ -130,19 +130,20 @@ const char* llhttp_get_version_string(void)
 
 static void init_settings_with_callbacks(llhttp_settings_t* settings)
 {
-	// printf("Initializing llhttp settings with callbacks...\n"); // TODO remove
+	printf("Initializing llhttp settings with callbacks...\n");
 	llhttp_settings_init(settings);
+	printf("Initialized llhttp settings with callbacks...\n");
 
 	// Set up info callbacks
-	settings->on_header_value_complete = on_header_value_complete;
-	settings->on_message_complete = on_message_complete;
+	// settings->on_header_value_complete = on_header_value_complete;
+	// settings->on_message_complete = on_message_complete;
 
 	// Set up data callbacks
-	settings->on_url = on_url;
-	settings->on_status = on_status;
-	settings->on_header_field = on_header_field;
-	settings->on_header_value = on_header_value;
-	settings->on_body = on_body;
+	// settings->on_url = on_url;
+	// settings->on_status = on_status;
+	// settings->on_header_field = on_header_field;
+	// settings->on_header_value = on_header_value;
+	// settings->on_body = on_body;
 }
 
 void export_llhttp_bindings(lua_State* L)
@@ -160,6 +161,7 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_resume_after_upgrade = llhttp_resume_after_upgrade;
 	llhttp_exports_table.llhttp_get_errno = llhttp_get_errno;
 	llhttp_exports_table.llhttp_get_error_reason = llhttp_get_error_reason;
+	llhttp_exports_table.llhttp_set_error_reason = llhttp_set_error_reason;
 	llhttp_exports_table.llhttp_get_error_pos = llhttp_get_error_pos;
 	llhttp_exports_table.llhttp_errno_name = llhttp_errno_name;
 	llhttp_exports_table.llhttp_method_name = llhttp_method_name;
