@@ -54,7 +54,7 @@ local EvoBuildTarget = {
 		"Runtime/API/Networking/C_Networking.lua",
 		"Runtime/API/Testing/C_Testing.lua",
 		"deps/lpeg/re.lua",
-		"deps/llhttp-ffi/llhttp.lua",
+		"deps/llhttp.lua",
 	},
 	cSources = {
 		"Runtime/main.c",
@@ -80,7 +80,7 @@ local EvoBuildTarget = {
 		"deps/luv/deps/luajit/src",
 		"deps/luv/deps/lua-compat-5.3",
 		"deps/luv/deps/lua-compat-5.3/c-api",
-		"deps/llhttp-ffi/llhttp/include",
+		"deps/llhttp/include",
 		"deps/lua-openssl/src",
 		"deps/lua-openssl/deps/auxiliar",
 		"deps/openssl/include",
