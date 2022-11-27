@@ -60,6 +60,7 @@ function Luvi:InitializeStaticLibraryExports()
 	-- We substitute this object for the exports table that is normally added via load(), as it only works for shared libraries
 	for libraryName, staticWrapperObject in pairs(staticLibraryExports) do
 		local ffiBindings = require(libraryName)
+		ffiBindings.initialize()
 		local expectedStructName = "struct static_" .. libraryName .. "_exports_table*"
 		local ffiExportsTable = ffi.cast(expectedStructName, staticWrapperObject)
 		ffiBindings.bindings = ffiExportsTable
