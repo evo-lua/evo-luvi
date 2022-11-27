@@ -4,9 +4,11 @@ local benchmark = Benchmark("Throughput: Raw llhttp calls via FFI (minimal overh
 
 local ffi = require("ffi")
 local ffi_new = ffi.new
+local buffer = require("string.buffer")
 
 local llhttp = require("llhttp")
 local llhttp_init = llhttp.bindings.llhttp_init
+local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_finish = llhttp.bindings.llhttp_finish
 local llhttp_reset = llhttp.bindings.llhttp_reset
@@ -21,7 +23,9 @@ function benchmark:OnSetup()
 
 	parserState = ffi_new("llhttp_t")
 	local parserSettings = ffi_new("llhttp_settings_t")
+	llhttp_settings_init(parserSettings)
 	llhttp_init(parserState, llhttp.PARSER_TYPES.HTTP_REQUEST, parserSettings)
+	parserState.data = buffer.new()
 end
 
 function benchmark:OnRun()
