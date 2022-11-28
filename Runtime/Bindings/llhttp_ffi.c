@@ -1,3 +1,6 @@
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_BUFFER_DUMPS 1
+
 #include "llhttp.h"
 #include "lua.h"
 
@@ -61,9 +64,6 @@ struct lj_writebuffer {
 };
 typedef struct lj_writebuffer lj_writebuffer_t;
 // TODO Move structs to .h
-
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
-// #define ENABLE_LLHTTP_BUFFER_DUMPS 1
 
 static void DEBUG(char* message) {
 	#ifdef ENABLE_LLHTTP_CALLBACK_LOGGING

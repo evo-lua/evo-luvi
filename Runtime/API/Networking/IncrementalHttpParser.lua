@@ -41,16 +41,20 @@ function IncrementalHttpParser:Construct(maxAllowedChunkSizeInBytes)
 	return instance
 end
 
+local ffi_cast = ffi.cast
+local ffi_sizeof = ffi.sizeof
+
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	DEBUG("ParseNextChunk", #chunk, chunk)
 	-- printf("Buffer contents before parsing: %s", self.eventLogBuffer)
-	local writeBuffer = ffi.cast("lj_writebuffer_t*", self.state.data)
+	local writeBuffer = ffi_cast("lj_writebuffer_t*", self.state.data)
 	-- TODO reserve #chunk + buffer for events (at most 1 ID per character, which is PROBABLY far too high... but still)
 	-- writeBuffer.size = #chunk * 2-- Leave some extra room for the event IDs (sketchy?)
 
 	-- TODO math min if is set, else just use chunk size
-	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * 3 -- TODO sizeof, raise error event that can be used to DC client or send an error code
-	local ptr, len = self.eventLogBuffer:reserve(#chunk * 3) -- TODO use sizeof(llhttp_event_t)
+		--TODO raise error event that can be used to DC client or send an error code
+	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * ffi_sizeof("llhttp_event_t")
+	local ptr, len = self.eventLogBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
 	-- printf("Reserved %s bytes in buffer %s", len, ptr)
 
 	writeBuffer.size = len
