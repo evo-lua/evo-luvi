@@ -73,7 +73,7 @@ function benchmark:OnReport(runTimeInNanoseconds, numIterationsPerformed)
 	local numRequestsPerSecond = numIterationsPerformed / elapsedTimeInMilliseconds * 1000
 	printf("Requests per second: %d", numRequestsPerSecond)
 
-	local bytesPerRequest = #websocketsRequestString
+	local bytesPerRequest = #request
 	local totalBytesParsed = bytesPerRequest * numIterationsPerformed
 	printf("Bytes parsed: %d (%d MB)", totalBytesParsed, totalBytesParsed / (1024 ^ 2))
 
