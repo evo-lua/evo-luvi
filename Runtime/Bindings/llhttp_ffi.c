@@ -80,6 +80,11 @@ int on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
 	printf("[C] llhttp called on_url with token %.*s\n", length, at);
 	//  self.bufferedRequest.requestedURL:put(parsedString)
+	http_request* buffered_request = (http_request*)parser_state->data;
+
+	lj_buf_putmem(buffered_request->url_token_buffer, at, length);
+
+	printf("lj)buf_putmem done\n");
 	return HPE_OK;
 }
 
@@ -108,11 +113,7 @@ int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
 	printf("[C] llhttp called on_body with token %.*s\n", (int)length, at);
-	http_request* buffered_request = (http_request*)parser_state->data;
 
-	lj_buf_putmem(buffered_request->url_token_buffer, at, length);
-
-	printf("lj)buf_putmem done\n");
 
 	return HPE_OK;
 }
@@ -135,15 +136,15 @@ static void init_settings_with_callbacks(llhttp_settings_t* settings)
 	printf("Initialized llhttp settings with callbacks...\n");
 
 	// Set up info callbacks
-	// settings->on_header_value_complete = on_header_value_complete;
-	// settings->on_message_complete = on_message_complete;
+	settings->on_header_value_complete = on_header_value_complete;
+	settings->on_message_complete = on_message_complete;
 
 	// Set up data callbacks
-	// settings->on_url = on_url;
-	// settings->on_status = on_status;
-	// settings->on_header_field = on_header_field;
-	// settings->on_header_value = on_header_value;
-	// settings->on_body = on_body;
+	settings->on_url = on_url;
+	settings->on_status = on_status;
+	settings->on_header_field = on_header_field;
+	settings->on_header_value = on_header_value;
+	settings->on_body = on_body;
 }
 
 void export_llhttp_bindings(lua_State* L)
