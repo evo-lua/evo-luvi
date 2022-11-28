@@ -38,14 +38,14 @@ function benchmark:OnSetup()
 
 	self.iterationCount = 1000000 -- It's too slow to do much more in a reasonable timeframe
 
-	parser = C_Networking.IncrementalHttpRequestParser()
+	parser = C_Networking.IncrementalHttpParser()
 end
 
 function benchmark:OnRun()
 	parser:ParseNextChunk(request)
-	parser:FinalizeBufferedRequest()
-	parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
-	parser:ResetInternalState()
+	-- parser:FinalizeBufferedRequest()
+	-- parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
+	-- parser:ResetInternalState()
 end
 
 function benchmark:OnReport(runTimeInNanoseconds, numIterationsPerformed)

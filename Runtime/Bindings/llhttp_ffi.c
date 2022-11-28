@@ -62,8 +62,8 @@ struct lj_writebuffer {
 typedef struct lj_writebuffer lj_writebuffer_t;
 // TODO Move structs to .h
 
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
-#define ENABLE_LLHTTP_BUFFER_DUMPS 1
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_BUFFER_DUMPS 1
 
 static void DEBUG(char* message) {
 	#ifdef ENABLE_LLHTTP_CALLBACK_LOGGING
@@ -75,6 +75,7 @@ static void DUMP(llhttp_t* parser) {
 	#ifdef ENABLE_LLHTTP_BUFFER_DUMPS
 
 	lj_writebuffer_t* write_buffer = (lj_writebuffer_t*)parser->data;
+	if(write_buffer == NULL) return; // Nothing to debug here
 
 	printf("\tlj_writebuffer_t ptr: %p\n", write_buffer->ptr);
 	printf("\tlj_writebuffer_t size: %zu\n", write_buffer->size);
@@ -107,6 +108,8 @@ struct static_llhttp_exports_table {
 
 int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	lj_writebuffer_t* write_buffer = (lj_writebuffer_t*)parser->data;
+
+	if(write_buffer == NULL) return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
 
 	size_t num_bytes_required = write_buffer->used + event->payload_length;
 	if(num_bytes_required > write_buffer->size) {

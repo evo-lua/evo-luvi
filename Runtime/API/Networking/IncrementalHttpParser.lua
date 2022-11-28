@@ -42,12 +42,12 @@ end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	DEBUG("ParseNextChunk", #chunk, chunk)
-	printf("Buffer contents before parsing: %s", self.eventLogBuffer)
+	-- printf("Buffer contents before parsing: %s", self.eventLogBuffer)
 	local writeBuffer = ffi.cast("lj_writebuffer_t*", self.state.data)
 	-- TODO reserve #chunk + buffer for events (at most 1 ID per character, which is PROBABLY far too high... but still)
 	-- writeBuffer.size = #chunk * 2-- Leave some extra room for the event IDs (sketchy?)
 	local ptr, len = self.eventLogBuffer:reserve(#chunk * 3) -- TODO use sizeof(llhttp_event_t)
-	printf("Reserved %s bytes in buffer %s", len, ptr)
+	-- printf("Reserved %s bytes in buffer %s", len, ptr)
 
 	writeBuffer.size = len
 	writeBuffer.ptr = ptr
@@ -55,19 +55,19 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 	llhttp_execute(self.state, chunk, #chunk)
 
-	printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
+	-- printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
 	self.eventLogBuffer:commit(writeBuffer.used)
 
-	local firstEvent = ffi.cast("llhttp_event_t*", self.eventLogBuffer)
-	-- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
-	print()
-	print("First stored event:", firstEvent)
-	printf("\tevent_id: %d", tonumber(firstEvent.event_id))
-	printf("\tpayload_start_pointer: %s", firstEvent.payload_start_pointer)
-	printf("\tpayload_length: %d", tonumber(firstEvent.payload_length))
-	print()
+	-- local firstEvent = ffi.cast("llhttp_event_t*", self.eventLogBuffer)
+	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
+	-- print()
+	-- print("First stored event:", firstEvent)
+	-- printf("\tevent_id: %d", tonumber(firstEvent.event_id))
+	-- printf("\tpayload_start_pointer: %s", firstEvent.payload_start_pointer)
+	-- printf("\tpayload_length: %d", tonumber(firstEvent.payload_length))
+	-- print()
 
-	printf("Buffer contents after parsing: %s", tostring(self.eventLogBuffer))
+	-- printf("Buffer contents after parsing: %s", tostring(self.eventLogBuffer))
 end
 
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })
