@@ -336,6 +336,15 @@ local llhttp = {
 			void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 		};
+	]] ..
+	-- And this is unlikely to ever change, based on the LuaJIT string.buffer API (needed to pass data from C to FFI without callbacks)
+	[[
+		struct lj_writebuffer {
+			size_t size;
+			uint8_t* ptr; // buffer_area_start
+			size_t used;
+		};
+		typedef struct lj_writebuffer lj_writebuffer_t;
 	]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,

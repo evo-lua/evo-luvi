@@ -16,10 +16,14 @@ describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
 		it("should populate the event log queue if at least one llhttp event is expected", function()
 			local parser = IncrementalHttpParser()
-			parser:ParseNextChunk("test#123")
+			local chunk = "GET /awesome HTTP/1.1"
 
-			assertEquals(#parser.eventLogBuffer, #"test#123")
-			assertEquals(tostring(parser.eventLogBuffer), "test#123")
+			print(type(parser.eventLogBuffer))
+			print(parser.state.data)
+			parser:ParseNextChunk(chunk)
+
+			assertEquals(#parser.eventLogBuffer, #chunk)
+			assertEquals(tostring(parser.eventLogBuffer), chunk)
 		end)
 	end)
 end)
