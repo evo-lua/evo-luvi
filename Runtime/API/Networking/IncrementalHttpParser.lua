@@ -19,10 +19,11 @@ local DEFAULT_EVENTLOG_BUFFER_SIZE_IN_BYTES = 255 -- We can let LuaJIT handle th
 
 local IncrementalHttpParser = {}
 
-function IncrementalHttpParser:Construct()
+function IncrementalHttpParser:Construct(maxBufferSizeInBytes)
 	local instance = {
 		state = ffi.new("llhttp_t"),
 		settings = ffi.new("llhttp_settings_t"),
+		maxBufferSizeInBytes = maxBufferSizeInBytes,
 	}
 
 	llhttp_settings_init(instance.settings) -- Also sets up callbacks in C (to avoid Lua/C call overhead)
@@ -46,6 +47,8 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	local writeBuffer = ffi.cast("lj_writebuffer_t*", self.state.data)
 	-- TODO reserve #chunk + buffer for events (at most 1 ID per character, which is PROBABLY far too high... but still)
 	-- writeBuffer.size = #chunk * 2-- Leave some extra room for the event IDs (sketchy?)
+
+	local maxBufferSizeToReserve = self.maxBufferSizeInBytes or #chunk * 3
 	local ptr, len = self.eventLogBuffer:reserve(#chunk * 3) -- TODO use sizeof(llhttp_event_t)
 	-- printf("Reserved %s bytes in buffer %s", len, ptr)
 
