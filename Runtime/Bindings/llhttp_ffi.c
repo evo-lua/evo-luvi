@@ -137,105 +137,83 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 int on_header_value_complete(llhttp_t* parser_state)
 {
 	DEBUG("on_header_value_complete");
-	// printf("[C] llhttp called on_header_value_complete with token %.*s\n", length, at);
 
-	// local fieldName = tostring(self.lastReceivedHeaderKey)
-	// local fieldValue = tostring(self.lastReceivedHeaderValue)
-	// DEBUG(format("Storing received header pair - %s: %s", fieldName, fieldValue))
-	// self.bufferedRequest.headers[fieldName] = fieldValue
+	llhttp_event_t event = { llhttp_ffi_on_header_value_complete, 0, 0};
+	llhttp_push_event(parser_state, &event);
 
-	// -- This is somewhat redundant, but allows serializing headers in the exact order they were received later
-	// -- .All the while, also preserving the ability to perform dictionary lookups (constant-time + ease-of-use)
-	// self.bufferedRequest.headers[#self.bufferedRequest.headers + 1] = fieldName
+	DUMP(parser_state);
 
-	// -- Reset buffer so the next key-value-pair can be stored
-	// self.lastReceivedHeaderKey:reset()
-	// self.lastReceivedHeaderValue:reset()
 	return HPE_OK;
 }
 
 int on_message_complete(llhttp_t* parser_state)
 {
-
 	DEBUG("on_message_complete");
 
-	// printf("[C] llhttp called on_message_complete with token %.*s\n", length, at);
-	//  DEBUG("[IncrementalHttpRequestParser] HTTP_MESSAGE_COMPLETE triggered")
-	//  self.isBufferReady = true
+	llhttp_event_t event = { llhttp_ffi_on_message_complete, 0, 0};
+	llhttp_push_event(parser_state, &event);
 
-	// local methodName = llhttp_method_name(self.state.method)
-	// self.bufferedRequest.method:set(ffi_string(methodName))
-
-	// self.bufferedRequest.versionString:set(format("HTTP/%d.%d", self.state.http_major, self.state.http_minor))
+	DUMP(parser_state);
 	return HPE_OK;
 }
 
 // llhttp data callbacks
 int on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
-
 	DEBUG("on_url");
-
-	DUMP(parser_state);
-
-	// printf("[C] llhttp called on_url with token %.*s\n", length, at);
-	// //  self.bufferedRequest.requestedURL:put(parsedString)
-	// http_request* buffered_request = (http_request*)parser_state->data;
 
 	llhttp_event_t event = { llhttp_ffi_on_url, at, length };
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
 
-	// lj_buf_putmem( (LuaJIT_StringBuffer*) parser_state->data, "on_url#", strlen("on_url#"));
-	// lj_buf_putmem(write_buffer, at, length);
-	// We need to get this data into Lua without using callbacks... this isn't great, but I haven't found a more efficient way yet
-	// I'd love to do zero-copy somehow, but since we want Lua tables at the other end that's probably impossible anyway?
-	// As long as this doesn't incur the same 20-50x slowdown as using C->Lua callbacks it might be fine, for now...
-	// if((write_buffer->used + length) > write_buffer->size) {
-	// 	// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (WAY too much even, just to be extra safe)
-	// 	DEBUG("Failed to memcpy llhttp data to write buffer (not enough space reserved in Lua?)");
-	// } else
-	// {
-	// 	// TODO also write event ID and separator so we can replay the events in Lua
-	// 	memcpy(write_buffer->ptr, at, length);
-	// 	write_buffer->used+= length; // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
-	// }
-
-	// printf("lj)buf_putmem done\n");
-
 	return HPE_OK;
 }
 
 int on_status(llhttp_t* parser_state, const char* at, size_t length)
 {
-
 	DEBUG("on_status");
 
-	// printf("[C] llhttp called on_status with token %.*s\n", length, at);
-	//  self.bufferedRequest.requestedURL:put(parsedString)
+	llhttp_event_t event = { llhttp_ffi_on_status, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
 	return HPE_OK;
 }
 
 int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
 {
-	// printf("[C] llhttp called on_header_field with token %.*s\n", length, at);
-	//  self.lastReceivedHeaderKey:put(parsedString)
+	DEBUG("on_header_field");
+
+	llhttp_event_t event = { llhttp_ffi_on_header_field, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
 	return HPE_OK;
 }
 
 int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 {
-	// printf("[C] llhttp called on_header_value with token %.*s\n", length, at);
-	//  self.lastReceivedHeaderValue:put(parsedString)
+	DEBUG("on_header_value");
+
+	llhttp_event_t event = { llhttp_ffi_on_header_value, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
 	return HPE_OK;
 }
 
 static int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
-	// self.bufferedRequest.body:put(parsedString)
-	// printf("[C] llhttp called on_body with token %.*s\n", (int)length, at);
+	DEBUG("on_body");
 
+	llhttp_event_t event = { llhttp_ffi_on_body, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
 
 	return HPE_OK;
 }
