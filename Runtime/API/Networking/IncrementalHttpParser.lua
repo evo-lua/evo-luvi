@@ -48,6 +48,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- TODO reserve #chunk + buffer for events (at most 1 ID per character, which is PROBABLY far too high... but still)
 	-- writeBuffer.size = #chunk * 2-- Leave some extra room for the event IDs (sketchy?)
 
+	-- TODO math min if is set, else just use chunk size
 	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * 3 -- TODO sizeof, raise error event that can be used to DC client or send an error code
 	local ptr, len = self.eventLogBuffer:reserve(#chunk * 3) -- TODO use sizeof(llhttp_event_t)
 	-- printf("Reserved %s bytes in buffer %s", len, ptr)
