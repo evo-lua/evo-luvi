@@ -345,6 +345,13 @@ local llhttp = {
 			size_t used;
 		};
 		typedef struct lj_writebuffer lj_writebuffer_t;
+
+		struct llhttp_event {
+			uint8_t event_id;
+			const char* payload_start_pointer;
+			size_t payload_length;
+		};
+		typedef struct llhttp_event llhttp_event_t;
 	]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
