@@ -8,7 +8,7 @@
 
 static void DEBUG(char* message) {
 	#ifdef ENABLE_LLHTTP_CALLBACK_LOGGING
-	printf("%s", message);
+	printf("[C] llhttp_ffi: %s\n", message);
 	#endif
 }
 
@@ -126,9 +126,9 @@ const char* llhttp_get_version_string(void)
 
 static void init_settings_with_callbacks(llhttp_settings_t* settings)
 {
-	// printf("Initializing llhttp settings with callbacks...\n");
+	DEBUG("init_settings_with_callbacks");
+
 	llhttp_settings_init(settings);
-	// printf("Initialized llhttp settings with callbacks...\n");
 
 	// Set up info callbacks
 	settings->on_header_value_complete = on_header_value_complete;
