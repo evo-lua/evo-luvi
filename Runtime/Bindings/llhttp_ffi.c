@@ -62,7 +62,7 @@ struct lj_writebuffer {
 typedef struct lj_writebuffer lj_writebuffer_t;
 // TODO Move structs to .h
 
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 // #define ENABLE_LLHTTP_BUFFER_DUMPS 1
 
 static void DEBUG(char* message) {
@@ -234,6 +234,31 @@ static void init_settings_with_callbacks(llhttp_settings_t* settings)
 	DEBUG("init_settings_with_callbacks");
 
 	llhttp_settings_init(settings);
+
+	// TODO register callbacks for all of them (and create handlers, too)
+	// llhttp_ffi_on_message_begin = 1,
+	// llhttp_ffi_on_url = 2,
+	// llhttp_ffi_on_status = 3,
+	// llhttp_ffi_on_method = 4,
+	// llhttp_ffi_on_version = 5,
+	// llhttp_ffi_on_header_field = 6,
+	// llhttp_ffi_on_header_value = 7,
+	// llhttp_ffi_on_chunk_extension_name = 8,
+	// llhttp_ffi_on_chunk_extension_value = 9,
+	// llhttp_ffi_on_headers_complete = 10,
+	// llhttp_ffi_on_body = 11,
+	// llhttp_ffi_on_message_complete = 12,
+	// llhttp_ffi_on_url_complete = 13,
+	// llhttp_ffi_on_status_complete = 14,
+	// llhttp_ffi_on_method_complete = 15,
+	// llhttp_ffi_on_version_complete = 16,
+	// llhttp_ffi_on_header_field_complete = 17,
+	// llhttp_ffi_on_header_value_complete = 18,
+	// llhttp_ffi_on_chunk_extension_name_complete = 19,
+	// llhttp_ffi_on_chunk_extension_value_complete = 20,
+	// llhttp_ffi_on_chunk_header = 21,
+	// llhttp_ffi_on_chunk_complete = 22,
+	// llhttp_ffi_on_reset = 23,
 
 	// Set up info callbacks
 	settings->on_header_value_complete = on_header_value_complete;
