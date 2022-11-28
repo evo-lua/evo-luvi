@@ -111,6 +111,7 @@ int on_url(llhttp_t* parser_state, const char* at, size_t length)
 	{
 		// TODO also write event ID and separator so we can replay the events in Lua
 		memcpy(write_buffer->ptr, at, length);
+		write_buffer->used+= length; // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
 	}
 
 	// printf("lj)buf_putmem done\n");
