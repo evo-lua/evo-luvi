@@ -71,6 +71,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- print()
 
 	-- printf("Buffer contents after parsing: %s", tostring(self.eventLogBuffer))
+	self.eventLogBuffer:reset()
 end
 
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })

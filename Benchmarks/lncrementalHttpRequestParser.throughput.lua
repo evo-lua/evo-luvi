@@ -1,6 +1,6 @@
 local Benchmark = import("./Benchmark.lua")
 
-local benchmark = Benchmark("Throughput: Lua-based parser on top of llhttp (huge overhead)")
+local benchmark = Benchmark("Throughput: Lua-based parser on top of llhttp")
 
 local parser
 local websocketsRequestString =

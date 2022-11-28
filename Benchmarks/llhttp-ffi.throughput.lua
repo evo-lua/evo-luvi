@@ -1,6 +1,6 @@
 local Benchmark = import("./Benchmark.lua")
 
-local benchmark = Benchmark("Throughput: Raw llhttp calls via FFI (minimal overhead)")
+local benchmark = Benchmark("Throughput: Raw llhttp calls via FFI")
 
 local ffi = require("ffi")
 local ffi_new = ffi.new

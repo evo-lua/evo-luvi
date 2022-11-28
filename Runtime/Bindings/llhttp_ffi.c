@@ -106,6 +106,8 @@ struct static_llhttp_exports_table {
 };
 
 
+// TODO expose via static exports, unit test in Lua
+
 int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	lj_writebuffer_t* write_buffer = (lj_writebuffer_t*)parser->data;
 
