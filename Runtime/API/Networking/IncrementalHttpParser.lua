@@ -52,6 +52,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- writeBuffer.size = #chunk * 2-- Leave some extra room for the event IDs (sketchy?)
 
 	-- TODO math min if is set, else just use chunk size
+		-- TODO maxAllowedChunkSizeInBytes should be fairly small, whatever fits into a single RECV buffer is the limit anyway? Pointless...
 		--TODO raise error event that can be used to DC client or send an error code
 	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * ffi_sizeof("llhttp_event_t")
 	local ptr, len = self.eventLogBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
