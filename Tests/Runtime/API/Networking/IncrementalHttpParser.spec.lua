@@ -16,7 +16,7 @@ describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
 		it("should populate the event log queue if at least one llhttp event is expected", function()
 			local parser = IncrementalHttpParser()
-			local chunk = "GET /awesome HTTP/1.1"
+			local chunk = "GET /awesome HTTP/1.1\r\n\r\n"
 
 			print(type(parser.eventLogBuffer))
 			print(parser.state.data)
