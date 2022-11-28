@@ -30,13 +30,13 @@ local nodeRequest2 = "POST /joyent/http-parser HTTP/1.1\r\n"
 	.. "Transfer-Encoding: chunked\r\n"
 	.. "Cache-Control: max-age=0\r\n\r\nb\r\nhello world\r\n0\r\n\r\n"
 
-local request = nodeRequest1
+local request = nodeRequest2
 
 function benchmark:OnSetup()
 	self.globalDebugPrintHandler = _G.DEBUG
 	_G.DEBUG = function() end -- NOOP so it can be eliminated in optimized traces
 
-	self.iterationCount = 1000000 -- It's too slow to do much more in a reasonable timeframe
+	-- self.iterationCount = 1000000 -- It's too slow to do much more in a reasonable timeframe
 
 	parser = C_Networking.IncrementalHttpParser()
 end
