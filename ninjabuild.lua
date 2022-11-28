@@ -53,6 +53,7 @@ local EvoBuildTarget = {
 		"Runtime/API/Networking/HttpRequest.lua",
 		"Runtime/API/Networking/HttpResponse.lua",
 		"Runtime/API/Networking/HttpServer.lua",
+		"Runtime/API/Networking/IncrementalHttpParser.lua",
 		"Runtime/API/Networking/IncrementalHttpRequestParser.lua",
 		"Runtime/API/Networking/TcpSocket.lua",
 		"Runtime/API/Networking/TcpClient.lua",

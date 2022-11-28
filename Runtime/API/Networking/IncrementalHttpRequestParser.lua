@@ -84,9 +84,9 @@ function IncrementalHttpRequestParser:Construct()
 	llhttp_settings_init(instance.settings) -- Also sets up callbacks in C (to avoid Lua/C call overhead)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_REQUEST, instance.settings)
 
+	setmetatable(instance, self)
 	instance.state.data = buffer.new()
 
-	setmetatable(instance, self)
 
 	-- instance:RegisterCallbackHandlers() -- TODO optimize via ffi
 
