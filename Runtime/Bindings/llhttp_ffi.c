@@ -15,7 +15,6 @@ static void DEBUG(char* message) {
 	#endif
 }
 
-
 // We require one event per llhttp_settings callback, plus one extra (ID is 0) for the "hopefully impossible" error case
 // (not enough bytes reserved in the LuaJIT string buffer prior to registering the callbacks
 //  -> just another safeguard, even if it's probably not needed
