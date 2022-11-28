@@ -1,11 +1,17 @@
 #include "llhttp.h"
 #include "lua.h"
-// TODO remove //printf
 #include <stdio.h>
 
 #include <lj_buf.h>
 
-// Shorthands (because readability)
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+
+static void DEBUG(char* message) {
+	#ifdef ENABLE_LLHTTP_CALLBACK_LOGGING
+	printf("%s", message);
+	#endif
+}
+
 typedef SBuf LuaJIT_StringBuffer;
 
 struct static_llhttp_exports_table {
@@ -29,18 +35,6 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 };
-
-typedef struct http_request_t {
-	LuaJIT_StringBuffer* url_token_buffer;
-} http_request;
-
-struct http_response {
-};
-
-struct http_message {
-};
-
-// int (*llhttp_data_cb)(llhttp_t* parser_state, const char *at, size_t length);
 
 // llhttp info callbacks
 int on_header_value_complete(llhttp_t* parser_state)
@@ -78,13 +72,14 @@ int on_message_complete(llhttp_t* parser_state)
 // llhttp data callbacks
 int on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
-	printf("[C] llhttp called on_url with token %.*s\n", length, at);
-	//  self.bufferedRequest.requestedURL:put(parsedString)
-	http_request* buffered_request = (http_request*)parser_state->data;
+	// printf("[C] llhttp called on_url with token %.*s\n", length, at);
+	// //  self.bufferedRequest.requestedURL:put(parsedString)
+	// http_request* buffered_request = (http_request*)parser_state->data;
 
-	lj_buf_putmem(buffered_request->url_token_buffer, at, length);
+	// lj_buf_putmem(buffered_request->url_token_buffer, at, length);
 
-	printf("lj)buf_putmem done\n");
+	// printf("lj)buf_putmem done\n");
+
 	return HPE_OK;
 }
 
@@ -109,7 +104,7 @@ int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 	return HPE_OK;
 }
 
-int on_body(llhttp_t* parser_state, const char* at, size_t length)
+static int on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	// self.bufferedRequest.body:put(parsedString)
 	printf("[C] llhttp called on_body with token %.*s\n", (int)length, at);
@@ -131,9 +126,9 @@ const char* llhttp_get_version_string(void)
 
 static void init_settings_with_callbacks(llhttp_settings_t* settings)
 {
-	printf("Initializing llhttp settings with callbacks...\n");
+	// printf("Initializing llhttp settings with callbacks...\n");
 	llhttp_settings_init(settings);
-	printf("Initialized llhttp settings with callbacks...\n");
+	// printf("Initialized llhttp settings with callbacks...\n");
 
 	// Set up info callbacks
 	settings->on_header_value_complete = on_header_value_complete;
