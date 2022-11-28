@@ -104,9 +104,9 @@ int on_url(llhttp_t* parser_state, const char* at, size_t length)
 	// We need to get this data into Lua without using callbacks... this isn't great, but I haven't found a more efficient way yet
 	// I'd love to do zero-copy somehow, but since we want Lua tables at the other end that's probably impossible anyway?
 	// As long as this doesn't incur the same 20-50x slowdown as using C->Lua callbacks it might be fine, for now...
-	if(length > write_buffer->size) {
+	if((write_buffer->used + length) > write_buffer->size) {
 		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (WAY too much even, just to be extra safe)
-		DEBUG("Failed to memcpy on_url data to write buffer (not enough space reserved in Lua?)");
+		DEBUG("Failed to memcpy llhttp data to write buffer (not enough space reserved in Lua?)");
 	} else
 	{
 		// TODO also write event ID and separator so we can replay the events in Lua
