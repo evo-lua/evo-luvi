@@ -117,6 +117,7 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	if(num_bytes_required > write_buffer->size) {
 		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (WAY too much even, just to be extra safe)
 		DEBUG("Failed to llhttp_push_event to the write buffer (not enough space reserved ahead of time?)");
+		// TODO set first event to error, ignore rest?
 		return num_bytes_required - write_buffer->size;
 	}
 
