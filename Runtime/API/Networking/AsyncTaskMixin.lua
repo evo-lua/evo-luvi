@@ -1,5 +1,25 @@
 local TcpClient = {}
 
+local C_AsyncTask = {
+	activeThreads = {},
+	mainThread = coroutine.running(),
+}
+
+function C_AsyncTask.Schedule(task, ...)
+
+	-- if label then C_AsyncTask.SetLabel(task, label) end
+
+	coroutine.wrap(task, ...)
+
+end
+
+function C_AsyncTask.GetName(task)
+	local currentThread = coroutine.running()
+
+	if currentThread == C_AsyncTask.mainThread then return "main" end
+	return C_AsyncTask.activeThreads[currentThread] or tostring(currentThread)
+end
+
 local coroutine_yield = coroutine.yield
 local coroutine_running = coroutine.running
 local coroutine_wrap = coroutine.wrap
