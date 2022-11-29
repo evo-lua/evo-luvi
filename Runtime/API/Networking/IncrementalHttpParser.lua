@@ -54,18 +54,25 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- TODO math min if is set, else just use chunk size
 		-- TODO maxAllowedChunkSizeInBytes should be fairly small, whatever fits into a single RECV buffer is the limit anyway? Pointless...
 		--TODO raise error event that can be used to DC client or send an error code
-	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * ffi_sizeof("llhttp_event_t")
-	local ptr, len = self.eventLogBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
-	-- printf("Reserved %s bytes in buffer %s", len, ptr)
+	local maxBufferSizeToReserve = (self.maxAllowedChunkSizeInBytes or #chunk) * ffi_sizeof("llhttp_event_t") / 8 -- bits -> bytes
+	-- local ptr, len = self.eventLogBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
+	local ptr, len = self.eventLogBuffer:reserve(maxBufferSizeToReserve)
+	-- printf("Reserved %s bytes in buffer %s (requested: %s, total size: %s) - %s", len, ptr, maxBufferSizeToReserve, #self.eventLogBuffer, c)
 
 	writeBuffer.size = len
 	writeBuffer.ptr = ptr
 	writeBuffer.used = 0
 
 	llhttp_execute(self.state, chunk, #chunk)
-
-	-- printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
-	self.eventLogBuffer:commit(writeBuffer.used)
+		-- print("llhttp_execute OK")
+		-- printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
+		if writeBuffer.used > 0 then
+			-- If nothing needs to be written, this can cause segfaults?
+			self.eventLogBuffer:commit(writeBuffer.used)
+			-- print("buffer_commit OK")
+			self.eventLogBuffer:reset()
+			-- print("buffer_reset OK", c)
+		end
 
 	-- local firstEvent = ffi.cast("llhttp_event_t*", self.eventLogBuffer)
 	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
