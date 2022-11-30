@@ -6,8 +6,8 @@ local TcpSocket = require("TcpSocket")
 
 local TcpClient = {
 	-- TODO move to socket mixin, make configurable, tests
-	backpressureUpperLimitInBytes = 1024 * 8, -- maxAllowedWriteQueueSize
-	backpressureEasingLimitInBytes = 1024 * 2, --
+	backpressureUpperLimitInBytes = 1024 * 64, -- maxAllowedWriteQueueSize
+	backpressureEasingLimitInBytes = 1024 * 8, -- just use 0?
 	isBackpressured = false,
 }
 
