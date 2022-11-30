@@ -341,7 +341,7 @@ local llhttp = {
 	[[
 		struct lj_writebuffer {
 			size_t size;
-			uint8_t* ptr; // buffer_area_start
+			uint8_t* ptr;
 			size_t used;
 		};
 		typedef struct lj_writebuffer lj_writebuffer_t;

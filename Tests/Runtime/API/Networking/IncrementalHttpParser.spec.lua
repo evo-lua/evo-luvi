@@ -2,28 +2,39 @@ local IncrementalHttpParser = C_Networking.IncrementalHttpParser
 
 describe("IncrementalHttpParser", function()
 	describe("Construct", function()
-		it("should initialize an empty event log buffer", function()
+		it("should initialize an empty event buffer", function()
 			local parser = IncrementalHttpParser()
-			local eventLogBuffer = parser.eventLogBuffer
+			local eventBuffer = parser:GetEventBuffer()
 
-			assertEquals(parser.state.data, parser.eventLogBuffer:ref())
+			assertEquals(parser:GetNumBufferedEvents(), 0)
+			assertEquals(tostring(eventBuffer), "")
+			assertEquals(#eventBuffer, 0)
 
-			assertEquals(tostring(eventLogBuffer), "")
-			assertEquals(#eventLogBuffer, 0)
+			assertEquals(parser:GetBufferedEvents(), {})
 		end)
 	end)
 
 	describe("ParseNextChunk", function()
-		it("should populate the event log queue if at least one llhttp event is expected", function()
+		it("should populate the event buffer if at least one llhttp event is expected", function()
 			local parser = IncrementalHttpParser()
 			local chunk = "GET /awesome HTTP/1.1\r\n\r\n"
 
-			print(type(parser.eventLogBuffer))
-			print(parser.state.data)
 			parser:ParseNextChunk(chunk)
 
-			assertEquals(#parser.eventLogBuffer, #chunk)
-			assertEquals(tostring(parser.eventLogBuffer), chunk)
+			print(parser:GetBufferedEvents())
+
+			local eventBuffer = parser:GetEventBuffer()
+			assertEquals(parser:GetNumBufferedEvents(), 42)
+			assertEquals(tostring(eventBuffer), "test")
+			assertEquals(#eventBuffer, 42)
+
+
+
+			-- print(type(parser.eventBuffer))
+			-- print(parser.state.data)
+
+			-- assertEquals(#parser.eventBuffer, #chunk)
+			-- assertEquals(tostring(parser.eventBuffer), chunk)
 		end)
 	end)
 end)
