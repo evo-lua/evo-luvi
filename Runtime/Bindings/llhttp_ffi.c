@@ -41,6 +41,59 @@ enum llhttp_events { // TBD explicit indexing or just use defaults?
 	llhttp_ffi_on_reset = 23,
 };
 
+const char* llhttp_get_event_name(enum llhttp_events event_id) {
+	switch(event_id) {
+	case llhttp_ffi_on_buffer_too_small:
+		return "LLHTTP_FFI_BUFFER_TOO_SMALL";
+	case llhttp_ffi_on_message_begin:
+		return "LLHTTP_FFI_ON_MESSAGE_BEGIN";
+	case llhttp_ffi_on_url:
+		return "LLHTTP_FFI_ON_URL";
+	case llhttp_ffi_on_status:
+		return "LLHTTP_FFI_ON_STATUS";
+	case llhttp_ffi_on_method:
+		return "LLHTTP_FFI_ON_METHOD";
+	case llhttp_ffi_on_version:
+		return "LLHTTP_FFI_ON_VERSION";
+	case llhttp_ffi_on_header_field:
+		return "LLHTTP_FFI_HEADER_FIELD";
+	case llhttp_ffi_on_header_value:
+		return "LLHTTP_FFI_ON_HEADER_VALUE";
+	case llhttp_ffi_on_chunk_extension_name:
+		return "LLHTTP_FFI_ON_CHUNK_EXTENSION_NAME";
+	case llhttp_ffi_on_chunk_extension_value:
+		return "LLHTTP_FFI_ON_CHUNK_EXTENSION_VALUE";
+	case llhttp_ffi_on_headers_complete:
+		return "LLHTTP_FFI_ON_HEADERS_COMPLETE";
+	case llhttp_ffi_on_body:
+		return "LLHTTP_FFI_ON_BODY";
+	case llhttp_ffi_on_message_complete:
+		return "LLHTTP_FFI_ON_MESSAGE_COMPLETE";
+	case llhttp_ffi_on_url_complete:
+		return "LLHTTP_FFI_ON_URL_COMPLETE";
+	case llhttp_ffi_on_status_complete:
+		return "LLHTTP_FFI_ON_STATUS_COMPLETE";
+	case llhttp_ffi_on_method_complete:
+		return "LLHTTP_FFI_ON_METHOD_COMPLETE";
+	case llhttp_ffi_on_version_complete:
+		return "LLHTTP_FFI_ON_VERSION_COMPLETE";
+	case llhttp_ffi_on_header_field_complete:
+		return "LLHTTP_FFI_ON_HEADER_FIELD_COMPLETE";
+	case llhttp_ffi_on_header_value_complete:
+		return "LLHTTP_FFI_ON_HEADER_VALUE_COMPLETE";
+	case llhttp_ffi_on_chunk_extension_name_complete:
+		return "LLHTTP_FFI_ON_CHUNK_EXTENSION_NAME_COMPLETE";
+	case llhttp_ffi_on_chunk_extension_value_complete:
+		return "LLHTTP_FFI_ON_CHUNK_EXTENSION_VALUE_COMPLETE";
+	case llhttp_ffi_on_chunk_header:
+		return "LLHTTP_FFI_ON_CHUNK_HEADER";
+	case llhttp_ffi_on_chunk_complete:
+		return "LLHTTP_FFI_ON_CHUNK_COMPLETE";
+	case llhttp_ffi_on_reset:
+		return "LLHTTP_FFI_ON_RESET";
+	}
+}
+
 // Since we can't trigger Lua events directly without murdering performance, store the relevant info and fetch it from Lua later
 // Note: Since only data_callbacks (llhttp_data_cb) have a payload, store (0, 0) for info-only callbacks (llhttp_cb)
 struct llhttp_event {
