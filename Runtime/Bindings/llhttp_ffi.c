@@ -1,4 +1,4 @@
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 // #define ENABLE_LLHTTP_BUFFER_DUMPS 1
 
 #include "llhttp.h"
@@ -124,6 +124,9 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	// We don't care to store the diff (from buffer start to payload start) since we can pass these parameters to LuaJIT's ffi.string()
 	// TBD adding padding for 32/64 alignment? needs benchmark
 	// TODO copy normally vs memcpy (overhead)?
+
+	printf("Pushing event: %u\n", event->event_id);
+
 	memcpy(write_buffer->ptr, &event->event_id, sizeof(event->event_id));
 	memcpy(write_buffer->ptr, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
 	memcpy(write_buffer->ptr, &event->payload_length, sizeof(event->payload_length));

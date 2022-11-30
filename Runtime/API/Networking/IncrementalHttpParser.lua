@@ -47,20 +47,42 @@ function IncrementalHttpParser:GetEventBuffer()
 end
 
 function IncrementalHttpParser:GetNumBufferedEvents()
-	return (#self.eventBuffer / 1) -- TODO sizeof event_t
+	return #self.eventBuffer /  ffi_sizeof("llhttp_event_t")
 end
+
+local tonumber = tonumber
 
 function IncrementalHttpParser:GetBufferedEvents()
 	local writeBuffer = ffi_cast("lj_writebuffer_t*", self.state.data)
-	print("Dumping write buffer contents",#self.eventBuffer) -- TODO better name...
+
+	-- TODO better name...
+	print("Dumping write buffer contents", self.eventBuffer)
+	print("Write buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
 
 	if #self.eventBuffer == 0 then return {} end -- Avoids segfault
 
-	for index = 0, #self.eventBuffer do
-		print("Fetching event " .. index)
-		local event = ffi_cast("llhttp_event_t*", self.eventBuffer)
-		print("Event " .. index .. ": " .. tonumber(event.event_id) .. ", payload_start_pointer = " .. event.payload_start_pointer .. ", payload_length = " .. event.payload_length)
+	for index = 0, self:GetNumBufferedEvents() - 1 do
+		-- local event = self.eventBuffer:get(ffi_sizeof("llhttp_event_t"))
+		-- print(event)
+		-- event = ffi_cast("llhttp_event_t*", event)
+		-- print(event)
+		-- print("Buffer index: " .. index .. ": " .. tonumber(event.event_id) .. ", payload_start_pointer = " .. tonumber(event.payload_start_pointer) .. ", payload_length = " .. tonumber(event.payload_length))
+
+		local event = ffi.cast("llhttp_event_t*", self.eventBuffer)
+		-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
+		-- print()
+		print("Stored event:", event, index)
+		printf("\tevent_id: %d", tonumber(event.event_id))
+		printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
+		printf("\tpayload_length: %d", tonumber(event.payload_length))
+		-- print()
+		print("Popping event...")
+		self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
+		print("Num bytes left: " .. #self.eventBuffer)
+
 	end
+
+	-- TODO queue should be empty now...
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
@@ -72,7 +94,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
-	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t") / 8 -- bits -> bytes
+	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t")
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
 
 
@@ -88,12 +110,16 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	llhttp_execute(self.state, chunk, #chunk)
 		-- printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
 		if writeBuffer.used > 0 then
-			DEBUG("Total event buffer size: " .. tonumber(writeBuffer.size) .. " bytes")
+			DEBUG("Total event buffer capacity: " .. tonumber(writeBuffer.size) .. " bytes")
 			DEBUG("Events triggered by last chunk used: " .. tonumber(writeBuffer.used) .. " bytes")
 			-- If nothing needs to be written, this can cause segfaults?
 			eventBuffer:commit(writeBuffer.used)
 			-- print("buffer_commit OK")
-			eventBuffer:reset()
+
+			DEBUG("Dumping queued events ...")
+			dump(self:GetBufferedEvents())
+
+			-- eventBuffer:reset()
 			-- print("buffer_reset OK", c)
 		end
 
@@ -106,8 +132,10 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- printf("\tpayload_length: %d", tonumber(firstEvent.payload_length))
 	-- print()
 
+
+
 	-- printf("Buffer contents after parsing: %s", tostring(eventBuffer))
-	eventBuffer:reset()
+	-- eventBuffer:reset()
 end
 
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })
