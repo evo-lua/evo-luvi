@@ -41,13 +41,7 @@ struct llhttp_event {
 };
 typedef struct llhttp_event llhttp_event_t;
 
-// This is a bit unfortunate, but in order to store events we rely on LuaJIT to manage the buffer
-//  Lua MUST reserve enough bytes ahead of time so that even in a worst-case scenario of
-// '1 event per character in the processed chunk' ALL events fit inside the buffer (i.e., #chunk * sizeof(llhttp_event) space is needed)
-// It's somewhat wasteful because it's VERY defensive, but unless gigantic payloads arrive the overhead shouldn't matter too much?
-// (and those should be blocked from Lua already/the client DCed or whatever, via configurable parameters on the Lua side)
-// Note: Have to use the buffer's writable area directly since Lua cannot pass the SBuf pointer via FFI (AFAIK...),
-// nor can we pass the Lua state to create new buffers here (which would also be more complicated and error-prone)
+// This represents the string buffer's writable area since Lua cannot directly pass the SBuf pointer via FFI (AFAIK), nor the Lua state
 struct lj_writebuffer {
 	size_t size;
 	uint8_t * ptr;
