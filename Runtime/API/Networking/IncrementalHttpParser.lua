@@ -61,20 +61,15 @@ function IncrementalHttpParser:GetBufferedEvents()
 
 	if #self.eventBuffer == 0 then return {} end -- Avoids segfault (TODO remove?)
 
+	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 	while #self.eventBuffer > 0 do
-		-- local event = self.eventBuffer:get(ffi_sizeof("llhttp_event_t"))
-		-- print(event)
-		-- event = ffi_cast("llhttp_event_t*", event)
-		-- print(event)
-		-- print("Buffer index: " .. index .. ": " .. tonumber(event.event_id) .. ", payload_start_pointer = " .. tonumber(event.payload_start_pointer) .. ", payload_length = " .. tonumber(event.payload_length))
-
 		local event = ffi.cast("llhttp_event_t*", self.eventBuffer)
-		-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 		-- print()
 		print("Stored event:", event)
 		local eventID = tonumber(event.event_id)
 		printf("\tevent_id: %d", eventID)
-		print("FFI Event: " .. llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT")
+		eventID = llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT"
+		print("FFI Event: " .. eventID)
 		printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
 		printf("\tpayload_length: %d", tonumber(event.payload_length))
 		-- print()
@@ -82,6 +77,17 @@ function IncrementalHttpParser:GetBufferedEvents()
 		self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
 		print("Num bytes left: " .. #self.eventBuffer)
 
+		if not self[eventID] then
+			ERROR("Failed to trigger FFI event " .. tostring(eventID))
+		else
+			-- TBD Do we really want this? It's wasteful, better to just pass at/length and append to a buffered request's string buffer!
+			local payload = {
+				-- TODO remove
+				payloadStartPointer = event.payload_start_pointer,
+				payloadEnd = event.payload_length,
+			}
+			self[eventID](self, eventID, payload)
+		end
 	end
 
 	-- TODO queue should be empty now...
@@ -139,6 +145,39 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- printf("Buffer contents after parsing: %s", tostring(eventBuffer))
 	-- eventBuffer:reset()
 end
+
+-- TODO use this as default, as per event system RFC
+function IncrementalHttpParser:OnEvent() end
+
+-- TODO FFI_ is enough, strip LLHTTP prefix from all events (also in C)
+
+function IncrementalHttpParser:LLHTTP_FFI_BUFFER_TOO_SMALL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_MESSAGE_BEGIN(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_URL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_METHOD(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_VERSION(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_HEADER_FIELD(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_HEADER_VALUE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_EXTENSION_NAME(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_EXTENSION_VALUE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_HEADERS_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_BODY(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_MESSAGE_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_URL_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_STATUS_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_METHOD_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_VERSION_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_HEADER_FIELD_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_HEADER_VALUE_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_HEADER(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_CHUNK_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:LLHTTP_FFI_ON_RESET(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })
 
