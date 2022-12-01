@@ -50,7 +50,21 @@ struct static_llhttp_exports_table {
 };
 
 
-// TODO expose via static exports, unit test in Lua
+void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event) {
+	uint8_t  offset = 0;
+
+	memcpy(buffer->ptr + offset, &event->event_id, sizeof(event->event_id));
+	offset += sizeof(event->event_id);
+	memcpy(buffer->ptr + offset, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
+	offset +=  sizeof(event->payload_start_pointer);
+	memcpy(buffer->ptr + offset, &event->payload_length, sizeof(event->payload_length));
+
+	 // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
+	buffer->used+= sizeof(llhttp_event_t);
+
+	// Don't want to overwrite the event that was just queued...
+	buffer->ptr += sizeof(llhttp_event_t);
+}
 
 int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	luajit_stringbuffer_reference_t* write_buffer = (luajit_stringbuffer_reference_t*)parser->data;
@@ -64,18 +78,7 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 		return num_bytes_required - write_buffer->size;
 	}
 
-	uint8_t  offset = 0;
-	memcpy(write_buffer->ptr + offset, &event->event_id, sizeof(event->event_id));
-	offset += sizeof(event->event_id);
-	memcpy(write_buffer->ptr + offset, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
-	offset +=  sizeof(event->payload_start_pointer);
-	memcpy(write_buffer->ptr + offset, &event->payload_length, sizeof(event->payload_length));
-
-	 // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
-	write_buffer->used+= sizeof(llhttp_event_t);
-
-	// Don't want to overwrite the event that was just queued later...
-	write_buffer->ptr += sizeof(llhttp_event_t);
+	stringbuffer_add_event(write_buffer, event);
 
 	return 0;
 }
