@@ -25,13 +25,11 @@ function IncrementalHttpParser:Construct()
 	llhttp_settings_init(instance.settings) -- Also sets up callbacks in C (to avoid Lua/C call overhead)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_BOTH, instance.settings)
 
-	-- The parser's userdata field can be used as a event log to avoid C->Lua callbacks (extremely slow)
-	-- Setting up the buffer from Lua is much simpler since we don't need to deal with the Lua state directly here
+	-- The parser's userdata field serves as an "event log" of sorts:
+	-- To avoid C->Lua callbacks (which are extremely slow), buffer all events there... then replay them in Lua for fun and profit!
+	-- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 24 extra bytes/event)
 	instance.eventBuffer = string_buffer.new()
-	-- instance.state.data = instance.eventLogBuffer:ref() -- Can only store void pointer, which we will cast in C to SBuf* before using it
-	-- instance.state.data = instance.eventLogBuffer -- Can only store void pointer, which we will cast in C to SBuf* before using it
-
-	-- We can't easily pass the actual LuaJIT type to C here, so use a proxy type for the writable area of the buffer instead
+	-- We can't easily pass the actual LuaJIT SBuf type to C, so use a proxy type for the writable area of the buffer instead
 	instance.state.data = ffi.new("luajit_stringbuffer_reference_t")
 
 	setmetatable(instance, { __index = self })
