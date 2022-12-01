@@ -22,10 +22,10 @@ function IncrementalHttpParser:Construct()
 		settings = ffi.new("llhttp_settings_t"),
 	}
 
-	llhttp_settings_init(instance.settings) -- Also sets up callbacks in C (to avoid Lua/C call overhead)
+	llhttp_settings_init(instance.settings)
 	llhttp_init(instance.state, llhttp.PARSER_TYPES.HTTP_BOTH, instance.settings)
 
-	-- The parser's userdata field serves as an "event log" of sorts:
+	-- The parser's userdata field here serves as an "event log" of sorts:
 	-- To avoid C->Lua callbacks (which are extremely slow), buffer all events there... then replay them in Lua for fun and profit!
 	-- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 24 extra bytes/event)
 	instance.eventBuffer = string_buffer.new()
