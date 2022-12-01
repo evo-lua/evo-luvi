@@ -42,6 +42,7 @@ struct llhttp_event {
 typedef struct llhttp_event llhttp_event_t;
 
 // This represents the string buffer's writable area since Lua cannot directly pass the SBuf pointer via FFI (AFAIK), nor the Lua state
+// The FFI bindings just write to it, assuming plenty of space has been reserved ahead of time (somewhat wasteful, but should be safe)
 struct lj_writebuffer {
 	size_t size;
 	uint8_t * ptr;
