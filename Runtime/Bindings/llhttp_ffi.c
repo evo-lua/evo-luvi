@@ -27,29 +27,6 @@ static void DUMP(llhttp_t* parser) {
 	#endif
 }
 
-struct static_llhttp_exports_table {
-	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
-	void (*llhttp_reset)(llhttp_t* parser);
-	void (*llhttp_settings_init)(llhttp_settings_t* settings);
-	llhttp_errno_t (*llhttp_execute)(llhttp_t* parser, const char* data, size_t len);
-	llhttp_errno_t (*llhttp_finish)(llhttp_t* parser);
-	int (*llhttp_message_needs_eof)(const llhttp_t* parser);
-	int (*llhttp_should_keep_alive)(const llhttp_t* parser);
-	void (*llhttp_pause)(llhttp_t* parser);
-	void (*llhttp_resume)(llhttp_t* parser);
-	void (*llhttp_resume_after_upgrade)(llhttp_t* parser);
-	llhttp_errno_t (*llhttp_get_errno)(const llhttp_t* parser);
-	const char* (*llhttp_get_error_reason)(const llhttp_t* parser);
-	void (*llhttp_set_error_reason)(llhttp_t* parser, const char* reason);
-	const char* (*llhttp_get_error_pos)(const llhttp_t* parser);
-	const char* (*llhttp_errno_name)(llhttp_errno_t err);
-	const char* (*llhttp_method_name)(llhttp_method_t method);
-	void (*llhttp_set_lenient_headers)(llhttp_t* parser, int enabled);
-	void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
-	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
-};
-
-
 void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event) {
 	uint8_t  offset = 0;
 
