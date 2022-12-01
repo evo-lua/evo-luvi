@@ -153,8 +153,6 @@ end
 -- TODO use this as default, as per event system RFC
 function IncrementalHttpParser:OnEvent() end
 
--- TODO FFI_ is enough, strip LLHTTP prefix from all events (also in C)
-
 function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 function IncrementalHttpParser:HTTP_ON_URL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
