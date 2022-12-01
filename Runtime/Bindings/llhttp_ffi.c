@@ -6,9 +6,7 @@
 
 #include <stdio.h>
 #include "stdint.h" // for uint8_t * (LuaJIT FFI return value for string_buffer.ref)
-#include "inttypes.h" // PRIu8 macro (can remove later)
-
-#include <lj_buf.h>
+#include "string.h"
 
 // We require one event per llhttp_settings callback, plus one extra (ID is 0) for the "hopefully impossible" error case
 // (not enough bytes reserved in the LuaJIT string buffer prior to registering the callbacks
