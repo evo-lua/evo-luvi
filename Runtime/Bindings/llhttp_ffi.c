@@ -14,31 +14,31 @@
 // (not enough bytes reserved in the LuaJIT string buffer prior to registering the callbacks
 //  -> just another safeguard, even if it's probably not needed
 enum llhttp_events { // TBD explicit indexing or just use defaults?
-	llhttp_ffi_on_buffer_too_small = 0, // Need to buffer.reserve MORE bytes before calling llhttp_execute (in Lua)
+	on_buffer_too_small = 0, // Need to buffer.reserve MORE bytes before calling llhttp_execute (in Lua)
 	// This has the added bonus of cleanly mapping Lua indices to enum values, since Lua normally starts at 1, and not 0
-	llhttp_ffi_on_message_begin = 1,
-	llhttp_ffi_on_url = 2,
-	llhttp_ffi_on_status = 3,
-	llhttp_ffi_on_method = 4,
-	llhttp_ffi_on_version = 5,
-	llhttp_ffi_on_header_field = 6,
-	llhttp_ffi_on_header_value = 7,
-	llhttp_ffi_on_chunk_extension_name = 8,
-	llhttp_ffi_on_chunk_extension_value = 9,
-	llhttp_ffi_on_headers_complete = 10,
-	llhttp_ffi_on_body = 11,
-	llhttp_ffi_on_message_complete = 12,
-	llhttp_ffi_on_url_complete = 13,
-	llhttp_ffi_on_status_complete = 14,
-	llhttp_ffi_on_method_complete = 15,
-	llhttp_ffi_on_version_complete = 16,
-	llhttp_ffi_on_header_field_complete = 17,
-	llhttp_ffi_on_header_value_complete = 18,
-	llhttp_ffi_on_chunk_extension_name_complete = 19,
-	llhttp_ffi_on_chunk_extension_value_complete = 20,
-	llhttp_ffi_on_chunk_header = 21,
-	llhttp_ffi_on_chunk_complete = 22,
-	llhttp_ffi_on_reset = 23,
+	on_message_begin = 1,
+	on_url = 2,
+	on_status = 3,
+	on_method = 4,
+	on_version = 5,
+	on_header_field = 6,
+	on_header_value = 7,
+	on_chunk_extension_name = 8,
+	on_chunk_extension_value = 9,
+	on_headers_complete = 10,
+	on_body = 11,
+	on_message_complete = 12,
+	on_url_complete = 13,
+	on_status_complete = 14,
+	on_method_complete = 15,
+	on_version_complete = 16,
+	on_header_field_complete = 17,
+	on_header_value_complete = 18,
+	on_chunk_extension_name_complete = 19,
+	on_chunk_extension_value_complete = 20,
+	on_chunk_header = 21,
+	on_chunk_complete = 22,
+	on_reset = 23,
 };
 
 // Since we can't trigger Lua events directly without murdering performance, store the relevant info and fetch it from Lua later
@@ -145,12 +145,11 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 // TODO rename parser_state to parser everywhere
 // TODO Add the missing callbacks (llhttp added a few new ones)
 
-// llhttp info callbacks
-int on_header_value_complete(llhttp_t* parser_state)
+int llhttp_on_header_value_complete(llhttp_t* parser_state)
 {
 	DEBUG("on_header_value_complete");
 
-	llhttp_event_t event = { llhttp_ffi_on_header_value_complete, 0, 0};
+	llhttp_event_t event = { on_header_value_complete, 0, 0};
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -158,23 +157,22 @@ int on_header_value_complete(llhttp_t* parser_state)
 	return HPE_OK;
 }
 
-int on_message_complete(llhttp_t* parser_state)
+int llhttp_on_message_complete(llhttp_t* parser_state)
 {
 	DEBUG("on_message_complete");
 
-	llhttp_event_t event = { llhttp_ffi_on_message_complete, 0, 0};
+	llhttp_event_t event = { on_message_complete, 0, 0};
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
 	return HPE_OK;
 }
 
-// llhttp data callbacks
-int on_url(llhttp_t* parser_state, const char* at, size_t length)
+int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length)
 {
 	DEBUG("on_url");
 
-	llhttp_event_t event = { llhttp_ffi_on_url, at, length };
+	llhttp_event_t event = { on_url, at, length };
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -182,11 +180,11 @@ int on_url(llhttp_t* parser_state, const char* at, size_t length)
 	return HPE_OK;
 }
 
-int on_status(llhttp_t* parser_state, const char* at, size_t length)
+int llhttp_on_status(llhttp_t* parser_state, const char* at, size_t length)
 {
 	DEBUG("on_status");
 
-	llhttp_event_t event = { llhttp_ffi_on_status, at, length };
+	llhttp_event_t event = { on_status, at, length };
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -194,11 +192,62 @@ int on_status(llhttp_t* parser_state, const char* at, size_t length)
 	return HPE_OK;
 }
 
-int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
+
+int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length)
+{
+	DEBUG("on_method");
+
+	llhttp_event_t event = { on_method, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length)
+{
+	DEBUG("on_version");
+
+	llhttp_event_t event = { on_version, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+
+int llhttp_on_chunk_extension_name(llhttp_t* parser_state, const char* at, size_t length)
+{
+	DEBUG("on_chunk_extension_name");
+
+	llhttp_event_t event = { on_chunk_extension_name, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_chunk_extension_value(llhttp_t* parser_state, const char* at, size_t length)
+{
+	DEBUG("on_chunk_extension_value");
+
+	llhttp_event_t event = { on_chunk_extension_value, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+
+int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length)
 {
 	DEBUG("on_header_field");
 
-	llhttp_event_t event = { llhttp_ffi_on_header_field, at, length };
+	llhttp_event_t event = { on_header_field, at, length };
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -206,11 +255,11 @@ int on_header_field(llhttp_t* parser_state, const char* at, size_t length)
 	return HPE_OK;
 }
 
-int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
+int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 {
 	DEBUG("on_header_value");
 
-	llhttp_event_t event = { llhttp_ffi_on_header_value, at, length };
+	llhttp_event_t event = { on_header_value, at, length };
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -218,11 +267,156 @@ int on_header_value(llhttp_t* parser_state, const char* at, size_t length)
 	return HPE_OK;
 }
 
-static int on_body(llhttp_t* parser_state, const char* at, size_t length)
+int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length)
 {
 	DEBUG("on_body");
 
-	llhttp_event_t event = { llhttp_ffi_on_body, at, length };
+	llhttp_event_t event = { on_body, at, length };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_chunk_header(llhttp_t* parser_state)
+{
+	DEBUG("on_chunk_header");
+
+	llhttp_event_t event = { on_chunk_header, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_message_begin(llhttp_t* parser_state)
+{
+	DEBUG("on_message_begin");
+
+	llhttp_event_t event = { on_message_begin, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_headers_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_headers_complete");
+
+	llhttp_event_t event = { on_headers_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_status_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_status_complete");
+
+	llhttp_event_t event = { on_status_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_method_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_method_complete");
+
+	llhttp_event_t event = { on_method_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_version_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_version_complete");
+
+	llhttp_event_t event = { on_version_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_header_field_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_header_field_complete");
+
+	llhttp_event_t event = { on_header_field_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+
+int llhttp_on_chunk_extension_name_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_chunk_extension_name_complete");
+
+	llhttp_event_t event = { on_chunk_extension_name_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_chunk_extension_value_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_chunk_extension_value_complete");
+
+	llhttp_event_t event = { on_chunk_extension_value_complete, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_reset(llhttp_t* parser_state)
+{
+	DEBUG("on_reset");
+
+	llhttp_event_t event = { on_reset, 0, 0 };
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_url_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_url_complete");
+
+	llhttp_event_t event = { on_url_complete, 0, 0};
+	llhttp_push_event(parser_state, &event);
+
+	DUMP(parser_state);
+
+	return HPE_OK;
+}
+
+int llhttp_on_chunk_complete(llhttp_t* parser_state)
+{
+	DEBUG("on_chunk_complete");
+
+	llhttp_event_t event = { on_chunk_complete, 0, 0};
 	llhttp_push_event(parser_state, &event);
 
 	DUMP(parser_state);
@@ -247,41 +441,29 @@ static void init_settings_with_callbacks(llhttp_settings_t* settings)
 
 	llhttp_settings_init(settings);
 
-	// TODO register callbacks for all of them (and create handlers, too)
-	// llhttp_ffi_on_message_begin = 1,
-	// llhttp_ffi_on_url = 2,
-	// llhttp_ffi_on_status = 3,
-	// llhttp_ffi_on_method = 4,
-	// llhttp_ffi_on_version = 5,
-	// llhttp_ffi_on_header_field = 6,
-	// llhttp_ffi_on_header_value = 7,
-	// llhttp_ffi_on_chunk_extension_name = 8,
-	// llhttp_ffi_on_chunk_extension_value = 9,
-	// llhttp_ffi_on_headers_complete = 10,
-	// llhttp_ffi_on_body = 11,
-	// llhttp_ffi_on_message_complete = 12,
-	// llhttp_ffi_on_url_complete = 13,
-	// llhttp_ffi_on_status_complete = 14,
-	// llhttp_ffi_on_method_complete = 15,
-	// llhttp_ffi_on_version_complete = 16,
-	// llhttp_ffi_on_header_field_complete = 17,
-	// llhttp_ffi_on_header_value_complete = 18,
-	// llhttp_ffi_on_chunk_extension_name_complete = 19,
-	// llhttp_ffi_on_chunk_extension_value_complete = 20,
-	// llhttp_ffi_on_chunk_header = 21,
-	// llhttp_ffi_on_chunk_complete = 22,
-	// llhttp_ffi_on_reset = 23,
-
-	// Set up info callbacks
-	settings->on_header_value_complete = on_header_value_complete;
-	settings->on_message_complete = on_message_complete;
-
-	// Set up data callbacks
-	settings->on_url = on_url;
-	settings->on_status = on_status;
-	settings->on_header_field = on_header_field;
-	settings->on_header_value = on_header_value;
-	settings->on_body = on_body;
+	settings->on_message_begin = llhttp_on_message_begin;
+	settings->on_url = llhttp_on_url;
+	settings->on_status = llhttp_on_status;
+	settings->on_method = llhttp_on_method;
+	settings->on_version = llhttp_on_version;
+	settings->on_header_field = llhttp_on_header_field;
+	settings->on_header_value = llhttp_on_header_value;
+	settings->on_chunk_extension_name = llhttp_on_chunk_extension_name;
+	settings->on_chunk_extension_value = llhttp_on_chunk_extension_value;
+	settings->on_headers_complete = llhttp_on_headers_complete;
+	settings->on_body = llhttp_on_body;
+	settings->on_message_complete = llhttp_on_message_complete;
+	settings->on_url_complete = llhttp_on_url_complete;
+	settings->on_status_complete = llhttp_on_status_complete;
+	settings->on_method_complete = llhttp_on_method_complete;
+	settings->on_version_complete = llhttp_on_version_complete;
+	settings->on_header_field_complete = llhttp_on_header_field_complete;
+	settings->on_header_value_complete = llhttp_on_header_value_complete;
+	settings->on_chunk_extension_name_complete = llhttp_on_chunk_extension_name_complete;
+	settings->on_chunk_extension_value_complete = llhttp_on_chunk_extension_value_complete;
+	settings->on_chunk_header = llhttp_on_chunk_header;
+	settings->on_chunk_complete = llhttp_on_chunk_complete;
+	settings->on_reset = llhttp_on_reset;
 }
 
 void export_llhttp_bindings(lua_State* L)
