@@ -143,286 +143,58 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 
 
 // TODO rename parser_state to parser everywhere
-// TODO Add the missing callbacks (llhttp added a few new ones)
 
-int llhttp_on_header_value_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_header_value_complete");
+#define LLHTTP_DATA_CALLBACK(event_name) \
+int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) { \
+	DEBUG("event_name"); \
+ \
+	llhttp_event_t event = { event_name, at, length}; \
+	llhttp_push_event(parser_state, &event); \
+ \
+	DUMP(parser_state); \
+\
+	return HPE_OK; \
+} \
+
+#define LLHTTP_INFO_CALLBACK(event_name) \
+int llhttp_##event_name(llhttp_t* parser_state) { \
+	DEBUG("event_name"); \
+ \
+	llhttp_event_t event = { event_name, 0, 0}; \
+	llhttp_push_event(parser_state, &event); \
+ \
+	DUMP(parser_state); \
+\
+	return HPE_OK; \
+} \
+
+LLHTTP_INFO_CALLBACK(on_chunk_complete)
+LLHTTP_INFO_CALLBACK(on_header_value_complete)
+LLHTTP_INFO_CALLBACK(on_message_complete)
+LLHTTP_INFO_CALLBACK(on_chunk_header)
+LLHTTP_INFO_CALLBACK(on_message_begin)
+LLHTTP_INFO_CALLBACK(on_headers_complete)
+LLHTTP_INFO_CALLBACK(on_status_complete)
+LLHTTP_INFO_CALLBACK(on_method_complete)
+LLHTTP_INFO_CALLBACK(on_version_complete)
+LLHTTP_INFO_CALLBACK(on_header_field_complete)
+LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
+LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
+LLHTTP_INFO_CALLBACK(on_url_complete)
+LLHTTP_INFO_CALLBACK(on_reset)
+
+LLHTTP_DATA_CALLBACK(on_url)
+LLHTTP_DATA_CALLBACK(on_status)
+LLHTTP_DATA_CALLBACK(on_method)
+LLHTTP_DATA_CALLBACK(on_version)
+LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
+LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
+LLHTTP_DATA_CALLBACK(on_header_field)
+LLHTTP_DATA_CALLBACK(on_header_value)
+LLHTTP_DATA_CALLBACK(on_body)
+
+// TODO use const char for DEBUG function
 
-	llhttp_event_t event = { on_header_value_complete, 0, 0};
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_message_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_message_complete");
-
-	llhttp_event_t event = { on_message_complete, 0, 0};
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-	return HPE_OK;
-}
-
-int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_url");
-
-	llhttp_event_t event = { on_url, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_status(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_status");
-
-	llhttp_event_t event = { on_status, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-
-int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_method");
-
-	llhttp_event_t event = { on_method, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_version");
-
-	llhttp_event_t event = { on_version, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-
-int llhttp_on_chunk_extension_name(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_chunk_extension_name");
-
-	llhttp_event_t event = { on_chunk_extension_name, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_chunk_extension_value(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_chunk_extension_value");
-
-	llhttp_event_t event = { on_chunk_extension_value, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-
-int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_header_field");
-
-	llhttp_event_t event = { on_header_field, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_header_value");
-
-	llhttp_event_t event = { on_header_value, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length)
-{
-	DEBUG("on_body");
-
-	llhttp_event_t event = { on_body, at, length };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_chunk_header(llhttp_t* parser_state)
-{
-	DEBUG("on_chunk_header");
-
-	llhttp_event_t event = { on_chunk_header, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_message_begin(llhttp_t* parser_state)
-{
-	DEBUG("on_message_begin");
-
-	llhttp_event_t event = { on_message_begin, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_headers_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_headers_complete");
-
-	llhttp_event_t event = { on_headers_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_status_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_status_complete");
-
-	llhttp_event_t event = { on_status_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_method_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_method_complete");
-
-	llhttp_event_t event = { on_method_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_version_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_version_complete");
-
-	llhttp_event_t event = { on_version_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_header_field_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_header_field_complete");
-
-	llhttp_event_t event = { on_header_field_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-
-int llhttp_on_chunk_extension_name_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_chunk_extension_name_complete");
-
-	llhttp_event_t event = { on_chunk_extension_name_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_chunk_extension_value_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_chunk_extension_value_complete");
-
-	llhttp_event_t event = { on_chunk_extension_value_complete, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_reset(llhttp_t* parser_state)
-{
-	DEBUG("on_reset");
-
-	llhttp_event_t event = { on_reset, 0, 0 };
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_url_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_url_complete");
-
-	llhttp_event_t event = { on_url_complete, 0, 0};
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
-
-int llhttp_on_chunk_complete(llhttp_t* parser_state)
-{
-	DEBUG("on_chunk_complete");
-
-	llhttp_event_t event = { on_chunk_complete, 0, 0};
-	llhttp_push_event(parser_state, &event);
-
-	DUMP(parser_state);
-
-	return HPE_OK;
-}
 
 #define EXPAND_AS_STRING(text) #text
 #define TOSTRING(text) EXPAND_AS_STRING(text)
