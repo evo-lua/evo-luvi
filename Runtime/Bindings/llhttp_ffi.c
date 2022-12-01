@@ -18,12 +18,12 @@ static void DEBUG(const char* message) {
 static void DUMP(llhttp_t* parser) {
 	#ifdef ENABLE_LLHTTP_BUFFER_DUMPS
 
-	luajit_stringbuffer_reference_t* write_buffer = (luajit_stringbuffer_reference_t*)parser->data;
-	if(write_buffer == NULL) return; // Nothing to debug here
+	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
+	if(event_buffer == NULL) return; // Nothing to debug here
 
-	printf("\tluajit_stringbuffer_reference_t ptr: %p\n", write_buffer->ptr);
-	printf("\tluajit_stringbuffer_reference_t size: %zu\n", write_buffer->size);
-	printf("\tluajit_stringbuffer_reference_t used: %zu\n", write_buffer->used);
+	printf("\tluajit_stringbuffer_reference_t ptr: %p\n", event_buffer->ptr);
+	printf("\tluajit_stringbuffer_reference_t size: %zu\n", event_buffer->size);
+	printf("\tluajit_stringbuffer_reference_t used: %zu\n", event_buffer->used);
 	#endif
 }
 
@@ -67,18 +67,18 @@ void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_even
 }
 
 int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
-	luajit_stringbuffer_reference_t* write_buffer = (luajit_stringbuffer_reference_t*)parser->data;
+	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
 
-	if(write_buffer == NULL) return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
+	if(event_buffer == NULL) return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
 
-	size_t num_bytes_required = write_buffer->used + sizeof(llhttp_event_t);
-	if(num_bytes_required > write_buffer->size) {
+	size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
+	if(num_bytes_required > event_buffer->size) {
 		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (way too much even, just to be extra safe)
 		DEBUG("Failed to llhttp_push_event to the write buffer (not enough space reserved ahead of time?)");
-		return num_bytes_required - write_buffer->size;
+		return num_bytes_required - event_buffer->size;
 	}
 
-	stringbuffer_add_event(write_buffer, event);
+	stringbuffer_add_event(event_buffer, event);
 
 	return 0;
 }
