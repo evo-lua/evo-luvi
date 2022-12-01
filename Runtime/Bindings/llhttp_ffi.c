@@ -146,7 +146,7 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 
 #define LLHTTP_DATA_CALLBACK(event_name) \
 int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) { \
-	DEBUG("event_name"); \
+	DEBUG(#event_name); \
  \
 	llhttp_event_t event = { event_name, at, length}; \
 	llhttp_push_event(parser_state, &event); \
@@ -158,7 +158,7 @@ int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) {
 
 #define LLHTTP_INFO_CALLBACK(event_name) \
 int llhttp_##event_name(llhttp_t* parser_state) { \
-	DEBUG("event_name"); \
+	DEBUG(#event_name); \
  \
 	llhttp_event_t event = { event_name, 0, 0}; \
 	llhttp_push_event(parser_state, &event); \
