@@ -77,6 +77,9 @@ function IncrementalHttpParser:GetBufferedEvents()
 		self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
 		print("Num bytes left: " .. #self.eventBuffer)
 
+
+		-- ReplayNativeEvent(eventID)
+		DEBUG("Replaying FFI event " .. tostring(eventID))
 		if not self[eventID] then
 			ERROR("Failed to trigger FFI event " .. tostring(eventID))
 		else
@@ -103,12 +106,13 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
 	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t")
+	DEBUG("Trying to reserve " .. maxBufferSizeToReserve .. " bytes in the FFI write buffer ... ")
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
 
 
 		--TODO raise error event that can be used to DC client or send an error code
 	-- local ptr, len = eventBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
-	-- printf("Reserved %s bytes in buffer %s (requested: %s, total size: %s) - %s", len, ptr, maxBufferSizeToReserve, #eventBuffer, c)
+	printf("Reserved %s bytes in buffer %s (requested: %s, total size: %s)", len, ptr, maxBufferSizeToReserve, #eventBuffer)
 
 	-- This is only used internally by the llhttp-ffi layer to queue events in order, and then we can commit as many bytes to the buffer
 	writeBuffer.size = len
