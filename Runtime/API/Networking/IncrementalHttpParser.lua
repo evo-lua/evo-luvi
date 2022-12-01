@@ -59,9 +59,9 @@ function IncrementalHttpParser:GetBufferedEvents()
 	print("Dumping write buffer contents", self.eventBuffer)
 	print("Write buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
 
-	if #self.eventBuffer == 0 then return {} end -- Avoids segfault
+	if #self.eventBuffer == 0 then return {} end -- Avoids segfault (TODO remove?)
 
-	for index = 0, self:GetNumBufferedEvents() - 1 do
+	while #self.eventBuffer > 0 do
 		-- local event = self.eventBuffer:get(ffi_sizeof("llhttp_event_t"))
 		-- print(event)
 		-- event = ffi_cast("llhttp_event_t*", event)
@@ -71,8 +71,10 @@ function IncrementalHttpParser:GetBufferedEvents()
 		local event = ffi.cast("llhttp_event_t*", self.eventBuffer)
 		-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 		-- print()
-		print("Stored event:", event, index)
-		printf("\tevent_id: %d", tonumber(event.event_id))
+		print("Stored event:", event)
+		local eventID = tonumber(event.event_id)
+		printf("\tevent_id: %d", eventID)
+		print("FFI Event: " .. llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT")
 		printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
 		printf("\tpayload_length: %d", tonumber(event.payload_length))
 		-- print()

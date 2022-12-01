@@ -127,10 +127,16 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 
 	printf("Pushing event: %u\n", event->event_id);
 
-	memcpy(write_buffer->ptr, &event->event_id, sizeof(event->event_id));
-	memcpy(write_buffer->ptr, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
-	memcpy(write_buffer->ptr, &event->payload_length, sizeof(event->payload_length));
+	uint8_t  offset = 0;
+	memcpy(write_buffer->ptr + offset, &event->event_id, sizeof(event->event_id));
+	offset += sizeof(event->event_id);
+	memcpy(write_buffer->ptr + offset, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
+	offset +=  sizeof(event->payload_start_pointer);
+	memcpy(write_buffer->ptr + offset, &event->payload_length, sizeof(event->payload_length));
+	// offset += sizeof(event->payload_length);
+
 	write_buffer->used+= sizeof(llhttp_event_t); // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
+	write_buffer->ptr += sizeof(llhttp_event_t); // Don't overwrite the event we just queued...
 
 	return 0;
 }
