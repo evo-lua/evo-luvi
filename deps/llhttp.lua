@@ -339,12 +339,12 @@ local llhttp = {
 	]] ..
 	-- And this is unlikely to ever change, based on the LuaJIT string.buffer API (needed to pass data from C to FFI without callbacks)
 	[[
-		struct lj_writebuffer {
+		struct luajit_stringbuffer_reference {
 			size_t size;
 			uint8_t* ptr;
 			size_t used;
 		};
-		typedef struct lj_writebuffer lj_writebuffer_t;
+		typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
 
 		struct llhttp_event {
 			uint8_t event_id;

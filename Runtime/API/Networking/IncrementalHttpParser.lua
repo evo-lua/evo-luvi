@@ -32,7 +32,7 @@ function IncrementalHttpParser:Construct()
 	-- instance.state.data = instance.eventLogBuffer -- Can only store void pointer, which we will cast in C to SBuf* before using it
 
 	-- We can't easily pass the actual LuaJIT type to C here, so use a proxy type for the writable area of the buffer instead
-	instance.state.data = ffi.new("lj_writebuffer_t")
+	instance.state.data = ffi.new("luajit_stringbuffer_reference_t")
 
 	setmetatable(instance, { __index = self })
 
@@ -53,7 +53,7 @@ end
 local tonumber = tonumber
 
 function IncrementalHttpParser:GetBufferedEvents()
-	local writeBuffer = ffi_cast("lj_writebuffer_t*", self.state.data)
+	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
 	-- TODO better name...
 	print("Dumping write buffer contents", self.eventBuffer)
@@ -101,7 +101,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 	-- printf("Buffer contents before parsing: %s", eventBuffer)
 	local eventBuffer = self.eventBuffer
-	local writeBuffer = ffi_cast("lj_writebuffer_t*", self.state.data)
+	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
