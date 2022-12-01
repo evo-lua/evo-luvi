@@ -1,43 +1,13 @@
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 // #define ENABLE_LLHTTP_BUFFER_DUMPS 1
 
 #include "llhttp.h"
+#include "llhttp_ffi.h"
 #include "lua.h"
 
 #include <stdio.h>
-#include "stdint.h" // for uint8_t * (LuaJIT FFI return value for string_buffer.ref)
+#include "stdint.h"
 #include "string.h"
-
-// We require one event per llhttp_settings callback, plus one extra (ID is 0) for the "hopefully impossible" error case
-// (not enough bytes reserved in the LuaJIT string buffer prior to registering the callbacks
-//  -> just another safeguard, even if it's probably not needed
-enum llhttp_events { // TBD explicit indexing or just use defaults?
-	on_buffer_too_small = 0, // Need to buffer.reserve MORE bytes before calling llhttp_execute (in Lua)
-	// This has the added bonus of cleanly mapping Lua indices to enum values, since Lua normally starts at 1, and not 0
-	on_message_begin = 1,
-	on_url = 2,
-	on_status = 3,
-	on_method = 4,
-	on_version = 5,
-	on_header_field = 6,
-	on_header_value = 7,
-	on_chunk_extension_name = 8,
-	on_chunk_extension_value = 9,
-	on_headers_complete = 10,
-	on_body = 11,
-	on_message_complete = 12,
-	on_url_complete = 13,
-	on_status_complete = 14,
-	on_method_complete = 15,
-	on_version_complete = 16,
-	on_header_field_complete = 17,
-	on_header_value_complete = 18,
-	on_chunk_extension_name_complete = 19,
-	on_chunk_extension_value_complete = 20,
-	on_chunk_header = 21,
-	on_chunk_complete = 22,
-	on_reset = 23,
-};
 
 // Since we can't trigger Lua events directly without murdering performance, store the relevant info and fetch it from Lua later
 // Note: Since only data_callbacks (llhttp_data_cb) have a payload, store (0, 0) for info-only callbacks (llhttp_cb)
@@ -63,7 +33,7 @@ struct lj_writebuffer {
 typedef struct lj_writebuffer lj_writebuffer_t;
 // TODO Move structs to .h
 
-static void DEBUG(char* message) {
+static void DEBUG(const char* message) {
 	#ifdef ENABLE_LLHTTP_CALLBACK_LOGGING
 	printf("[C] llhttp_ffi: %s\n", message);
 	#endif
@@ -111,19 +81,12 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 
 	if(write_buffer == NULL) return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
 
-	size_t num_bytes_required = write_buffer->used + event->payload_length;
+	size_t num_bytes_required = write_buffer->used + sizeof(llhttp_event_t);
 	if(num_bytes_required > write_buffer->size) {
 		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (WAY too much even, just to be extra safe)
 		DEBUG("Failed to llhttp_push_event to the write buffer (not enough space reserved ahead of time?)");
-		// TODO set first event to error, ignore rest?
 		return num_bytes_required - write_buffer->size;
 	}
-
-	// We don't care to store the diff (from buffer start to payload start) since we can pass these parameters to LuaJIT's ffi.string()
-	// TBD adding padding for 32/64 alignment? needs benchmark
-	// TODO copy normally vs memcpy (overhead)?
-
-	printf("Pushing event: %u\n", event->event_id);
 
 	uint8_t  offset = 0;
 	memcpy(write_buffer->ptr + offset, &event->event_id, sizeof(event->event_id));
@@ -131,24 +94,23 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	memcpy(write_buffer->ptr + offset, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
 	offset +=  sizeof(event->payload_start_pointer);
 	memcpy(write_buffer->ptr + offset, &event->payload_length, sizeof(event->payload_length));
-	// offset += sizeof(event->payload_length);
 
-	write_buffer->used+= sizeof(llhttp_event_t); // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
-	write_buffer->ptr += sizeof(llhttp_event_t); // Don't overwrite the event we just queued...
+	 // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
+	write_buffer->used+= sizeof(llhttp_event_t);
+
+	// And don't overwrite the event we just queued...
+	write_buffer->ptr += sizeof(llhttp_event_t);
 
 	return 0;
 }
 
-
-// TODO rename parser_state to parser everywhere
-
 #define LLHTTP_DATA_CALLBACK(event_name) \
 int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) { \
 	DEBUG(#event_name); \
- \
+\
 	llhttp_event_t event = { event_name, at, length}; \
 	llhttp_push_event(parser_state, &event); \
- \
+\
 	DUMP(parser_state); \
 \
 	return HPE_OK; \
@@ -157,10 +119,10 @@ int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) {
 #define LLHTTP_INFO_CALLBACK(event_name) \
 int llhttp_##event_name(llhttp_t* parser_state) { \
 	DEBUG(#event_name); \
- \
+\
 	llhttp_event_t event = { event_name, 0, 0}; \
 	llhttp_push_event(parser_state, &event); \
- \
+\
 	DUMP(parser_state); \
 \
 	return HPE_OK; \
@@ -190,9 +152,6 @@ LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
 LLHTTP_DATA_CALLBACK(on_header_field)
 LLHTTP_DATA_CALLBACK(on_header_value)
 LLHTTP_DATA_CALLBACK(on_body)
-
-// TODO use const char for DEBUG function
-
 
 #define EXPAND_AS_STRING(text) #text
 #define TOSTRING(text) EXPAND_AS_STRING(text)
