@@ -260,9 +260,9 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_set_lenient_headers = llhttp_set_lenient_headers;
 	llhttp_exports_table.llhttp_set_lenient_chunked_length = llhttp_set_lenient_chunked_length;
 	llhttp_exports_table.llhttp_set_lenient_keep_alive = llhttp_set_lenient_keep_alive;
-	// llhttp_exports_table.luaState = L;
 
-	lua_getglobal(L, "STATIC_FFI_EXPORTS"); // TODO This will seem like a hack to anyone who hasn't read Mike Pall's post? Document it...
+	// This wrapper must be bound to the llhttp namespace on initialization from Lua, in place of the dynamic binding (.so/.dll load)
+	lua_getglobal(L, "STATIC_FFI_EXPORTS");
 	lua_pushlightuserdata(L, &llhttp_exports_table);
 	lua_setfield(L, -2, "llhttp");
 }
