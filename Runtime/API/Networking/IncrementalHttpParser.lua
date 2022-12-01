@@ -1,7 +1,9 @@
 local ffi = require("ffi")
 local llhttp = require("llhttp")
-
 local string_buffer = require("string.buffer")
+
+local ffi_cast = ffi.cast
+local ffi_sizeof = ffi.sizeof
 
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
@@ -36,9 +38,6 @@ function IncrementalHttpParser:Construct()
 
 	return instance
 end
-
-local ffi_cast = ffi.cast
-local ffi_sizeof = ffi.sizeof
 
 function IncrementalHttpParser:GetEventBuffer()
 	return self.eventBuffer
