@@ -65,26 +65,26 @@ describe("IncrementalHttpParser", function()
 	end)
 
 	describe("ParseNextChunk", function()
-		-- it("should populate the event buffer if at least one llhttp event is expected", function()
-		-- 	local parser = IncrementalHttpParser()
-		-- 	local chunk = websocketsRequestString
+		it("should replay all bufferd llhttp-ffi events in the order that they were queued in", function()
+			local parser = IncrementalHttpParser()
+			local chunk = websocketsRequestString
 
-		-- 	parser:ParseNextChunk(chunk)
-
-
-		-- 	local eventBuffer = parser:GetEventBuffer()
-		-- 	assertEquals(parser:GetNumBufferedEvents(), 42)
-		-- 	assertEquals(tostring(eventBuffer), "test")
-		-- 	assertEquals(#eventBuffer, 42)
-
-		-- 	print(parser:GetBufferedEvents())
+			parser:ParseNextChunk(chunk)
 
 
-		-- 	-- print(type(parser.eventBuffer))
-		-- 	-- print(parser.state.data)
+			local eventBuffer = parser:GetEventBuffer()
+			assertEquals(parser:GetNumBufferedEvents(), 42)
+			assertEquals(tostring(eventBuffer), "test")
+			assertEquals(#eventBuffer, 42)
 
-		-- 	-- assertEquals(#parser.eventBuffer, #chunk)
-		-- 	-- assertEquals(tostring(parser.eventBuffer), chunk)
-		-- end)
+			print(parser:GetBufferedEvents())
+
+
+			-- print(type(parser.eventBuffer))
+			-- print(parser.state.data)
+
+			-- assertEquals(#parser.eventBuffer, #chunk)
+			-- assertEquals(tostring(parser.eventBuffer), chunk)
+		end)
 	end)
 end)
