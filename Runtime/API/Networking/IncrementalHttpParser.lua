@@ -83,10 +83,11 @@ function IncrementalHttpParser:GetBufferedEvents()
 			-- TBD Do we really want this? It's wasteful, better to just pass at/length and append to a buffered request's string buffer!
 			local payload = {
 				-- TODO remove
+				eventData = event,
 				payloadStartPointer = event.payload_start_pointer,
-				payloadEnd = event.payload_length,
+				payloadLengthInBytes = event.payload_length,
 			}
-			self:OnEvent(eventID, payload)
+			self[eventID](self, eventID, payload)
 		-- end
 	end
 
@@ -186,7 +187,7 @@ mixin(IncrementalHttpParser, EventListenerMixin)
 -- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
 	for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
 		IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-			DEBUG(eventID .. " triggered", payload.payloadStartPointer, payload.payloadLengthInBytes)
+			DEBUG(eventID .. " triggered", payload.eventData, payload.payloadStartPointer, payload.payloadLengthInBytes)
 		end
 	end
 
