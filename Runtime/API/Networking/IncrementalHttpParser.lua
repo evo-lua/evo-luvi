@@ -48,9 +48,33 @@ function IncrementalHttpParser:GetNumBufferedEvents()
 end
 
 local tonumber = tonumber
+local table_insert = table.insert
+local ffi_string = ffi.string
+local bold = transform.bold
 
-function IncrementalHttpParser:GetBufferedEvents()
+-- TODO add tests that catch the pragma packing issue
+local function llhttpEvent_ToString(event)
+	local eventID = tonumber(event.event_id)
+	printf("\tevent_id: %d", eventID)
+	eventID = llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT"
+	print("FFI Event: " .. eventID)
+	printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
+	printf("\tpayload_length: %d", tonumber(event.payload_length))
+
+	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
+	local NO_PAYLOAD_STRING = "no payload"
+	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
+
+	local hasPayload = (tonumber(event.payload_length) > 0)
+	local payloadString = hasPayload and READABLE_PAYLOAD_STRING or NO_PAYLOAD_STRING
+
+	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
+end
+
+function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
+
+	local bufferedEvents = {}
 
 	-- TODO better name...
 	print("Dumping write buffer contents", self.eventBuffer)
@@ -62,7 +86,7 @@ function IncrementalHttpParser:GetBufferedEvents()
 	while #self.eventBuffer > 0 do
 		local event = ffi.cast("llhttp_event_t*", self.eventBuffer)
 		-- print()
-		print("Stored event:", event)
+		print("Stored event:", llhttpEvent_ToString(event))
 		local eventID = tonumber(event.event_id)
 		printf("\tevent_id: %d", eventID)
 		eventID = llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT"
@@ -74,7 +98,7 @@ function IncrementalHttpParser:GetBufferedEvents()
 		self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
 		print("Num bytes left: " .. #self.eventBuffer)
 
-
+		table_insert(bufferedEvents, event)
 		-- ReplayNativeEvent(eventID)
 		DEBUG("Replaying FFI event " .. tostring(eventID))
 		-- if not self[eventID] then
@@ -89,8 +113,10 @@ function IncrementalHttpParser:GetBufferedEvents()
 			}
 			self[eventID](self, eventID, payload)
 		-- end
+
 	end
 
+	return bufferedEvents
 	-- TODO queue should be empty now...
 end
 
