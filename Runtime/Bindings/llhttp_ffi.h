@@ -33,6 +33,9 @@ enum llhttp_events {
 	on_reset = 23,
 };
 
+// We rely on the bytes to be laid out exactly as specified since LuaJIT's FFI doesn't consider packing apparently?
+#pragma pack(1)
+
 // Since we can't trigger Lua callbacks directly without murdering performance, save the relevant info and fetch it from Lua later
 // Only data_callbacks (llhttp_data_cb) have a payload, so let's store (0, 0) for info-only callbacks (llhttp_cb)
 struct llhttp_event {
