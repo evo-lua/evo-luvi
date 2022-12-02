@@ -339,6 +339,7 @@ local llhttp = {
 	]] ..
 	-- And this is unlikely to ever change, based on the LuaJIT string.buffer API (needed to pass data from C to FFI without callbacks)
 	[[
+		#pragma pack(1)
 		struct luajit_stringbuffer_reference {
 			size_t size;
 			uint8_t* ptr;
