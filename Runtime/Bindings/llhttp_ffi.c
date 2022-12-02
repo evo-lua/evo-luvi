@@ -43,7 +43,7 @@ void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_even
 	buffer->ptr += sizeof(llhttp_event_t);
 }
 
-int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
+int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event) {
 	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
 
 	if(event_buffer == NULL) return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
@@ -51,7 +51,7 @@ int llhttp_push_event(llhttp_t* parser, llhttp_event_t* event) {
 	size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
 	if(num_bytes_required > event_buffer->size) {
 		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (way too much even, just to be extra safe)
-		DEBUG("Failed to llhttp_push_event to the write buffer (not enough space reserved ahead of time?)");
+		DEBUG("Failed to store an llhttp event in the write buffer (not enough space reserved ahead of time?)");
 		return num_bytes_required - event_buffer->size;
 	}
 
@@ -65,7 +65,7 @@ int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG(#event_name); \
 \
 	llhttp_event_t event = { event_name, at, length}; \
-	llhttp_push_event(parser_state, &event); \
+	llhttp_store_event(parser_state, &event); \
 \
 	DUMP(parser_state); \
 \
@@ -77,7 +77,7 @@ int llhttp_##event_name(llhttp_t* parser_state) { \
 	DEBUG(#event_name); \
 \
 	llhttp_event_t event = { event_name, 0, 0}; \
-	llhttp_push_event(parser_state, &event); \
+	llhttp_store_event(parser_state, &event); \
 \
 	DUMP(parser_state); \
 \
@@ -120,9 +120,9 @@ const char* llhttp_get_version_string(void)
 	return LLHTTP_VERSION_STRING;
 }
 
-static void init_settings_with_callbacks(llhttp_settings_t* settings)
+static void init_settings_with_callback_handlers(llhttp_settings_t* settings)
 {
-	DEBUG("init_settings_with_callbacks");
+	DEBUG("init_settings_with_callback_handlers");
 
 	llhttp_settings_init(settings);
 
@@ -156,7 +156,7 @@ void export_llhttp_bindings(lua_State* L)
 	static struct static_llhttp_exports_table llhttp_exports_table;
 	llhttp_exports_table.llhttp_init = llhttp_init;
 	llhttp_exports_table.llhttp_reset = llhttp_reset;
-	llhttp_exports_table.llhttp_settings_init = init_settings_with_callbacks;
+	llhttp_exports_table.llhttp_settings_init = init_settings_with_callback_handlers;
 	llhttp_exports_table.llhttp_execute = llhttp_execute;
 	llhttp_exports_table.llhttp_finish = llhttp_finish;
 	llhttp_exports_table.llhttp_message_needs_eof = llhttp_message_needs_eof;
