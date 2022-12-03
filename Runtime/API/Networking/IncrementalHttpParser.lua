@@ -88,6 +88,7 @@ function IncrementalHttpParser:CreateLuaEvent(event)
 	return luaEvent
 end
 
+--TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
 function IncrementalHttpParser:ReplayParserEvent(event)
 	DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
 
@@ -111,17 +112,10 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	local eventBuffer = self.eventBuffer
 	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
-	-- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
-		local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
-	DEBUG("Trying to reserve " .. maxBufferSizeToReserve .. " bytes in the FFI write buffer ... ")
+	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
-
-
-		--TODO raise error event that can be used to DC client or send an error code
-	-- local ptr, len = eventBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
-	printf("Reserved %s bytes in buffer %s (requested: %s, total size: %s)", len, ptr, maxBufferSizeToReserve, #eventBuffer)
 
 	-- ResetEventBuffer (also call self.eventBuffer:reset()?)
 	-- This is only used internally by the llhttp-ffi layer to queue events in order, and then we can commit as many bytes to the buffer
@@ -149,9 +143,11 @@ function IncrementalHttpParser:AddBufferedEvent(event)
 	self.eventBuffer:putcdata(event, ffi_sizeof("llhttp_event_t"))
 end
 
+-- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
 function IncrementalHttpParser:GetEventBufferSize()
 	return #self.eventBuffer
 end
+
 -- TODO use this as default, as per event system RFC
 -- function IncrementalHttpParser:OnEvent() end
 
