@@ -33,7 +33,8 @@ enum llhttp_events {
 	on_reset = 23,
 };
 
-// We rely on the bytes to be laid out exactly as specified since LuaJIT's FFI doesn't consider packing apparently?
+// We rely on the bytes to be laid out exactly as specified as LuaJIT needs to map them 1:1 (and it saves a lot of space)
+// The alignment shouldn't really matter because we read the entire buffer in order when replaying (or storing) events...
 #pragma pack(1)
 
 // Since we can't trigger Lua callbacks directly without murdering performance, save the relevant info and fetch it from Lua later
