@@ -73,7 +73,7 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
 		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		-- TODO benchmark overhead (perf/memory) for this vs. raw cdata?
+		-- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
 		local luaEvent = self:CreateLuaEvent(event)
 		table_insert(bufferedEvents, luaEvent)
 	end
