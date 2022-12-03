@@ -213,6 +213,16 @@ describe("IncrementalHttpParser", function()
             end)
     end)
 
+    describe("CreateLuaEvent", function()
+		it("should return an equivalent Lua table if a llhttp_event_t was passed", function()
+			local parser = IncrementalHttpParser()
+			local cEvent = ffi.new("llhttp_event_t")
+			local luaEvent = parser:CreateLuaEvent(cEvent)
+
+			assertEquals(luaEvent.eventID, "HTTP_EVENT_BUFFER_TOO_SMALL")
+			assertEquals(luaEvent.payload, "")
+		end)
+	end)
 	-- TODO
     describe("ClearBufferedEvents", function() end)
     describe("ReplayBufferedEvents", function() end)
