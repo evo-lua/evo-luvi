@@ -42,9 +42,9 @@ function IncrementalHttpParser:Construct()
 	return instance
 end
 
-function IncrementalHttpParser:GetEventBuffer()
-	return self.eventBuffer
-end
+-- function IncrementalHttpParser:GetEventBuffer()
+-- 	return self.eventBuffer
+-- end
 
 function IncrementalHttpParser:GetNumBufferedEvents()
 	return #self.eventBuffer /  ffi_sizeof("llhttp_event_t")
@@ -110,7 +110,7 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 		payloadLengthInBytes = event.payload_length,
 	}
 	self[eventID](self, eventID, payload)
-
+-- TODO reset buffer?
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
@@ -145,10 +145,14 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 			eventBuffer:commit(writeBuffer.used)
 			-- print("buffer_commit OK")
 
-			DEBUG("Dumping queued events ...")
-			dump(self:GetBufferedEvents())
+			-- DEBUG("Dumping queued events ...")
+			-- dump(self:GetBufferedEvents())
 		end
 
+end
+
+function IncrementalHttpParser:AddBufferedEvent(event)
+	self.eventBuffer:putcdata(event, ffi_sizeof("llhttp_event_t"))
 end
 
 function IncrementalHttpParser:GetEventBufferSize()
