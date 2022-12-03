@@ -64,19 +64,30 @@ end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
-function IncrementalHttpParser:GetBufferedEvents()
-	local bufferedEvents = {}
+function IncrementalHttpParser:GetBufferedEvents(index)
+	-- local bufferedEvents = {}
 
-	local startPointer, lengthInBytes = self.eventBuffer:ref()
-	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
+-- index = index or 0
+
+	local startPointer = self.eventBuffer:ref()
+	local offset = index*ffi_sizeof("llhttp_event_t")
+
+	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
+
+	-- if index < 0 or index > lastValidIndex then return nil end
+
+	-- for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
 		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		local luaEvent = self:CreateLuaEvent(event)
-		table_insert(bufferedEvents, luaEvent)
-	end
+		-- local luaEvent = self:CreateLuaEvent(event)
+		-- table_insert(bufferedEvents, luaEvent)
+	-- end
 
-	return bufferedEvents
+	-- print(llhttpEvent_ToString(event))
+
+
+	return event
 end
 
 function IncrementalHttpParser:CreateLuaEvent(event)
@@ -92,8 +103,8 @@ end
 function IncrementalHttpParser:ReplayParserEvent(event)
 	-- DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
 
-	local eventID = event.eventID
-	-- eventID = llhttp.FFI_EVENTS[eventID]
+	local eventID = event.event_id
+	eventID = llhttp.FFI_EVENTS[eventID]
 	-- TODO tests
 	-- if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
 
@@ -104,7 +115,7 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 	-- 	payloadStartPointer = event.payload_start_pointer,
 	-- 	payloadLengthInBytes = event.payload_length,
 	-- }
-	self[eventID](self, eventID, event.payload)
+	self[eventID](self, eventID, event)
 -- TODO reset buffer?
 end
 
@@ -196,7 +207,7 @@ mixin(IncrementalHttpParser, EventListenerMixin)
 -- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
 	for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
 		IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-			DEBUG(eventID .. " triggered", payload)
+			-- TEST(eventID .. " triggered", payload)
 		end
 	end
 
