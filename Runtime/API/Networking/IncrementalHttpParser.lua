@@ -73,8 +73,8 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	local bufferedEvents = {}
 
 	-- TODO better name...
-	print("Dumping write buffer contents", self.eventBuffer)
-	print("Write buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
+	print("Dumping event buffer contents", self.eventBuffer)
+	print("Events buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
 
 	-- Avoids segfault (TODO remove?)
 	if #self.eventBuffer == 0 then return {} end
@@ -83,7 +83,7 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	-- local events = ffi.cast("luajit_stringbuffer_reference_t*", self.state.data)
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
 	-- local events = ffi_cast("llhttp_event_t**", startPointer)
-	for offset = 0, lengthInBytes, ffi_sizeof("llhttp_event_t") do
+	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 		print(offset, event, llhttpEvent_ToString(event))
 		table_insert(bufferedEvents, event)
@@ -123,6 +123,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- GetMaxRequiredBufferSize(chunk)
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
+		-- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
 	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t")
 	DEBUG("Trying to reserve " .. maxBufferSizeToReserve .. " bytes in the FFI write buffer ... ")
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
