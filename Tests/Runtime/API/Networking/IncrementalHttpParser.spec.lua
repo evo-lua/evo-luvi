@@ -127,8 +127,8 @@ describe("IncrementalHttpParser", function()
                     {eventID = "HTTP_ON_HEADERS_COMPLETE", payload = ""},
                     {eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = ""}
                 }
-                assertEquals(numEventsAfter, 29) -- TODO #expectedEventList
-                assertEquals(bufferSizeAfter, 493) -- TODO sizeof * numEvents
+                assertEquals(numEventsAfter, #expectedEventList)
+                assertEquals(bufferSizeAfter, parser:GetNumBufferedEvents() * ffi.sizeof("llhttp_event_t"))
                 assertEquals(eventListAfter, expectedEventList)
             end)
 
