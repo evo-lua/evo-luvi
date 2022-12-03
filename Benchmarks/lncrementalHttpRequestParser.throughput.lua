@@ -36,13 +36,20 @@ function benchmark:OnSetup()
 	self.globalDebugPrintHandler = _G.DEBUG
 	_G.DEBUG = function() end -- NOOP so it can be eliminated in optimized traces
 
-	-- self.iterationCount = 1000000 -- It's too slow to do much more in a reasonable timeframe
+	-- self.iterationCount = 100 -- It's too slow to do much more in a reasonable timeframe
 
 	parser = C_Networking.IncrementalHttpParser()
 end
 
 function benchmark:OnRun()
 	parser:ParseNextChunk(request)
+
+	-- local events = parser:GetBufferedEvents()
+	-- for index, event in ipairs(events) do
+	-- 	parser:ReplayParserEvent(event)
+	-- 	 -- Better clear the internal buffer to avoid incurring the wrath of the OOM killer...
+	-- end
+	parser:ClearBufferedEvents()
 	-- parser:FinalizeBufferedRequest()
 	-- parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
 	-- parser:ResetInternalState()
