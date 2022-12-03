@@ -7,27 +7,27 @@ local websocketsRequestString =
     "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
 
 describe("IncrementalHttpParser", function()
-    describe("Construct", function()
-        local parser = IncrementalHttpParser()
-        it("should initialize the parser with an empty event buffer", function()
-            assertEquals(parser:GetNumBufferedEvents(), 0)
-            assertEquals(parser:GetEventBufferSize(), 0)
-            assertEquals(parser:GetBufferedEvents(), {})
-        end)
+    -- describe("Construct", function()
+    --     local parser = IncrementalHttpParser()
+    --     it("should initialize the parser with an empty event buffer", function()
+    --         assertEquals(parser:GetNumBufferedEvents(), 0)
+    --         assertEquals(parser:GetEventBufferSize(), 0)
+    --         assertEquals(parser:GetBufferedEvents(), {})
+    --     end)
 
-        it("should register handlers for all llhttp-ffi events", function()
-            local expectedEventHandlers = llhttp.FFI_EVENTS
+    --     it("should register handlers for all llhttp-ffi events", function()
+    --         local expectedEventHandlers = llhttp.FFI_EVENTS
 
-            for _, eventID in ipairs(expectedEventHandlers) do
-                assertEquals(type(parser[eventID]), "function",
-                             "Should register listener for event " .. eventID)
-            end
+    --         for _, eventID in ipairs(expectedEventHandlers) do
+    --             assertEquals(type(parser[eventID]), "function",
+    --                          "Should register listener for event " .. eventID)
+    --         end
 
-            assertEquals(type(parser["HTTP_EVENT_BUFFER_TOO_SMALL"]),
-                         "function", "Should register listener for event " ..
-                             "HTTP_EVENT_BUFFER_TOO_SMALL")
-        end)
-    end)
+    --         assertEquals(type(parser["HTTP_EVENT_BUFFER_TOO_SMALL"]),
+    --                      "function", "Should register listener for event " ..
+    --                          "HTTP_EVENT_BUFFER_TOO_SMALL")
+    --     end)
+    -- end)
 
     describe("ParseNextChunk", function()
         it(

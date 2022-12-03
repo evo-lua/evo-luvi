@@ -15,6 +15,7 @@ local bold = transform.bold
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
+local llhttp_get_event = llhttp.bindings.llhttp_get_event
 -- local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
 -- local llhttp_finish = llhttp.bindings.llhttp_finish
 -- -- local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade -- NYI
@@ -52,6 +53,9 @@ end
 
 -- TODO add tests that catch the pragma packing issue
 local function llhttpEvent_ToString(event)
+	print(event, event.event_id, event.payload_start_pointer, event.payload_length)
+
+
 	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
 	local NO_PAYLOAD_STRING = "no payload"
 	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
@@ -65,16 +69,34 @@ end
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
 function IncrementalHttpParser:GetBufferedEvents()
+
+	-- TODO move to C?
 	local bufferedEvents = {}
 
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
-	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
-		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
-		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		local luaEvent = self:CreateLuaEvent(event)
-		table_insert(bufferedEvents, luaEvent)
+	-- ptr, len = eventBuffer:ref()
+
+-- This is only used internally by the llhttp-ffi layer to access the buffer, because we can't easily pass a raw LuaJIT SBuf* object
+local writableBufferArea = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
+
+writableBufferArea.size = lengthInBytes
+writableBufferArea.ptr = startPointer
+writableBufferArea.used = 0 -- tbd
+
+	for index = 0, self:GetNumBufferedEvents(), 1 do
+		local event = llhttp_get_event(self.state, index)
+		print(event)
+		llhttpEvent_ToString(event)
 	end
+	-- for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
+	-- 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+	-- 	-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
+	-- 	-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
+	-- 	local luaEvent = self:CreateLuaEvent(event)
+	-- 	table_insert(bufferedEvents, luaEvent)
+	-- end
+
+	-- dump(bufferedEvents)
 
 	return bufferedEvents
 end
