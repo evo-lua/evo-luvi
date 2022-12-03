@@ -214,7 +214,7 @@ describe("IncrementalHttpParser", function()
     end)
 
     describe("CreateLuaEvent", function()
-		it("should return an equivalent Lua table if a llhttp_event_t was passed", function()
+		it("should return an equivalent Lua table if an llhttp_event_t cdata value was passed", function()
 			local parser = IncrementalHttpParser()
 			local cEvent = ffi.new("llhttp_event_t")
 			local luaEvent = parser:CreateLuaEvent(cEvent)
