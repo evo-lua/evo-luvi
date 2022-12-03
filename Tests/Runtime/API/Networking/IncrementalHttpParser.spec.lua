@@ -99,10 +99,9 @@ describe("IncrementalHttpParser", function()
 		it("should return the size of the event buffer if at least one event has been buffered", function()
 			local event = ffi.new("llhttp_event_t")
 			parser:AddBufferedEvent(event)
-			-- Since LuaJIT sizes the string buffer automatically, we don't "know" how much it will return
-			-- It's probably always the next power-of-two, but that's an implementation detail we'll ignore for now
-			-- The important part is that there's (more than) enough space for all events in the buffer at all times
-			assertTrue(parser:GetEventBufferSize() >= ffi.sizeof("llhttp_event_t"))
+			assertEquals(parser:GetEventBufferSize(), ffi.sizeof("llhttp_event_t"))
+			parser:AddBufferedEvent(event)
+			assertEquals(parser:GetEventBufferSize(), ffi.sizeof("llhttp_event_t") * parser:GetNumBufferedEvents())
 		end)
 	end)
 
