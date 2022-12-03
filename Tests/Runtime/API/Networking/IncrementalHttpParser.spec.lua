@@ -39,17 +39,6 @@ describe("IncrementalHttpParser", function()
 			assertEquals(parser:GetBufferedEvents(), {})
 		end)
 
-		-- it("should register event handlers for all llhttp-ffi events", function()
-			-- 	local llhttpEvents = llhttp.FFI_EVENTS
-			-- 	dump(parser)
-			-- 	for index, eventID in ipairs(llhttpEvents) do
-				-- 		assertTrue(parser:IsEventRegistered(eventID), eventID)
-				-- 	end
-
-				-- 	-- Zero-indexed by design, which means the fallback is skipped by ipairs
-		-- 	assertTrue(parser:IsEventRegistered("HTTP_EVENT_BUFFER_TOO_SMALL"), "HTTP_EVENT_BUFFER_TOO_SMALL")
-		-- end)
-
 		it("should register handlers for all llhttp-ffi events", function()
 			local expectedEventHandlers = llhttp.FFI_EVENTS
 
@@ -62,9 +51,42 @@ describe("IncrementalHttpParser", function()
 	end)
 
 	describe("ParseNextChunk", function()
-		it("should add new lhttp-ffi events to the event buffer if any were triggered", function()
-				local parser = IncrementalHttpParser()
+		local parser = IncrementalHttpParser()
+		it("should not modify the event buffer if the parser did not trigger an event", function()
+			local numEventsBefore = parser:GetNumBufferedEvents()
+			local bufferSizeBefore = parser:GetEventBufferSize()
+			local eventListBefore = parser:GetBufferedEvents()
+
+			parser:ParseNextChunk("") -- Parsing literally any other string WILL trigger an event, if only MESSAGE_BEGIN ...
+
+			local numEventsAfter = parser:GetNumBufferedEvents()
+			local bufferSizeAfter = parser:GetEventBufferSize()
+			local eventListAfter = parser:GetBufferedEvents()
+
+			assertEquals(numEventsBefore, numEventsAfter)
+			assertEquals(bufferSizeBefore, bufferSizeAfter)
+			assertEquals(eventListBefore, eventListAfter)
 		end)
+
+		it("should add all events to the event buffer if any were triggered and the buffer is empty", function()
+			local parser = IncrementalHttpParser()
+
+			parser:ParseNextChunk(websocketsRequestString)
+
+			local numEventsAfter = parser:GetNumBufferedEvents()
+			local bufferSizeAfter = parser:GetEventBufferSize()
+			local eventListAfter = parser:GetBufferedEvents()
+	end)
+
+	it("should add all events to that were triggered if the buffer is not empty", function()
+		local parser = IncrementalHttpParser()
+
+		parser:ParseNextChunk(websocketsRequestString)
+
+		local numEventsAfter = parser:GetNumBufferedEvents()
+		local bufferSizeAfter = parser:GetEventBufferSize()
+		local eventListAfter = parser:GetBufferedEvents()
+	end)
 		-- it("should replay all buffered llhttp-ffi events in the order that they were queued in", function()
 		-- 	local parser = IncrementalHttpParser()
 		-- 	local chunk = nodeRequest2
@@ -93,6 +115,23 @@ describe("IncrementalHttpParser", function()
 	describe("GetNumBufferedEvents", function()
 		local parser = IncrementalHttpParser()
 		it("should return zero if no events have been buffered yet", function()
+			assertEquals(parser:GetNumBufferedEvents(), 0)
+		end)
+
+		it("should return the number of events in the buffer", function()
+			local event = ffi.new("llhttp_event_t")
+			parser:AddBufferedEvent(event)
+			assertEquals(parser:GetNumBufferedEvents(), 1)
+			parser:AddBufferedEvent(event)
+			assertEquals(parser:GetNumBufferedEvents(), 2)
+			parser:AddBufferedEvent(event)
+			assertEquals(parser:GetNumBufferedEvents(), 3)
+		end)
+	end)
+
+	describe("GetEventBufferSize", function()
+		local parser = IncrementalHttpParser()
+		it("should return zero if no events have been buffered yet", function()
 			assertEquals(parser:GetEventBufferSize(), 0)
 		end)
 
@@ -105,8 +144,6 @@ describe("IncrementalHttpParser", function()
 		end)
 	end)
 
-	describe("GetEventBufferSize", function()
-	end)
 	describe("GetBufferedEvents", function()
 	end)
 	describe("ClearBufferedEvents", function()
