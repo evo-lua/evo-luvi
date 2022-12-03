@@ -67,20 +67,10 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 
 	local bufferedEvents = {}
 
-	-- TODO better name...
-	-- print("Dumping event buffer contents", self.eventBuffer)
-	-- print("Events buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
-
-	-- Avoids segfault (TODO remove?)
-	if #self.eventBuffer == 0 then return {} end
-
 	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
-	-- local events = ffi.cast("luajit_stringbuffer_reference_t*", self.state.data)
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
-	-- local events = ffi_cast("llhttp_event_t**", startPointer)
 	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-		-- print(offset, event, llhttpEvent_ToString(event))
 
 		-- ExtractEventInfo(cdata) -- TODO test, move to llhttp?
 		local eventID = tonumber(event.event_id)
