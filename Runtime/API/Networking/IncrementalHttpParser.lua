@@ -85,8 +85,18 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	-- local events = ffi_cast("llhttp_event_t**", startPointer)
 	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-		print(offset, event, llhttpEvent_ToString(event))
-		table_insert(bufferedEvents, event)
+		-- print(offset, event, llhttpEvent_ToString(event))
+
+		-- ExtractEventInfo(cdata) -- TODO test, move to llhttp?
+		local eventID = tonumber(event.event_id)
+		-- Copying this does add more overhead, but I think the ease-of-use is worth it for the most common use cases
+		-- cdata can easily SEGFAULT the server if used incorrectly, and if needed it could easily be exposed later
+		-- TODO benchmark overhead (perf/memory) for this vs. raw cdata?
+		local luaEvent = {
+			eventID = llhttp.FFI_EVENTS[eventID],
+			payload = ffi_string(event.payload_start_pointer, event.payload_length)
+		}
+		table_insert(bufferedEvents, luaEvent)
 	end
 
 	return bufferedEvents
