@@ -62,12 +62,10 @@ local function llhttpEvent_ToString(event)
 	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
 end
 
-function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
-	-- local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
-
+-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
+function IncrementalHttpParser:GetBufferedEvents()
 	local bufferedEvents = {}
 
-	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
 	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
@@ -79,7 +77,6 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	end
 
 	return bufferedEvents
-	-- TODO queue should be empty now...
 end
 
 function IncrementalHttpParser:CreateLuaEvent(event)
