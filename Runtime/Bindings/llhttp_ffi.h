@@ -35,6 +35,7 @@ enum llhttp_events {
 
 // We rely on the bytes to be laid out exactly as specified so that LuaJIT can map them 1:1 (and it saves a lot of space)
 // The alignment shouldn't really matter because we read the entire buffer in order when replaying (or storing) events...
+// But if the compiler inserts padding bytes, they will be pointlessly encoded in the event buffer = useless bloat
 #pragma pack(1)
 
 // Since we can't trigger Lua callbacks directly without murdering performance, save the relevant info and fetch it from Lua later
