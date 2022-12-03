@@ -223,6 +223,7 @@ describe("IncrementalHttpParser", function()
 			assertEquals(luaEvent.payload, "")
 		end)
 	end)
+
 	-- TODO
     describe("ClearBufferedEvents", function() end)
     describe("ReplayBufferedEvents", function() end)
