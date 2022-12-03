@@ -90,29 +90,40 @@ end
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
 function IncrementalHttpParser:ReplayParserEvent(event)
-	DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
+	-- DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
 
-	local eventID = tonumber(event.event_id)
-	eventID = llhttp.FFI_EVENTS[eventID]
+	local eventID = event.eventID
+	-- eventID = llhttp.FFI_EVENTS[eventID]
 	-- TODO tests
-	if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
+	-- if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
 
-	self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
+	-- self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
 
-	local payload = {
-		eventData = event,
-		payloadStartPointer = event.payload_start_pointer,
-		payloadLengthInBytes = event.payload_length,
-	}
-	self[eventID](self, eventID, payload)
+	-- local payload = {
+	-- 	-- eventData = event,
+	-- 	payloadStartPointer = event.payload_start_pointer,
+	-- 	payloadLengthInBytes = event.payload_length,
+	-- }
+	self[eventID](self, eventID, event.payload)
 -- TODO reset buffer?
+end
+
+function IncrementalHttpParser:ClearBufferedEvents()
+	self.eventBuffer:reset()
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- In order to process parser events in Lua (without relying on slow C->Lua callbacks), store them in an intermediary reusable buffer
 	local eventBuffer = self.eventBuffer
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
-	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
+
+	local needsMoreSpace = #eventBuffer < maxBufferSizeToReserve
+	local ptr, len
+	if needsMoreSpace then
+		ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
+	else
+		ptr, len = eventBuffer:ref()
+	end
 
 	-- This is only used internally by the llhttp-ffi layer to access the buffer, because we can't easily pass a raw LuaJIT SBuf* object
 	local writableBufferArea = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
@@ -185,7 +196,7 @@ mixin(IncrementalHttpParser, EventListenerMixin)
 -- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
 	for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
 		IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-			DEBUG(eventID .. " triggered", payload.eventData, payload.payloadStartPointer, payload.payloadLengthInBytes)
+			DEBUG(eventID .. " triggered", payload)
 		end
 	end
 
