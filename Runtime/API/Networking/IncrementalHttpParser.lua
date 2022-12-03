@@ -120,6 +120,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	local eventBuffer = self.eventBuffer
 	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
+	-- GetMaxRequiredBufferSize(chunk)
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
 	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t")
@@ -131,6 +132,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	-- local ptr, len = eventBuffer:reserve(#chunk * ffi_sizeof("llhttp_event_t"))
 	printf("Reserved %s bytes in buffer %s (requested: %s, total size: %s)", len, ptr, maxBufferSizeToReserve, #eventBuffer)
 
+	-- ResetEventBuffer (also call self.eventBuffer:reset()?)
 	-- This is only used internally by the llhttp-ffi layer to queue events in order, and then we can commit as many bytes to the buffer
 	writeBuffer.size = len
 	writeBuffer.ptr = ptr
