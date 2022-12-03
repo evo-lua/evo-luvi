@@ -68,7 +68,7 @@ describe("IncrementalHttpParser", function()
 			assertEquals(eventListBefore, eventListAfter)
 		end)
 
-		it("should add all events to the event buffer if any were triggered and the buffer is empty", function()
+		it("should add all events to the buffer if any were triggered and the buffer is empty", function()
 			local parser = IncrementalHttpParser()
 
 			parser:ParseNextChunk(websocketsRequestString)
@@ -78,7 +78,7 @@ describe("IncrementalHttpParser", function()
 			local eventListAfter = parser:GetBufferedEvents()
 	end)
 
-	it("should add all events to that were triggered if the buffer is not empty", function()
+	it("should add all events to the buffer if any were triggered and the buffer is empty", function()
 		local parser = IncrementalHttpParser()
 
 		parser:ParseNextChunk(websocketsRequestString)
