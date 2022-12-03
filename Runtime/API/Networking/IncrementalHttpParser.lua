@@ -71,16 +71,10 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
 	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-
-		-- CreateLuaEvent(cdata) -- TODO test, move to llhttp?
-		local eventID = tonumber(event.event_id)
 		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
 		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
 		-- TODO benchmark overhead (perf/memory) for this vs. raw cdata?
-		local luaEvent = {
-			eventID = llhttp.FFI_EVENTS[eventID],
-			payload = ffi_string(event.payload_start_pointer, event.payload_length)
-		}
+		local luaEvent = self:CreateLuaEvent(event)
 		table_insert(bufferedEvents, luaEvent)
 	end
 
