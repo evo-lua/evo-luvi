@@ -109,25 +109,23 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
+	-- In order to process parser events in Lua (without relying on slow C->Lua callbacks), store them in an intermediary reusable buffer
 	local eventBuffer = self.eventBuffer
-	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
-
-	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
-	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
 
-	-- ResetEventBuffer (also call self.eventBuffer:reset()?)
-	-- This is only used internally by the llhttp-ffi layer to queue events in order, and then we can commit as many bytes to the buffer
-	writeBuffer.size = len
-	writeBuffer.ptr = ptr
-	writeBuffer.used = 0
+	-- This is only used internally by the llhttp-ffi layer to get the events to Lua, because we can't easily pass a LuaJIT SBuf* object
+	local writableBufferArea = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
+
+	writableBufferArea.size = len
+	writableBufferArea.ptr = ptr
+	writableBufferArea.used = 0
 
 	llhttp_execute(self.state, chunk, #chunk)
 
-	if writeBuffer.used > 0 then
-		-- If nothing needs to be written, this can cause segfaults?
-		eventBuffer:commit(writeBuffer.used)
+	if writableBufferArea.used > 0 then
+		-- If nothing needs to be written, commits can cause segfaults
+		eventBuffer:commit(writableBufferArea.used)
 	end
 
 end
