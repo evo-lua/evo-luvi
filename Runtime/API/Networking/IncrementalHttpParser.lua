@@ -114,7 +114,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
 
-	-- This is only used internally by the llhttp-ffi layer to get the events to Lua, because we can't easily pass a LuaJIT SBuf* object
+	-- This is only used internally by llhttp-ffi to write events to the buffer, because we can't easily pass a LuaJIT SBuf* object
 	local writableBufferArea = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
 	writableBufferArea.size = len
