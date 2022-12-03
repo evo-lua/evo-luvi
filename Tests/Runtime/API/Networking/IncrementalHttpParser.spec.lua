@@ -241,7 +241,7 @@ describe("IncrementalHttpParser", function()
 	end)
 
 	-- TODO
-    describe("ClearBufferedEvents", function() end)
+    describe("ClearBufferedEvents", function() end) -- 	-- ResetEventBuffer (also call self.eventBuffer:reset()?)
     describe("ReplayBufferedEvents", function() end)
     describe("ReplayEvent", function() end)
 
