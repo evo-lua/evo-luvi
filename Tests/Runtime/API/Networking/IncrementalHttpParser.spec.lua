@@ -224,6 +224,22 @@ describe("IncrementalHttpParser", function()
 		end)
 	end)
 
+    describe("GetMaxRequiredBufferSize", function()
+		local parser = IncrementalHttpParser()
+		it("should return zero if an empty string was passed", function()
+			assertEquals(parser:GetMaxRequiredBufferSize(""), 0)
+		end)
+
+		it("should return a defensive upper-bound based on the chunk size", function()
+			-- This clearly is too wasteful, but it's difficult to say how many events will be triggered in advance (mainly due to headers)
+			local chunk = websocketsRequestString
+			local expectedUpperBound = 2703
+			-- local expectedUpperBound = #chunk * ffi.sizeof("llhttp_event_t")
+			assertEquals(parser:GetMaxRequiredBufferSize(chunk), expectedUpperBound)
+
+		end)
+	end)
+
 	-- TODO
     describe("ClearBufferedEvents", function() end)
     describe("ReplayBufferedEvents", function() end)
