@@ -63,6 +63,7 @@ local function llhttpEvent_ToString(event)
 end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
+-- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
 function IncrementalHttpParser:GetBufferedEvents()
 	local bufferedEvents = {}
 
@@ -71,7 +72,6 @@ function IncrementalHttpParser:GetBufferedEvents()
 		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
 		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		-- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
 		local luaEvent = self:CreateLuaEvent(event)
 		table_insert(bufferedEvents, luaEvent)
 	end
@@ -108,17 +108,13 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
-	DEBUG("ParseNextChunk", #chunk, chunk)
-
-	-- printf("Buffer contents before parsing: %s", eventBuffer)
 	local eventBuffer = self.eventBuffer
 	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
-	-- GetMaxRequiredBufferSize(chunk)
+	-- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
 	-- Absolutely worst case upper bound: One char is sent at a time, and all chars trigger an event (VERY defensive)
 	-- This could probably be reduced to minimize overhead, but then chunks are limited by the OS's socket buffer size anyway...
-		-- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
-	local maxBufferSizeToReserve = #chunk * ffi_sizeof("llhttp_event_t")
+		local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 	DEBUG("Trying to reserve " .. maxBufferSizeToReserve .. " bytes in the FFI write buffer ... ")
 	local ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
 
@@ -134,18 +130,19 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	writeBuffer.used = 0
 
 	llhttp_execute(self.state, chunk, #chunk)
-		-- printf("llhttp used %d bytes of the available %d", writeBuffer.used, writeBuffer.size)
-		if writeBuffer.used > 0 then
-			DEBUG("Total event buffer capacity: " .. tonumber(writeBuffer.size) .. " bytes")
-			DEBUG("Events triggered by last chunk used: " .. tonumber(writeBuffer.used) .. " bytes")
-			-- If nothing needs to be written, this can cause segfaults?
-			eventBuffer:commit(writeBuffer.used)
-			-- print("buffer_commit OK")
 
-			-- DEBUG("Dumping queued events ...")
-			-- dump(self:GetBufferedEvents())
-		end
+	if writeBuffer.used > 0 then
+		-- If nothing needs to be written, this can cause segfaults?
+		eventBuffer:commit(writeBuffer.used)
+	end
 
+end
+
+function IncrementalHttpParser:GetMaxRequiredBufferSize(chunk)
+	-- This is extremely wasteful due to the fact we cannot adjust the buffer size from C and have to reserve plenty of space ahead of time
+	-- However, since the buffer is reused for each chunk and chunks are limited by the OS' RECV buffer (i.e., 4-16k max), it's acceptable?
+	local upperBound = #chunk * ffi_sizeof("llhttp_event_t")
+	return upperBound
 end
 
 function IncrementalHttpParser:AddBufferedEvent(event)
