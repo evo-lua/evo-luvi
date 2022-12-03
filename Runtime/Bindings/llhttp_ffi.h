@@ -58,7 +58,6 @@ typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
 
 // A thin wrapper for the llhttp API, only needed to expose the statically-linked llhttp symbols to Lua and load them via FFI
 struct static_llhttp_exports_table {
-	llhttp_event_t* (*llhttp_get_event)(llhttp_t* parser, uint8_t index);
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
 	void (*llhttp_reset)(llhttp_t* parser);
 	void (*llhttp_settings_init)(llhttp_settings_t* settings);

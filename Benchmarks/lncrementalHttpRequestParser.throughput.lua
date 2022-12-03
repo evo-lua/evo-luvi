@@ -44,7 +44,7 @@ end
 function benchmark:OnRun()
 	parser:ParseNextChunk(request)
 
-	local events = parser:GetBufferedEvents()
+	-- local events = parser:GetBufferedEvents()
 	-- for index, event in ipairs(events) do
 	-- 	parser:ReplayParserEvent(event)
 	-- 	 -- Better clear the internal buffer to avoid incurring the wrath of the OOM killer...

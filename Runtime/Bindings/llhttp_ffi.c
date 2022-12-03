@@ -27,16 +27,6 @@ static void DUMP(llhttp_t* parser) {
 	#endif
 }
 
-llhttp_event_t* stringbuffer_get_event(luajit_stringbuffer_reference_t* buffer, uint8_t index) {
-
-	// if null, offset > size return null etc;
-
-	uint8_t offset = index * sizeof(llhttp_event_t);
-	llhttp_event_t* event = (llhttp_event_t*) (buffer->ptr + offset);
-
-	return event;
-}
-
 void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event) {
 	uint8_t  offset = 0;
 
@@ -51,14 +41,6 @@ void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_even
 
 	// Don't want to overwrite the event that was just queued...
 	buffer->ptr += sizeof(llhttp_event_t);
-}
-
-llhttp_event_t* llhttp_get_event(llhttp_t* parser, uint8_t index) {
-	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
-
-	if(event_buffer == NULL) return NULL; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
-
-	return stringbuffer_get_event(event_buffer, index);
 }
 
 int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event) {
@@ -172,7 +154,6 @@ static void init_settings_with_callback_handlers(llhttp_settings_t* settings)
 void export_llhttp_bindings(lua_State* L)
 {
 	static struct static_llhttp_exports_table llhttp_exports_table;
-	llhttp_exports_table.llhttp_get_event = llhttp_get_event;
 	llhttp_exports_table.llhttp_init = llhttp_init;
 	llhttp_exports_table.llhttp_reset = llhttp_reset;
 	llhttp_exports_table.llhttp_settings_init = init_settings_with_callback_handlers;
