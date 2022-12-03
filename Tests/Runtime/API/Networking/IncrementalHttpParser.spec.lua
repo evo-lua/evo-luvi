@@ -196,26 +196,7 @@ describe("IncrementalHttpParser", function()
                 assertEquals(eventListAfter, expectedEventList)
 
             end)
-        -- it("should replay all buffered llhttp-ffi events in the order that they were queued in", function()
-        -- 	local parser = IncrementalHttpParser()
-        -- 	local chunk = nodeRequest2
 
-        -- 	parser:ParseNextChunk(chunk)
-
-        -- 	local eventBuffer = parser:GetEventBuffer()
-        -- 	assertEquals(parser:GetNumBufferedEvents(), 42)
-        -- 	assertEquals(tostring(eventBuffer), "test")
-        -- 	assertEquals(#eventBuffer, 42)
-
-        -- 	local events = parser:GetBufferedEvents()
-        -- 	dump(events)
-
-        -- 	-- print(type(parser.eventBuffer))
-        -- 	-- print(parser.state.data)
-
-        -- 	-- assertEquals(#parser.eventBuffer, #chunk)
-        -- 	-- assertEquals(tostring(parser.eventBuffer), chunk)
-        -- end)
     end)
 
     describe("GetNumBufferedEvents", function()
@@ -255,7 +236,6 @@ describe("IncrementalHttpParser", function()
             end)
     end)
 
-    describe("GetBufferedEvents", function() end)
     describe("ClearBufferedEvents", function() end)
     describe("ReplayBufferedEvents", function() end)
 end)
