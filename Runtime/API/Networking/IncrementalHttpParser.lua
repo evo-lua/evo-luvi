@@ -5,8 +5,12 @@ local string_buffer = require("string.buffer")
 
 local ffi_cast = ffi.cast
 local ffi_sizeof = ffi.sizeof
+local ffi_string = ffi.string
 
 local format = format
+local tonumber = tonumber
+local table_insert = table.insert
+local bold = transform.bold
 
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
@@ -42,18 +46,9 @@ function IncrementalHttpParser:Construct()
 	return instance
 end
 
--- function IncrementalHttpParser:GetEventBuffer()
--- 	return self.eventBuffer
--- end
-
 function IncrementalHttpParser:GetNumBufferedEvents()
 	return #self.eventBuffer /  ffi_sizeof("llhttp_event_t")
 end
-
-local tonumber = tonumber
-local table_insert = table.insert
-local ffi_string = ffi.string
-local bold = transform.bold
 
 -- TODO add tests that catch the pragma packing issue
 local function llhttpEvent_ToString(event)
@@ -68,13 +63,13 @@ local function llhttpEvent_ToString(event)
 end
 
 function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
-	local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
+	-- local writeBuffer = ffi_cast("luajit_stringbuffer_reference_t*", self.state.data)
 
 	local bufferedEvents = {}
 
 	-- TODO better name...
-	print("Dumping event buffer contents", self.eventBuffer)
-	print("Events buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
+	-- print("Dumping event buffer contents", self.eventBuffer)
+	-- print("Events buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
 
 	-- Avoids segfault (TODO remove?)
 	if #self.eventBuffer == 0 then return {} end
@@ -112,7 +107,6 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 	if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
 
 	self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
-	print("Num bytes left: " .. #self.eventBuffer) -- TODO remove
 
 	local payload = {
 		eventData = event,
