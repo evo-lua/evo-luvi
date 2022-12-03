@@ -1,3 +1,4 @@
+-- @CONCERNS: Integration of native llhttp parser events with the Lua environment
 local ffi = require("ffi")
 local llhttp = require("llhttp")
 local string_buffer = require("string.buffer")
