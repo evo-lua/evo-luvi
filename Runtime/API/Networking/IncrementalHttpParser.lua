@@ -5,6 +5,8 @@ local string_buffer = require("string.buffer")
 local ffi_cast = ffi.cast
 local ffi_sizeof = ffi.sizeof
 
+local format = format
+
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
@@ -54,13 +56,6 @@ local bold = transform.bold
 
 -- TODO add tests that catch the pragma packing issue
 local function llhttpEvent_ToString(event)
-	local eventID = tonumber(event.event_id)
-	printf("\tevent_id: %d", eventID)
-	eventID = llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT"
-	print("FFI Event: " .. eventID)
-	printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
-	printf("\tpayload_length: %d", tonumber(event.payload_length))
-
 	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
 	local NO_PAYLOAD_STRING = "no payload"
 	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
@@ -80,44 +75,41 @@ function IncrementalHttpParser:GetBufferedEvents() -- TBD ProcessStoredEvents?
 	print("Dumping write buffer contents", self.eventBuffer)
 	print("Write buffer contains " .. self:GetNumBufferedEvents() .. " entries (" .. #self.eventBuffer .. " bytes)")
 
-	if #self.eventBuffer == 0 then return {} end -- Avoids segfault (TODO remove?)
+	-- Avoids segfault (TODO remove?)
+	if #self.eventBuffer == 0 then return {} end
 
 	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
-	while #self.eventBuffer > 0 do
-		local event = ffi.cast("llhttp_event_t*", self.eventBuffer)
-		-- print()
-		print("Stored event:", llhttpEvent_ToString(event))
-		local eventID = tonumber(event.event_id)
-		printf("\tevent_id: %d", eventID)
-		eventID = llhttp.FFI_EVENTS[eventID] or "UNKNOWN_FFI_EVENT"
-		print("FFI Event: " .. eventID)
-		printf("\tpayload_start_pointer: %s", event.payload_start_pointer)
-		printf("\tpayload_length: %d", tonumber(event.payload_length))
-		-- print()
-		print("Popping event...")
-		self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
-		print("Num bytes left: " .. #self.eventBuffer)
-
+	-- local events = ffi.cast("luajit_stringbuffer_reference_t*", self.state.data)
+	local startPointer, lengthInBytes = self.eventBuffer:ref()
+	-- local events = ffi_cast("llhttp_event_t**", startPointer)
+	for offset = 0, lengthInBytes, ffi_sizeof("llhttp_event_t") do
+		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+		print(offset, event, llhttpEvent_ToString(event))
 		table_insert(bufferedEvents, event)
-		-- ReplayNativeEvent(eventID)
-		DEBUG("Replaying FFI event " .. tostring(eventID))
-		-- if not self[eventID] then
-		-- 	ERROR("Failed to trigger FFI event " .. tostring(eventID))
-		-- else
-			-- TBD Do we really want this? It's wasteful, better to just pass at/length and append to a buffered request's string buffer!
-			local payload = {
-				-- TODO remove
-				eventData = event,
-				payloadStartPointer = event.payload_start_pointer,
-				payloadLengthInBytes = event.payload_length,
-			}
-			self[eventID](self, eventID, payload)
-		-- end
-
 	end
 
 	return bufferedEvents
 	-- TODO queue should be empty now...
+end
+
+function IncrementalHttpParser:ReplayParserEvent(event)
+	DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
+
+	local eventID = tonumber(event.event_id)
+	eventID = llhttp.FFI_EVENTS[eventID]
+	-- TODO tests
+	if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
+
+	self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
+	print("Num bytes left: " .. #self.eventBuffer) -- TODO remove
+
+	local payload = {
+		eventData = event,
+		payloadStartPointer = event.payload_start_pointer,
+		payloadLengthInBytes = event.payload_length,
+	}
+	self[eventID](self, eventID, payload)
+
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
@@ -154,24 +146,8 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 			DEBUG("Dumping queued events ...")
 			dump(self:GetBufferedEvents())
-
-			-- eventBuffer:reset()
-			-- print("buffer_reset OK", c)
 		end
 
-	-- local firstEvent = ffi.cast("llhttp_event_t*", eventBuffer)
-	-- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
-	-- print()
-	-- print("First stored event:", firstEvent)
-	-- printf("\tevent_id: %d", tonumber(firstEvent.event_id))
-	-- printf("\tpayload_start_pointer: %s", firstEvent.payload_start_pointer)
-	-- printf("\tpayload_length: %d", tonumber(firstEvent.payload_length))
-	-- print()
-
-
-
-	-- printf("Buffer contents after parsing: %s", tostring(eventBuffer))
-	-- eventBuffer:reset()
 end
 
 -- TODO use this as default, as per event system RFC
