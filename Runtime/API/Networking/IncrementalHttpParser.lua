@@ -64,19 +64,35 @@ end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
+local table_new = require("table.new")
 function IncrementalHttpParser:GetBufferedEvents()
-	local bufferedEvents = {}
+	-- local bufferedEvents = table_new(self:GetNumBufferedEvents(), 0)
 
 	local startPointer, lengthInBytes = self.eventBuffer:ref()
-	for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
-		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
-		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		local luaEvent = self:CreateLuaEvent(event)
-		table_insert(bufferedEvents, luaEvent)
+		-- local events = ffi_cast("llhttp_event_t[]", startPointer)
+		-- print(events)
+		-- for index = 0, self:GetNumBufferedEvents(), 1 do
+		-- 	local event = events[index]
+		-- 	print(index, event)
+		-- end
+	local events = table_new(self:GetNumBufferedEvents(), 0)
+
+	local structSize = ffi_sizeof("llhttp_event_t")
+	for offset = 0, lengthInBytes - 1, structSize do
+		-- local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+	-- 	-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
+	-- 	-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
+	-- 	-- local luaEvent = self:CreateLuaEvent(event)
+	-- 	bufferedEvents[offset / ffi_sizeof("llhttp_event_t")] = event
+		-- table_insert(bufferedEvents, event)
+		local event =  ffi_cast("llhttp_event_t*", startPointer + offset)
+		-- table_insert(events, event)
+		-- print(llhttpEvent_ToString(event))
 	end
 
-	return bufferedEvents
+
+
+	return startPointer
 end
 
 function IncrementalHttpParser:CreateLuaEvent(event)
