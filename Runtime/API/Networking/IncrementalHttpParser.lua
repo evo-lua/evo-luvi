@@ -151,6 +151,9 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 end
 
+function IncrementalHttpParser:GetEventBufferSize()
+	return #self.eventBuffer
+end
 -- TODO use this as default, as per event system RFC
 -- function IncrementalHttpParser:OnEvent() end
 
