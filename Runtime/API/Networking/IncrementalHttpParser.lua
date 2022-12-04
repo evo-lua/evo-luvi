@@ -15,13 +15,6 @@ local bold = transform.bold
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
--- local llhttp_errno_name = llhttp.bindings.llhttp_errno_name
--- local llhttp_finish = llhttp.bindings.llhttp_finish
--- -- local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade -- NYI
--- local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
--- local llhttp_method_name = llhttp.bindings.llhttp_method_name
--- local llhttp_reset = llhttp.bindings.llhttp_reset
--- local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 
 local IncrementalHttpParser = {}
 
@@ -106,7 +99,7 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 	local eventID = event.event_id
 	eventID = llhttp.FFI_EVENTS[eventID]
 
-	self[eventID](self, event)
+	self[eventID](self, eventID, event)
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
@@ -198,7 +191,7 @@ mixin(IncrementalHttpParser, EventListenerMixin)
 -- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
 	for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
 		IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-			-- TEST(eventID .. " triggered", payload)
+			-- DEBUG(eventID .. " triggered", payload)
 		end
 	end
 
