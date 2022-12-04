@@ -36,7 +36,7 @@ function IncrementalHttpParser:Construct()
 
 	-- The parser's userdata field here serves as an "event log" of sorts:
 	-- To avoid C->Lua callbacks (which are extremely slow), buffer all events there... then replay them in Lua for fun and profit!
-	-- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 24 extra bytes/event)
+	-- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 17 extra bytes/event)
 	instance.eventBuffer = string_buffer.new()
 	-- We can't easily pass the actual LuaJIT SBuf type to C, so use a proxy type to represent the writable area of the buffer instead
 	instance.state.data = ffi.new("luajit_stringbuffer_reference_t")
@@ -74,6 +74,7 @@ function IncrementalHttpParser:GetBufferedEvents()
 
 	return bufferedEvents
 end
+
 function IncrementalHttpParser:GetBufferedEvent(index)
 	index = index or 0
 
@@ -106,7 +107,6 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 	eventID = llhttp.FFI_EVENTS[eventID]
 
 	self[eventID](self, event)
-	-- self:OnEvent(event)
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
@@ -137,7 +137,6 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 	-- If nothing needs to be written, commits can cause segfaults
 	if writableBufferArea.used == 0 then return end
-
 	eventBuffer:commit(writableBufferArea.used)
 
 end
