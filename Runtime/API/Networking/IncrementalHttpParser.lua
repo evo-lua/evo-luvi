@@ -102,22 +102,11 @@ end
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
 function IncrementalHttpParser:ReplayParserEvent(event)
-	-- DEBUG(format("Replaying stored event: %s", llhttpEvent_ToString(event)))
-
 	local eventID = event.event_id
 	eventID = llhttp.FFI_EVENTS[eventID]
-	-- TODO tests
-	-- if not eventID then error("Cannot replay unknown FFI event " .. llhttpEvent_ToString(event)) end
 
-	-- self.eventBuffer:skip(ffi_sizeof("llhttp_event_t"))
-
-	-- local payload = {
-	-- 	-- eventData = event,
-	-- 	payloadStartPointer = event.payload_start_pointer,
-	-- 	payloadLengthInBytes = event.payload_length,
-	-- }
-	self[eventID](self, eventID, event)
--- TODO reset buffer?
+	self[eventID](self, event)
+	-- self:OnEvent(event)
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
@@ -146,10 +135,10 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 
 	llhttp_execute(self.state, chunk, #chunk)
 
-	if writableBufferArea.used > 0 then
-		-- If nothing needs to be written, commits can cause segfaults
-		eventBuffer:commit(writableBufferArea.used)
-	end
+	-- If nothing needs to be written, commits can cause segfaults
+	if writableBufferArea.used == 0 then return end
+
+	eventBuffer:commit(writableBufferArea.used)
 
 end
 
@@ -170,7 +159,9 @@ function IncrementalHttpParser:GetEventBufferSize()
 end
 
 -- TODO use this as default, as per event system RFC
--- function IncrementalHttpParser:OnEvent() end
+-- function IncrementalHttpParser:OnEvent(event)
+
+-- end
 
 -- function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
