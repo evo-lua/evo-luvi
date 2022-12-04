@@ -50,6 +50,7 @@ local EvoBuildTarget = {
 		"Runtime/API/Testing/Scenario.lua",
 		"Runtime/API/Testing/TestSuite.lua",
 		"Runtime/API/Networking/HttpClient.lua",
+		"Runtime/API/Networking/HttpMessage.lua",
 		"Runtime/API/Networking/HttpRequest.lua",
 		"Runtime/API/Networking/HttpResponse.lua",
 		"Runtime/API/Networking/HttpServer.lua",
