@@ -75,30 +75,18 @@ function IncrementalHttpParser:GetBufferedEvents()
 	return bufferedEvents
 end
 function IncrementalHttpParser:GetBufferedEvent(index)
-	-- local bufferedEvents = {}
-
 	index = index or 0
-
-	local startPointer = self.eventBuffer:ref()
 
 	if #self.eventBuffer == 0 then return end
 
+	local startPointer = self.eventBuffer:ref()
 	local offset = index*ffi_sizeof("llhttp_event_t")
 
+	-- TODO test or remove
 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
-
 	-- if index < 0 or index > lastValidIndex then return nil end
 
-	-- for offset = 0, lengthInBytes - 1, ffi_sizeof("llhttp_event_t") do
-		local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-		-- Copying this does add more overhead, but I think the ease-of-use is worth it (needs benchmarking)
-		-- Raw cdata can easily SEGFAULT the server if used incorrectly, so exposing it in the high-level API seems a bit risky
-		-- local luaEvent = self:CreateLuaEvent(event)
-		-- table_insert(bufferedEvents, luaEvent)
-	-- end
-
-	-- print(llhttpEvent_ToString(event))
-
+	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 
 	return event
 end

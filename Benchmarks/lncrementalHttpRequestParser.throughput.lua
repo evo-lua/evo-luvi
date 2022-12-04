@@ -33,7 +33,7 @@ function benchmark:OnRun()
 	parser:ParseNextChunk(request)
 
 	for index=0, parser:GetNumBufferedEvents() - 1, 1 do
-		local event = parser:GetBufferedEvents(index)
+		local event = parser:GetBufferedEvent(index)
 		parser:ReplayParserEvent(event)
 	end
 	-- print(event)
