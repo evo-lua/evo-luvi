@@ -479,4 +479,21 @@ function llhttp.initialize()
 
 end
 
+local ffi_string = ffi.string
+local format = format
+local tonumber = tonumber
+
+
+-- TODO add tests that catch the pragma packing issue
+function llhttp.dumpcdata(event)
+	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
+	local NO_PAYLOAD_STRING = "no payload"
+	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
+
+	local hasPayload = (tonumber(event.payload_length) > 0)
+	local payloadString = hasPayload and READABLE_PAYLOAD_STRING or NO_PAYLOAD_STRING
+
+	return transform.bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
+end
+
 return llhttp
