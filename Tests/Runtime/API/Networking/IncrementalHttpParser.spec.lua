@@ -3,6 +3,17 @@ local IncrementalHttpParser = C_Networking.IncrementalHttpParser
 local llhttp = require("llhttp")
 local ffi = require("ffi")
 
+local ffi_string = ffi.string
+
+local function assertEventInfoMatches(actualEvents, expectedEvents)
+	for index, actualEvent in ipairs(actualEvents) do
+		local expectedEvent = expectedEvents[index]
+		assertEquals(llhttp.FFI_EVENTS[tonumber(actualEvent.event_id)], expectedEvent.eventID)
+		assertEquals(ffi_string(actualEvent.payload_start_pointer, actualEvent.payload_length), expectedEvent.payload)
+	end
+
+end
+
 local websocketsRequestString =
     "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
 
@@ -104,9 +115,10 @@ describe("IncrementalHttpParser", function()
                     {eventID = "HTTP_ON_HEADERS_COMPLETE", payload = ""},
                     {eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = ""}
                 }
-                assertEquals(numEventsAfter, #expectedEventList)
+
+	            assertEquals(numEventsAfter, #expectedEventList)
                 assertEquals(bufferSizeAfter, parser:GetNumBufferedEvents() * ffi.sizeof("llhttp_event_t"))
-                assertEquals(eventListAfter, expectedEventList)
+                assertEventInfoMatches(eventListAfter, expectedEventList)
             end)
 
         it(
@@ -170,7 +182,7 @@ describe("IncrementalHttpParser", function()
 
 				assertEquals(numEventsAfter, #expectedEventList)
                 assertEquals(bufferSizeAfter, parser:GetNumBufferedEvents() * ffi.sizeof("llhttp_event_t"))
-                assertEquals(eventListAfter, expectedEventList)
+                assertEventInfoMatches(eventListAfter, expectedEventList)
 
             end)
 

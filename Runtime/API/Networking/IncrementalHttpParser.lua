@@ -64,12 +64,25 @@ end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
-function IncrementalHttpParser:GetBufferedEvents(index)
+function IncrementalHttpParser:GetBufferedEvents()
+	local bufferedEvents = {}
+
+	for index=0, self:GetNumBufferedEvents() - 1, 1 do
+		local event = self:GetBufferedEvent(index)
+		table_insert(bufferedEvents, event)
+	end
+
+	return bufferedEvents
+end
+function IncrementalHttpParser:GetBufferedEvent(index)
 	-- local bufferedEvents = {}
 
--- index = index or 0
+	index = index or 0
 
 	local startPointer = self.eventBuffer:ref()
+
+	if #self.eventBuffer == 0 then return end
+
 	local offset = index*ffi_sizeof("llhttp_event_t")
 
 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
