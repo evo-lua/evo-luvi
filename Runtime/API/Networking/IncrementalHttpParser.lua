@@ -3,13 +3,14 @@ local ffi = require("ffi")
 local llhttp = require("llhttp")
 local string_buffer = require("string.buffer")
 
-local HttpMessage = require("HttpMessage")
-
 local ffi_cast = ffi.cast
 local ffi_sizeof = ffi.sizeof
+local ffi_string = ffi.string
 
-
-
+local format = format
+local tonumber = tonumber
+local table_insert = table.insert
+local bold = transform.bold
 
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
@@ -28,7 +29,6 @@ function IncrementalHttpParser:Construct()
 	local instance = {
 		state = ffi.new("llhttp_t"),
 		settings = ffi.new("llhttp_settings_t"),
-		bufferedMessage = HttpMessage(),
 	}
 
 	llhttp_settings_init(instance.settings)
@@ -50,24 +50,24 @@ function IncrementalHttpParser:GetNumBufferedEvents()
 	return #self.eventBuffer /  ffi_sizeof("llhttp_event_t")
 end
 
-local table_new = table.new
-local table_insert = table.insert
+-- TODO add tests that catch the pragma packing issue
+local function llhttpEvent_ToString(event)
+	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
+	local NO_PAYLOAD_STRING = "no payload"
+	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
+
+	local hasPayload = (tonumber(event.payload_length) > 0)
+	local payloadString = hasPayload and READABLE_PAYLOAD_STRING or NO_PAYLOAD_STRING
+
+	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
+end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
-function IncrementalHttpParser:GetBufferedEvents()
-	local events = table_new( self:GetNumBufferedEvents(), 0)
-	for index=0, self:GetNumBufferedEvents() - 1, 1 do
-		local event = self:GetBufferedEvent(index)
-		table_insert(events, event)
-	end
-	return events
-end
-
-function IncrementalHttpParser:GetBufferedEvent(index)
+function IncrementalHttpParser:GetBufferedEvents(index)
 	-- local bufferedEvents = {}
 
-	index = index or 0
+-- index = index or 0
 
 	local startPointer = self.eventBuffer:ref()
 	local offset = index*ffi_sizeof("llhttp_event_t")
@@ -88,6 +88,15 @@ function IncrementalHttpParser:GetBufferedEvent(index)
 
 
 	return event
+end
+
+function IncrementalHttpParser:CreateLuaEvent(event)
+	local eventID = tonumber(event.event_id)
+	local luaEvent = {
+		eventID = llhttp.FFI_EVENTS[eventID],
+		payload = ffi_string(event.payload_start_pointer, event.payload_length)
+	}
+	return luaEvent
 end
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
@@ -174,12 +183,7 @@ end
 -- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_HEADERS_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_BODY(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
-
--- function IncrementalHttpParser:HTTP_ON_MESSAGE_COMPLETE(eventID, payload)
--- 	 DEBUG(eventID .. " triggered", payload)
--- 	 dump(self.bufferedMessage)
--- end
-
+-- function IncrementalHttpParser:HTTP_ON_MESSAGE_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_URL_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_STATUS_COMPLETE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
@@ -201,10 +205,10 @@ local EventListenerMixin = require("EventListenerMixin")
 mixin(IncrementalHttpParser, EventListenerMixin)
 
 -- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
-	-- for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
-	-- 	IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-	-- 		-- TEST(eventID .. " triggered", payload)
-	-- 	end
-	-- end
+	for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
+		IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
+			-- TEST(eventID .. " triggered", payload)
+		end
+	end
 
 return IncrementalHttpParser
