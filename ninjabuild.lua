@@ -153,7 +153,7 @@ function EvoBuildTarget:SetLuaBytecodeGenerator()
 
 	ninjaFile:AddRule(
 		"bcsave",
-		"$LUAJIT_EXECUTABLE -b $in $out",
+		"$LUAJIT_EXECUTABLE -bg $in $out",
 		{ description = "Saving LuaJIT bytecode for $in ..." }
 	)
 
