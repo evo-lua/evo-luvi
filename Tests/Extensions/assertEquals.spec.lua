@@ -88,4 +88,19 @@ describe("assertEquals", function()
 
 		_G.ERROR = originalErrorHandler
 	end)
+
+	it("should return true if comparing a string and a buffer with the same contents", function()
+		local str = "hello"
+		local buffer = require("string.buffer").new()
+		buffer:put("hello")
+
+		assertEquals(str, buffer)
+	end)
+
+	it("should return true if comparing an empty string and an empty string buffer", function()
+		local str = ""
+		local buffer = require("string.buffer").new()
+
+		assertEquals(str, buffer)
+	end)
 end)
