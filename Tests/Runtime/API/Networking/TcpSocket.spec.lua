@@ -23,7 +23,6 @@ describe("TcpSocket", function()
 			GetPeerName = "getpeername",
 			GetSocketName = "getsockname",
 			Connect = "connect",
-			SetWriteQueueSize = "write_queue_size",
 			Reset = "close_reset",
 		}
 
