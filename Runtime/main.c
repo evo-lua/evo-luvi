@@ -151,7 +151,8 @@ int main(int argc, char* argv[])
 	errfunc = lua_gettop(L);
 
 	// Load the init.lua script
-	if (luaL_loadstring(L, "return require('init')(...)")) {
+	const char* entry_point = "return require('init')(...)";
+	if (luaL_loadbuffer(L, entry_point, strlen(entry_point), "=(Lua entry point, at " DEBUG_FILE_LOCATION ")")) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));
 		vm_release(L);
 		return -1;

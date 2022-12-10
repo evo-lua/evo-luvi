@@ -47,3 +47,7 @@ int luaopen_lpeg(lua_State* L);
 
 void luvi_openlibs(lua_State* L);
 #endif
+
+#define TOSTRING(x) #x
+#define STRINGIFY(x) TOSTRING(x)
+#define DEBUG_FILE_LOCATION __FILE__ ":" STRINGIFY(__LINE__)
