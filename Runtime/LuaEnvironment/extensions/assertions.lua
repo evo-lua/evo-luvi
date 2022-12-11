@@ -23,10 +23,10 @@ local function assertDeepStrictEquals(actual, expected, description)
 end
 
 function assertEquals(actual, expected, description)
-	if actual == "" then
+	if actual == "" or tostring(actual) == "" then
 		actual = "<empty string>"
 	end
-	if expected == "" then
+	if expected == "" or tostring(expected) == "" then
 		expected = "<empty string>"
 	end
 
