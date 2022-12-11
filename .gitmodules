@@ -15,7 +15,7 @@
 	url = https://github.com/rrthomas/lrexlib.git
 [submodule "deps/lpeg"]
 	path = deps/lpeg
-	url = https://github.com/roberto-ieru/LPeg.git
+	url = https://github.com/evo-lua/lpeg-compat-52
 [submodule "deps/llhttp"]
 	path = deps/llhttp
 	url = https://github.com/nodejs/llhttp
