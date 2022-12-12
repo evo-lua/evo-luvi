@@ -39,7 +39,7 @@ describe("regex", function()
 
 		it("should be exported to the runtime options", function()
 			-- This probably needs a rework, but for now it will just live here
-			local displayedPcreVersion = require("luvi").options.pcre2
+			local displayedPcreVersion = require("runtime").options.pcre2
 			local embeddedPcreVersion = regex.version()
 			local embeddedLrexlibVersion = regex._VERSION
 

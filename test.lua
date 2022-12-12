@@ -1,5 +1,5 @@
 local testCases = {
-	"Tests/Runtime/luvi.spec.lua",
+	"Tests/Runtime/runtime.spec.lua",
 	"Tests/Runtime/CLI.spec.lua",
 	"Tests/Runtime/LuviAppBundle.spec.lua",
 	"Tests/Runtime/API/BuildTools/NinjaFile.spec.lua",

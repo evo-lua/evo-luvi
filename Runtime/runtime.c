@@ -22,7 +22,7 @@
 #define LUVI_VERSION "dev-untagged"
 #endif
 
-LUALIB_API int luaopen_luvi(lua_State* L)
+LUALIB_API int luaopen_runtime(lua_State* L)
 {
 	char buffer[1024];
 	lua_newtable(L);

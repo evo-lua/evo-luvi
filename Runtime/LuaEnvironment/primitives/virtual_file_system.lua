@@ -30,8 +30,8 @@ end
 
 function vfs.getBundle()
 	-- Defer loading since it won't be available when this module is first compiled
-	local luvi = require("luvi")
-	return luvi.bundle
+	local runtime = require("runtime")
+	return runtime.bundle
 end
 
 return vfs

@@ -1,4 +1,4 @@
-local luvi = require("luvi")
+local runtime = require("runtime")
 local getPrefix, splitPath, joinParts
 
 local isWindows
@@ -108,7 +108,7 @@ local function pathJoin(...)
 end
 
 -- Legacy path exports
-luvi.path = {
+runtime.path = {
 	join = pathJoin,
 	getPrefix = getPrefix,
 	splitPath = splitPath,

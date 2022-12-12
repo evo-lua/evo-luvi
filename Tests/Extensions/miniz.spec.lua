@@ -35,7 +35,7 @@ describe("miniz", function()
 
 		it("should be exported to the runtime options", function()
 			-- This probably needs a rework, but for now it will just live here
-			local displayedMinizVersion = require("luvi").options.miniz
+			local displayedMinizVersion = require("runtime").options.miniz
 			local embeddedMinizVersion = miniz.version()
 			assertEquals(displayedMinizVersion, embeddedMinizVersion)
 		end)

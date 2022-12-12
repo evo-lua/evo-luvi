@@ -46,7 +46,7 @@ describe("lpeg", function()
 
 		it("should be exported to the runtime options", function()
 			-- This probably needs a rework, but for now it will just live here
-			local displayedLpegVersion = require("luvi").options.lpeg
+			local displayedLpegVersion = require("runtime").options.lpeg
 			local embeddedLpegVersion = lpeg.version
 			assertEquals(displayedLpegVersion, embeddedLpegVersion)
 		end)

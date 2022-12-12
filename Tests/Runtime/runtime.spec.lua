@@ -1,13 +1,13 @@
-describe("luvi", function()
-	local luvi = require("luvi")
+describe("runtime", function()
+	local runtime = require("runtime")
 
 	describe("version", function()
 		it("should include a semantic version string", function()
 			-- Technically git describe adds more information in between releases, but it's still "semver-like" enough
-			assertEquals(type(luvi.version), "string")
+			assertEquals(type(runtime.version), "string")
 
 			local expectedVersionStringPattern = "(v%d+%.%d+%.%d+.*)" --vMAJOR.MINOR.PATCH-optionalGitDescribeSuffix
-			local versionString = string.match(luvi.version, expectedVersionStringPattern)
+			local versionString = string.match(runtime.version, expectedVersionStringPattern)
 
 			assertEquals(type(versionString), "string")
 		end)
@@ -15,7 +15,7 @@ describe("luvi", function()
 
 	describe("signals", function()
 		it("should be exported even if there are no dereferenced signal handlers", function()
-			assertEquals(type(luvi.signals), "table")
+			assertEquals(type(runtime.signals), "table")
 		end)
 
 		it("should store the dereferenced SIGPIPE handler when one is required", function()
@@ -25,7 +25,7 @@ describe("luvi", function()
 				return
 			end
 
-			local sigpipeHandler = luvi.signals.SIGPIPE
+			local sigpipeHandler = runtime.signals.SIGPIPE
 			assertEquals(type(sigpipeHandler), "userdata")
 		end)
 	end)
