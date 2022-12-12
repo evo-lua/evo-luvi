@@ -336,6 +336,23 @@ local llhttp = {
 			void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 		};
+	]] ..
+	-- And this is unlikely to ever change, based on the LuaJIT string.buffer API (needed to pass data from C to FFI without callbacks)
+	[[
+		#pragma pack(1)
+		struct luajit_stringbuffer_reference {
+			size_t size;
+			uint8_t* ptr;
+			size_t used;
+		};
+		typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
+
+		struct llhttp_event {
+			uint8_t event_id;
+			const char* payload_start_pointer;
+			size_t payload_length;
+		};
+		typedef struct llhttp_event llhttp_event_t;
 	]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
@@ -417,6 +434,32 @@ local llhttp = {
 		HTTP_RECORD = 44,
 		HTTP_FLUSH = 45
 	},
+	FFI_EVENTS = {
+		[0] = "HTTP_EVENT_BUFFER_TOO_SMALL",
+		"HTTP_ON_MESSAGE_BEGIN",
+		"HTTP_ON_URL",
+		"HTTP_ON_STATUS",
+		"HTTP_ON_METHOD",
+		"HTTP_ON_VERSION",
+		"HTTP_HEADER_FIELD",
+		"HTTP_ON_HEADER_VALUE",
+		"HTTP_ON_CHUNK_EXTENSION_NAME",
+		"HTTP_ON_CHUNK_EXTENSION_VALUE",
+		"HTTP_ON_HEADERS_COMPLETE",
+		"HTTP_ON_BODY",
+		"HTTP_ON_MESSAGE_COMPLETE",
+		"HTTP_ON_URL_COMPLETE",
+		"HTTP_ON_STATUS_COMPLETE",
+		"HTTP_ON_METHOD_COMPLETE",
+		"HTTP_ON_VERSION_COMPLETE",
+		"HTTP_ON_HEADER_FIELD_COMPLETE",
+		"HTTP_ON_HEADER_VALUE_COMPLETE",
+		"HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE",
+		"HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE",
+		"HTTP_ON_CHUNK_HEADER",
+		"HTTP_ON_CHUNK_COMPLETE",
+		"HTTP_ON_RESET",
+	},
 	SHARED_OBJECT_NAME = isWindows and "llhttp.dll" or "./libllhttp.so",
 }
 
@@ -434,6 +477,23 @@ function llhttp.initialize()
 
 	llhttp.initialized = true
 
+end
+
+local ffi_string = ffi.string
+local format = format
+local tonumber = tonumber
+
+
+-- TODO add tests that catch the pragma packing issue
+function llhttp.dumpcdata(event)
+	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
+	local NO_PAYLOAD_STRING = "no payload"
+	local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(event.payload_start_pointer, event.payload_length))
+
+	local hasPayload = (tonumber(event.payload_length) > 0)
+	local payloadString = hasPayload and READABLE_PAYLOAD_STRING or NO_PAYLOAD_STRING
+
+	return transform.bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
 end
 
 return llhttp
