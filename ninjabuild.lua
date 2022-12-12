@@ -190,7 +190,7 @@ function EvoBuildTarget:ProcessNativeSources()
 end
 
 function EvoBuildTarget:GetDefines(cSourceFilePath)
-	local defines = format('-DLUVI_VERSION=\\"%s\\"', self.GIT_VERSION_TAG)
+	local defines = format('-DEVO_VERSION=\\"%s\\"', self.GIT_VERSION_TAG)
 
 	local pcreDefines = "-DPCRE2_STATIC -DPCRE2_CODE_UNIT_WIDTH=8"
 	defines = defines .. " " .. pcreDefines -- Since the runtime itself uses PCRE2 APIs to export the version, this is mandatory

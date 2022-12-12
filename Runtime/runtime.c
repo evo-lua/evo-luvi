@@ -23,7 +23,7 @@ LUALIB_API int luaopen_runtime(lua_State* L)
 {
 	char buffer[1024];
 	lua_newtable(L);
-	lua_pushstring(L, "" LUVI_VERSION "");
+	lua_pushstring(L, "" EVO_VERSION "");
 	lua_setfield(L, -2, "version");
 
 	// Can use this to store dereferenced signal handles (for testing and debugging purposes)
