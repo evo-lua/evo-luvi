@@ -51,7 +51,7 @@ LUALIB_API int luaopen_runtime(lua_State* L)
 
 		free(versionString);
 	}
-	lua_setfield(L, -2, "pcre2");
+	lua_setfield(L, -2, "regex");
 
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");

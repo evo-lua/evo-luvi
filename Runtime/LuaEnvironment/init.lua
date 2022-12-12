@@ -119,7 +119,7 @@ function Luvi:FixPcreVersionString()
 	if success and regex and regex.version() and regex._VERSION then
 		local pcreVersionString = regex.version()
 		local lrexlibVersion = regex._VERSION
-		require("runtime").libraries.pcre2 = pcreVersionString .. ", " .. lrexlibVersion -- This only affects the --version output
+		require("runtime").libraries.regex = pcreVersionString .. ", " .. lrexlibVersion -- This only affects the --version output
 	end
 end
 

@@ -39,7 +39,7 @@ describe("regex", function()
 
 		it("should be stored in the runtime library", function()
 			-- This probably needs a rework, but for now it will just live here
-			local displayedPcreVersion = require("runtime").libraries.pcre2
+			local displayedPcreVersion = require("runtime").libraries.regex
 			local embeddedPcreVersion = regex.version()
 			local embeddedLrexlibVersion = regex._VERSION
 
