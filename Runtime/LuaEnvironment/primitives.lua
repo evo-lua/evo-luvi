@@ -27,6 +27,9 @@ local primitives = {
 		require("AsyncStreamMixin")
 		require("AsyncSocketMixin")
 	end,
+	extend = function()
+		return require("extend")
+	end,
 }
 
 return primitives
