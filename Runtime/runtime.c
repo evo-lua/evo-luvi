@@ -15,7 +15,7 @@
  *
  */
 
-#include "./luvi.h"
+#include "luvi.h"
 #include "runtime.h"
 #include "Bindings/llhttp_ffi.h"
 
