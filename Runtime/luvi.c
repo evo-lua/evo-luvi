@@ -28,6 +28,11 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 	lua_newtable(L);
 	lua_pushstring(L, "" LUVI_VERSION "");
 	lua_setfield(L, -2, "version");
+
+	// Can use this to store dereferenced signal handles (for testing and debugging purposes)
+	lua_newtable(L);
+	lua_setfield(L, -2, "signals");
+
 	lua_newtable(L);
 	snprintf(buffer, sizeof(buffer), "%s, lua-openssl %s",
 		SSLeay_version(SSLEAY_VERSION), LOPENSSL_VERSION);
