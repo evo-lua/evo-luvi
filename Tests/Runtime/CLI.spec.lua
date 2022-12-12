@@ -1,6 +1,6 @@
 local uv = require("uv")
 
-local CLI = import("CLI.lua")
+local CLI = require("CLI")
 
 describe("ParseCommandLineArguments", function()
 	it("should raise an error if a non-table value was passed", function()
