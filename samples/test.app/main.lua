@@ -226,9 +226,9 @@ do
 	assert(uncompressed == original, "inflated data doesn't match original")
 end
 
-local options = require("runtime").options
+local libraries = require("runtime").libraries
 
-if options.zlib then
+if libraries.zlib then
 	local zlib = require("zlib")
 	print("Testing zlib")
 	p("zlib version", zlib.version())

@@ -107,7 +107,7 @@ function Luvi:FixLpegVersionString()
 
 	if success and lpeg and lpeg.version then
 		local lpegVersionString = string.match(lpeg.version, "%d+.%d+.%d+")
-		require("runtime").options.lpeg = lpegVersionString -- This only affects the --version output
+		require("runtime").libraries.lpeg = lpegVersionString -- This only affects the --version output
 		lpeg.version = lpegVersionString -- We don't want the prefix in the API either, as it isn't very useful
 	end
 end
@@ -119,13 +119,13 @@ function Luvi:FixPcreVersionString()
 	if success and regex and regex.version() and regex._VERSION then
 		local pcreVersionString = regex.version()
 		local lrexlibVersion = regex._VERSION
-		require("runtime").options.pcre2 = pcreVersionString .. ", " .. lrexlibVersion -- This only affects the --version output
+		require("runtime").libraries.pcre2 = pcreVersionString .. ", " .. lrexlibVersion -- This only affects the --version output
 	end
 end
 
 -- There's actually a C API for this, but the miniz bindings don't have a header to include, so might as well do it here instead
 function Luvi:FixMinizVersionString()
-	require("runtime").options.miniz = miniz.version() -- This only affects the --version output
+	require("runtime").libraries.miniz = miniz.version() -- This only affects the --version output
 end
 
 function Luvi:StartBundledApp()

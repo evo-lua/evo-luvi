@@ -60,6 +60,6 @@ LUALIB_API int luaopen_runtime(lua_State* L)
 	lua_setfield(L, -2, "llhttp");
 	lua_pushstring(L, uv_version_string());
 	lua_setfield(L, -2, "libuv");
-	lua_setfield(L, -2, "options");
+	lua_setfield(L, -2, "libraries");
 	return 1;
 }
