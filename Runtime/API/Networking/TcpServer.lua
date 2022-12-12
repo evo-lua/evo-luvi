@@ -149,7 +149,9 @@ function TcpServer:Disconnect(client, reason)
 	end
 
 	client:shutdown()
-	client:close(onCloseHandler)
+	if not client:is_closing() then
+		client:close(onCloseHandler)
+	end
 
 	self.connections[client] = nil
 end

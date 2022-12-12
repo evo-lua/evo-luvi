@@ -47,6 +47,7 @@ function C_Testing.CreateFauxTcpClient()
 
 	function fauxTcpClient:shutdown() end
 	function fauxTcpClient:close() end
+	function fauxTcpClient:is_closing() end
 
 	return fauxTcpClient
 end
