@@ -29,4 +29,24 @@ describe("runtime", function()
 			assertEquals(type(sigpipeHandler), "userdata")
 		end)
 	end)
+
+	describe("libraries", function()
+		it("should export the version of all embedded libraries", function()
+			local expectedLibraries = {
+				"regex",
+				"llhttp",
+				"miniz",
+				"ssl",
+				"lpeg",
+				"zlib",
+				"libuv",
+			}
+
+			for index, libraryName in ipairs(expectedLibraries) do
+				local exportedVersionString = runtime.libraries[libraryName]
+				-- Since both the format and method of exporting varies for each library, that's all we can assert here...
+				assertEquals(type(exportedVersionString), "string")
+			end
+		end)
+	end)
 end)
