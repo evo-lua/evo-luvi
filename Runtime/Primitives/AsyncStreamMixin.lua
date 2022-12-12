@@ -34,11 +34,11 @@ function AsyncStreamMixin:IsWritable()
 end
 
 function AsyncStreamMixin:SetBlockingMode(...)
-	return self.handle:stream_set_blocking(...)
+	return self.handle:set_blocking(...)
 end
 
 function AsyncStreamMixin:GetWriteQueueSize()
-	return self.handle:stream_get_write_queue_size()
+	return self.handle:write_queue_size()
 end
 
 return AsyncStreamMixin
