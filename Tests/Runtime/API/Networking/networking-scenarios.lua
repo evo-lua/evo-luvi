@@ -7,6 +7,7 @@ local listOfScenarioFilesToLoad = {
 	"./tcp-client-triggers-eof-event.lua",
 	"./tcp-server-handles-backpressure.lua",
 	"./tcp-client-handles-backpressure.lua",
+	-- "./http-hello-world.lua",
 }
 
 testSuite:AddScenarios(listOfScenarioFilesToLoad)
