@@ -127,6 +127,9 @@ function TcpServer:StartReading(client)
 
 		if chunk then
 			return self:TCP_CHUNK_RECEIVED(client, chunk)
+		else
+			-- When using a higher-level protocol, the registered parsers may need to finalize messages (e.g., HTTP/S)
+			self:TCP_EOF_RECEIVED(client)
 		end
 
 		-- EOF = client closed readable side; keeping the socket half-open seems pointless here, so just shut it down
@@ -146,7 +149,9 @@ function TcpServer:Disconnect(client, reason)
 	end
 
 	client:shutdown()
-	client:close(onCloseHandler)
+	if not client:is_closing() then
+		client:close(onCloseHandler)
+	end
 
 	self.connections[client] = nil
 end
@@ -203,6 +208,10 @@ end
 
 function TcpServer:TCP_CHUNK_RECEIVED(client, chunk)
 	DEBUG("[TcpServer] TCP_CHUNK_RECEIVED triggered", self:GetClientInfo(client), chunk)
+end
+
+function TcpServer:TCP_EOF_RECEIVED(client)
+	DEBUG("[TcpServer] TCP_EOF_RECEIVED triggered", self:GetClientInfo(client))
 end
 
 function TcpServer:TCP_WRITE_SUCCEEDED(client, chunk)
