@@ -16,11 +16,8 @@
  */
 
 #include "./luvi.h"
+#include "runtime.h"
 #include "Bindings/llhttp_ffi.h"
-
-#ifndef LUVI_VERSION
-#define LUVI_VERSION "dev-untagged"
-#endif
 
 LUALIB_API int luaopen_runtime(lua_State* L)
 {

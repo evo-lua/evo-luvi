@@ -59,6 +59,7 @@ local EvoBuildTarget = {
 	},
 	cSources = {
 		"Runtime/main.c",
+		"Runtime/runtime.c",
 		"Runtime/luvi_compat.c",
 		"Runtime/Bindings/llhttp_ffi.c",
 		-- Some of the deps don't have a real build system. Since they're tiny (mostly glue code), just incorporate them here (for now)
