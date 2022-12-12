@@ -33,10 +33,6 @@ function AsyncSocketMixin:Connect(...)
 	return self.handle:connect(...)
 end
 
-function AsyncSocketMixin:SetWriteQueueSize()
-	return self.handle:write_queue_size()
-end
-
 function AsyncSocketMixin:Reset()
 	return self.handle:close_reset()
 end

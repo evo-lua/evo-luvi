@@ -23,7 +23,6 @@ describe("TcpSocket", function()
 			GetPeerName = "getpeername",
 			GetSocketName = "getsockname",
 			Connect = "connect",
-			SetWriteQueueSize = "write_queue_size",
 			Reset = "close_reset",
 		}
 
@@ -41,8 +40,8 @@ describe("TcpSocket", function()
 			Write = "write",
 			IsReadable = "is_readable",
 			IsWritable = "is_writable",
-			SetBlockingMode = "stream_set_blocking",
-			GetWriteQueueSize = "stream_get_write_queue_size",
+			SetBlockingMode = "set_blocking",
+			GetWriteQueueSize = "write_queue_size",
 		}
 
 		local socket = TcpSocket()
