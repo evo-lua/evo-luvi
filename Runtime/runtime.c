@@ -15,18 +15,15 @@
  *
  */
 
-#include "./luvi.h"
+#include "luvi.h"
+#include "runtime.h"
 #include "Bindings/llhttp_ffi.h"
 
-#ifndef LUVI_VERSION
-#define LUVI_VERSION "dev-untagged"
-#endif
-
-LUALIB_API int luaopen_luvi(lua_State* L)
+LUALIB_API int luaopen_runtime(lua_State* L)
 {
 	char buffer[1024];
 	lua_newtable(L);
-	lua_pushstring(L, "" LUVI_VERSION "");
+	lua_pushstring(L, "" EVO_VERSION "");
 	lua_setfield(L, -2, "version");
 
 	// Can use this to store dereferenced signal handles (for testing and debugging purposes)
@@ -54,7 +51,7 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 
 		free(versionString);
 	}
-	lua_setfield(L, -2, "pcre2");
+	lua_setfield(L, -2, "regex");
 
 	lua_pushstring(L, zlibVersion());
 	lua_setfield(L, -2, "zlib");
@@ -63,6 +60,6 @@ LUALIB_API int luaopen_luvi(lua_State* L)
 	lua_setfield(L, -2, "llhttp");
 	lua_pushstring(L, uv_version_string());
 	lua_setfield(L, -2, "libuv");
-	lua_setfield(L, -2, "options");
+	lua_setfield(L, -2, "libraries");
 	return 1;
 }

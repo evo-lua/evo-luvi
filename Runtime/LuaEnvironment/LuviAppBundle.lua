@@ -1,7 +1,7 @@
 local miniz = require("miniz")
 local uv = require("uv")
 
-local luvi = require("luvi")
+local runtime = require("runtime")
 local luvipath = require("luvipath")
 local path_join = luvipath.pathJoin
 local path_extname = path.extname
@@ -63,7 +63,7 @@ setmetatable(LuviAppBundle, {
 })
 
 function LuviAppBundle:RunContainedApp(commandLineArguments)
-	luvi.bundle = self
+	runtime.bundle = self
 
 	local main = self:readfile(self.entryPoint)
 	if not main then

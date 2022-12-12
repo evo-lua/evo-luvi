@@ -1,5 +1,5 @@
 local uv = require("uv")
-local bundle = require("luvi").bundle
+local bundle = require("runtime").bundle
 
 local utils = loadstring(bundle:readfile("utils.lua"), "bundle:utils.lua")()
 local p = utils.prettyPrint
@@ -178,7 +178,7 @@ end
 writer:add("README.md", "# A Readme\n\nThis is neat?", 9)
 writer:add("data.json", '{"name":"Tim","age":32}\n', 9)
 writer:add("a/big/file.dat", string.rep("12345\n", 10000), 9)
-writer:add("main.lua", 'print(require("luvi").version)', 9)
+writer:add("main.lua", 'print(require("runtime").version)', 9)
 
 p("zip bytes", #writer:finalize())
 
@@ -226,9 +226,9 @@ do
 	assert(uncompressed == original, "inflated data doesn't match original")
 end
 
-local options = require("luvi").options
+local libraries = require("runtime").libraries
 
-if options.zlib then
+if libraries.zlib then
 	local zlib = require("zlib")
 	print("Testing zlib")
 	p("zlib version", zlib.version())

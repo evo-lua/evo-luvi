@@ -97,25 +97,24 @@ function CLI:SetConsole(console)
 	self.print = console and console.print or print
 end
 
-local luvi = require("luvi")
+local runtime = require("runtime")
 local jit = require("jit")
 
 function CLI:GetVersionText()
-	-- Generate options string
-	local optionsStringTokens = {}
+	local libraryVersionStringTokens = {}
 
-	for key, value in pairs(luvi.options) do
+	for key, value in pairs(runtime.libraries) do
 		if type(value) == "boolean" then
-			table.insert(optionsStringTokens, key)
+			table.insert(libraryVersionStringTokens, key)
 		else
-			table.insert(optionsStringTokens, string.format("\t%s\t%s", key, value))
+			table.insert(libraryVersionStringTokens, string.format("\t%s\t%s", key, value))
 		end
 	end
-	local optionsString = table.concat(optionsStringTokens, "\n")
+	local libraryVersionString = table.concat(libraryVersionStringTokens, "\n")
 
-	return string.format("This is Evo.lua %s (powered by %s)", luvi.version, jit.version)
+	return string.format("This is Evo.lua %s (powered by %s)", runtime.version, jit.version)
 		.. "\n\nEmbedded libraries:\n\n"
-		.. optionsString
+		.. libraryVersionString
 		.. "\n"
 end
 

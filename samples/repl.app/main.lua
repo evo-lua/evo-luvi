@@ -1,5 +1,5 @@
 local uv = require("uv")
-local bundle = require("luvi").bundle
+local bundle = require("runtime").bundle
 
 local utils = loadstring(bundle:readfile("utils.lua"), "bundle:utils.lua")()
 local repl = loadstring(bundle:readfile("repl.lua"), "bundle:repl.lua")()

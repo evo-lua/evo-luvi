@@ -33,9 +33,9 @@ describe("miniz", function()
 			assertEquals(type(string.match(embeddedMinizVersion, "%d+.%d+.%d+")), "string")
 		end)
 
-		it("should be exported to the runtime options", function()
+		it("should be stored in the runtime library", function()
 			-- This probably needs a rework, but for now it will just live here
-			local displayedMinizVersion = require("luvi").options.miniz
+			local displayedMinizVersion = require("runtime").libraries.miniz
 			local embeddedMinizVersion = miniz.version()
 			assertEquals(displayedMinizVersion, embeddedMinizVersion)
 		end)

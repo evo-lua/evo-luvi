@@ -17,7 +17,7 @@
 
 #define LUA_LIB
 #include "luv.h"
-#include "luvi.c"
+#include "runtime.h"
 #include "luvi.h"
 #include "Bindings/llhttp_ffi.h"
 #ifndef MINIZ_NO_STDIO
@@ -104,8 +104,8 @@ static lua_State* vm_acquire()
 	lua_setfield(L, -2, "regex");
 
 	// Store luvi module definition at preload.luvi
-	lua_pushcfunction(L, luaopen_luvi);
-	lua_setfield(L, -2, "luvi");
+	lua_pushcfunction(L, luaopen_runtime);
+	lua_setfield(L, -2, "runtime");
 
 	// Store openssl module definition at preload.openssl
 	lua_pushcfunction(L, luaopen_openssl);
