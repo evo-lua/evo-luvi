@@ -92,6 +92,10 @@ function Luvi:LuaMain(commandLineArgumentsPassedFromC)
 		local sigpipeSignal = uv.new_signal()
 		sigpipeSignal:start("sigpipe")
 		uv.unref(sigpipeSignal) -- This empty signal handler shouldn't prevent the event loop from exiting as it's a no-op
+
+		-- May want to remove the handler again, so let's make finding it trivial
+		local luvi = require("luvi")
+		luvi.signals.SIGPIPE = sigpipeSignal
 	end
 
 	return self:StartCommandLineParser()
