@@ -5,6 +5,8 @@ local listOfScenarioFilesToLoad = {
 	"./tcp-sigpipe.lua",
 	"./tcp-server-triggers-eof-event.lua",
 	"./tcp-client-triggers-eof-event.lua",
+	"./tcp-server-handles-backpressure.lua",
+	"./tcp-client-handles-backpressure.lua",
 }
 
 testSuite:AddScenarios(listOfScenarioFilesToLoad)
