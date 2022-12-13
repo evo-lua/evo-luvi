@@ -36,6 +36,20 @@ setmetatable(TcpClient, TcpClient)
 function TcpClient:StartConnecting()
 	DEBUG("Connecting to tcp://" .. self.hostName .. ":" .. self.port)
 
+	local function onConnectionEstablishedCallback(errorMessage, ...)
+		if type(errorMessage) == "string" then
+			return self:TCP_SOCKET_ERROR(errorMessage)
+		end
+
+		self:TCP_CONNECTION_ESTABLISHED()
+		self:StartReading()
+		self:TCP_SESSION_STARTED()
+	end
+
+	self:Connect(self.hostName, self.port, onConnectionEstablishedCallback)
+end
+
+function TcpClient:StartReading()
 	local function onIncomingDataCallback(errorMessage, chunk)
 		if type(errorMessage) == "string" then
 			return self:TCP_SOCKET_ERROR(errorMessage)
@@ -49,20 +63,8 @@ function TcpClient:StartConnecting()
 		self:TCP_SESSION_ENDED()
 	end
 
-	local function onConnectionEstablishedCallback(errorMessage, ...)
-		if type(errorMessage) == "string" then
-			return self:TCP_SOCKET_ERROR(errorMessage)
-		end
-
-		self:TCP_CONNECTION_ESTABLISHED()
-
-		-- This is guaranteed [by libuv] to succeed when called for the first time
-		self:StartReading(onIncomingDataCallback)
-
-		self:TCP_SESSION_STARTED()
-	end
-
-	self:Connect(self.hostName, self.port, onConnectionEstablishedCallback)
+	-- This is guaranteed [by libuv] to succeed when called for the first time
+	self.handle:read_start(onIncomingDataCallback)
 end
 
 function TcpClient:Disconnect()
