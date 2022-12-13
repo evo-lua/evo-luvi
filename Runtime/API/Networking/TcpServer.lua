@@ -69,7 +69,11 @@ function TcpServer:StartListening()
 		local client = uv.new_tcp()
 		self:Accept(client)
 
-		self.connections[client] = true
+		self.connections[client] = {
+			backpressureUpperLimitInBytes = 1024 * 64,
+			backpressureEasingLimitInBytes = 1024 * 8,
+			isBackpressured = false,
+		}
 		self:TCP_CLIENT_CONNECTED(client)
 
 		-- This is guaranteed [by libuv] to succeed when called for the first time
@@ -105,13 +109,34 @@ function TcpServer:StopListening()
 end
 
 function TcpServer:Send(client, chunk)
-	local success, errorMessage = client:write(chunk, function()
-		self:TCP_WRITE_SUCCEEDED(client, chunk)
-	end)
+	local connection = self.connections[client]
 
-	if not success then -- Likely: Write failed due to backpressure from the other end (i.e., the write queue is full)
-		-- Since there's no buffer/drain mechanism currently, this is the best we can do
-		self:TCP_WRITE_FAILED(client, errorMessage, chunk)
+	local function onWriteCallback(errorMessage, ...)
+		if type(errorMessage) == "string" then
+			return self:TCP_SOCKET_ERROR(errorMessage)
+		end
+
+		if
+			connection.isBackpressured
+			and client:write_queue_size() <= (connection.backpressureEasingLimitInBytes or 0)
+		then
+			connection.isBackpressured = false
+			self:TCP_BACKPRESSURE_EASED(client)
+		end
+
+		self:TCP_WRITE_SUCCEEDED(client, chunk)
+	end
+
+	local success, errorMessage = client:write(chunk, onWriteCallback)
+	if not success then
+		return self:TCP_WRITE_FAILED(client, errorMessage, chunk)
+	end
+
+	self:TCP_WRITE_QUEUED(client, chunk)
+
+	if client:write_queue_size() > connection.backpressureUpperLimitInBytes then
+		connection.isBackpressured = true
+		self:TCP_BACKPRESSURE_DETECTED(client)
 	end
 end
 
@@ -215,6 +240,10 @@ function TcpServer:TCP_WRITE_SUCCEEDED(client, chunk)
 	DEBUG("[TcpServer] TCP_WRITE_SUCCEEDED triggered", self:GetClientInfo(client), chunk)
 end
 
+function TcpServer:TCP_WRITE_QUEUED(client, chunk)
+	DEBUG("[TcpServer] TCP_WRITE_QUEUED triggered", self:GetClientInfo(client), chunk)
+end
+
 function TcpServer:TCP_WRITE_FAILED(client, errorMessage, chunk)
 	DEBUG("[TcpServer] TCP_WRITE_FAILED triggered", client, errorMessage, chunk)
 end
@@ -233,6 +262,13 @@ end
 
 function TcpServer:TCP_CLIENT_READ_ERROR(client, errorMessage)
 	DEBUG("[TcpServer] TCP_CLIENT_READ_ERROR triggered", client, errorMessage)
+end
+
+function TcpServer:TCP_BACKPRESSURE_DETECTED(client)
+	DEBUG("[TcpServer] TCP_BACKPRESSURE_DETECTED triggered", self:GetClientInfo(client), client:GetWriteQueueSize())
+end
+function TcpServer:TCP_BACKPRESSURE_EASED(client)
+	DEBUG("[TcpServer] TCP_BACKPRESSURE_EASED triggered", self:GetClientInfo(client), client:GetWriteQueueSize())
 end
 
 return TcpServer
