@@ -127,14 +127,11 @@ function TcpServer:StartReading(client)
 
 		if chunk then
 			return self:TCP_CHUNK_RECEIVED(client, chunk)
-		else
-			-- When using a higher-level protocol, the registered parsers may need to finalize messages (e.g., HTTP/S)
-			self:TCP_EOF_RECEIVED(client)
 		end
 
-		-- EOF = client closed readable side; keeping the socket half-open seems pointless here, so just shut it down
+		-- When using a higher-level protocol, the registered parsers may need to finalize messages (e.g., HTTP/S)
+		self:TCP_EOF_RECEIVED(client)
 		self:Disconnect(client, "Client sent EOF")
-
 		self:TCP_SESSION_ENDED(client)
 	end)
 end
