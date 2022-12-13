@@ -46,7 +46,7 @@ function IncrementalHttpParser:GetNumBufferedEvents()
 	return #self.eventBuffer / ffi_sizeof("llhttp_event_t")
 end
 
--- TODO add tests that catch the pragma packing issue
+-- TODO add tests that catch the pragma packing issue, add this to llhttp (for llhttp_event_t tests, C code)
 local function llhttpEvent_ToString(event)
 	local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
 	local NO_PAYLOAD_STRING = "no payload"
