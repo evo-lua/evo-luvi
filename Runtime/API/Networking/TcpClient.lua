@@ -39,11 +39,9 @@ function TcpClient:StartConnecting()
 
 		if chunk then
 			return self:TCP_CHUNK_RECEIVED(chunk)
-		else
-			self:TCP_EOF_RECEIVED()
 		end
 
-		-- Received EOF, i.e., peer sent FIN to signal they're going away
+		self:TCP_EOF_RECEIVED()
 		self:TCP_SESSION_ENDED()
 	end
 
