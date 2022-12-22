@@ -61,5 +61,6 @@ LUALIB_API int luaopen_runtime(lua_State* L)
 	lua_pushstring(L, uv_version_string());
 	lua_setfield(L, -2, "libuv");
 	lua_setfield(L, -2, "libraries");
+	// TODO raylib version, tests
 	return 1;
 }

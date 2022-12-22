@@ -28,3 +28,6 @@
 [submodule "deps/cparser"]
 	path = deps/cparser
 	url = https://github.com/facebookresearch/CParser.git
+[submodule "deps/raylib-lua"]
+	path = deps/raylib-lua
+	url = https://github.com/TSnake41/raylib-lua.git

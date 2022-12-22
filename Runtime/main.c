@@ -19,6 +19,7 @@
 #include "luv.h"
 #include "runtime.h"
 #include "luvi.h"
+#include "raylua.h"
 #include "Bindings/llhttp_ffi.h"
 #ifndef MINIZ_NO_STDIO
 #define MINIZ_NO_STDIO
@@ -93,6 +94,9 @@ static lua_State* vm_acquire()
 
 	lua_pushcfunction(L, luaopen_miniz);
 	lua_setfield(L, -2, "miniz");
+
+	lua_pushcfunction(L, luaopen_raylua);
+	lua_setfield(L, -2, "raylib");
 
 	lua_pushcfunction(L, luaopen_snapshot);
 	lua_setfield(L, -2, "snapshot");

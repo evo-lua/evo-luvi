@@ -88,6 +88,7 @@ local EvoBuildTarget = {
 		"deps/openssl/include",
 		"deps/pcre2/src",
 		"deps/zlib",
+		"deps/raylib-lua/src",
 	},
 	staticLibraries = {
 		-- Assuming Unix naming conventions here since that's what most of the libraries use
@@ -100,12 +101,15 @@ local EvoBuildTarget = {
 		"libcrypto.a",
 		"libpcre2-8.a",
 		"zlibstatic.a",
+		"libraylua.a",
+		"libraylib.a",
 	},
 	-- All those Windows system libraries are due to libuv and openssl, can't really remove them :(
 	sharedLibraries = (
-		isWindows and "-l PSAPI -l USER32 -l ADVAPI32 -l IPHLPAPI -l USERENV -l WS2_32 -l GDI32 -l CRYPT32"
+		isWindows and "-l PSAPI -l USER32 -l ADVAPI32 -l IPHLPAPI -l USERENV -l WS2_32 -l GDI32 -l CRYPT32 -l WINMM"
 		or "-lm -ldl -pthread"
 	),
+	-- opengl32.lib, gdi32.lib, ole32.lib, and optional: [netapi32.lib, Wininet.lib]
 }
 
 function EvoBuildTarget:GenerateNinjaFile()
