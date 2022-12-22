@@ -29,10 +29,9 @@ end
 
 local function assertCallbackRecordMatches(message, expectedEventList)
 	local parser = IncrementalHttpParser()
-	local stringBuffer = parser:ParseNextChunk("POST /hello")
+	local stringBuffer = parser:ParseNextChunk(message)
 
 	local eventList = C_Networking.DecodeBufferAsArrayOf(stringBuffer, "llhttp_event_t")
-	dump(eventList) -- TODO remove
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
@@ -52,7 +51,7 @@ describe("ParseNextChunk", function()
 		assertCallbackRecordMatches("POST /hello", expectedEventList)
 	end)
 
-	it("should return a list of callback events when a message was passed in two separate chunks", function()
+	it("should return a list of callback events when a message was split in two and passed as two separate chunks", function()
 		local parser = IncrementalHttpParser()
 		local stringBufferA = parser:ParseNextChunk("GET /hello-")
 		local stringBufferB = parser:ParseNextChunk("world HTTP/1.1\r\n\r\n")
@@ -64,7 +63,7 @@ describe("ParseNextChunk", function()
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello-" },
-			{ eventID = "HTTP_ON_URL", payload = "world" },
+			{ eventID = "HTTP_ON_URL", payload = "world" }, -- This redundancy is one of the "problems" llhttp has due to not buffering
 			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
 			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
@@ -73,14 +72,42 @@ describe("ParseNextChunk", function()
 		}
 
 		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBufferB, "llhttp_event_t")
-	dump(eventList) -- TODO remove
 	assertEventInfoMatches(eventList, expectedEventList)
-		-- assertCallbackRecordMatches("GET /hello", expectedEventList)
 	end)
 
-	it("should return a list of callback events when a request was passed", function() end)
+	it("should return a list of callback events when a request was passed as a single chunk", function()
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		}
+		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
+	end)
 
-	it("should return a list of callback events when a response was passed", function() end)
+	it("should return a list of callback events when a response was passed as a single chunk", function()
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+			{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+			{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+			{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		}
+		assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
+	end)
 
 	it("should return a list of callback events when more than one message was passed in a single chunk", function() end)
 
@@ -186,23 +213,23 @@ describe("IncrementalHttpParser", function()
 				{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
 				{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Host" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Host" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{
 					eventID = "HTTP_ON_HEADER_VALUE",
 					payload = "example.com:8000",
 				},
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Upgrade" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Upgrade" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_HEADER_VALUE", payload = "websocket" },
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Connection" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Connection" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_HEADER_VALUE", payload = "Upgrade" },
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
 				{
-					eventID = "HTTP_HEADER_FIELD",
+					eventID = "HTTP_ON_HEADER_FIELD",
 					payload = "Sec-WebSocket-Key",
 				},
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
@@ -212,7 +239,7 @@ describe("IncrementalHttpParser", function()
 				},
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
 				{
-					eventID = "HTTP_HEADER_FIELD",
+					eventID = "HTTP_ON_HEADER_FIELD",
 					payload = "Sec-WebSocket-Version",
 				},
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
@@ -248,23 +275,23 @@ describe("IncrementalHttpParser", function()
 				{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
 				{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Host" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Host" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{
 					eventID = "HTTP_ON_HEADER_VALUE",
 					payload = "example.com:8000",
 				},
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Upgrade" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Upgrade" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_HEADER_VALUE", payload = "websocket" },
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-				{ eventID = "HTTP_HEADER_FIELD", payload = "Connection" },
+				{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Connection" },
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
 				{ eventID = "HTTP_ON_HEADER_VALUE", payload = "Upgrade" },
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
 				{
-					eventID = "HTTP_HEADER_FIELD",
+					eventID = "HTTP_ON_HEADER_FIELD",
 					payload = "Sec-WebSocket-Key",
 				},
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
@@ -274,7 +301,7 @@ describe("IncrementalHttpParser", function()
 				},
 				{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
 				{
-					eventID = "HTTP_HEADER_FIELD",
+					eventID = "HTTP_ON_HEADER_FIELD",
 					payload = "Sec-WebSocket-Version",
 				},
 				{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
