@@ -41,7 +41,6 @@ describe("ParseNextChunk", function()
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello" },
 		}
-		dump(eventList)
 
 		assertEventInfoMatches(eventList, expectedEventList)
 	end)
