@@ -33,15 +33,13 @@ describe("ParseNextChunk", function()
 		local parser = IncrementalHttpParser()
 		local stringBuffer = parser:ParseNextChunk("POST /hello")
 
-		-- We don't want to extract events while parsing chunks since it adds significant overhead, so only do it for debugging purposes
-		local eventList = parser:RetrieveEvents(stringBuffer) -- C_Debug.DecodeBufferAsArrayOf(buffer, cType)
+		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBuffer, "llhttp_event_t")
 		local expectedEventList = {
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "POST" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello" },
 		}
-
 		assertEventInfoMatches(eventList, expectedEventList)
 	end)
 	it("should return a list of callback events when a message was passed in two chunks", function() end)
