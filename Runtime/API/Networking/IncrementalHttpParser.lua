@@ -62,42 +62,41 @@ end
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
 -- TODO Extract to EventBuffer class or LineBuffer?
-function IncrementalHttpParser:GetNumEvents(eventBuffer)
-	return #eventBuffer / ffi_sizeof("llhttp_event_t")
-end
+-- function IncrementalHttpParser:GetNumEvents(eventBuffer)
+-- 	return #eventBuffer / ffi_sizeof("llhttp_event_t")
+-- end
 
 
 -- C_Debug.DecodeElementAtBufferIndexAs(buffer, index, cType)
-function IncrementalHttpParser:GetEvent(eventBuffer, index)
-	index = index or 0
+-- function IncrementalHttpParser:GetEvent(eventBuffer, index)
+-- 	index = index or 0
 
-	if #self.eventBuffer == 0 then
-		return
-	end
+-- 	if #self.eventBuffer == 0 then
+-- 		return
+-- 	end
 
-	local startPointer = self.eventBuffer:ref()
-	local offset = index * ffi_sizeof("llhttp_event_t")
+-- 	local startPointer = self.eventBuffer:ref()
+-- 	local offset = index * ffi_sizeof("llhttp_event_t")
 
-	-- TODO test or remove
-	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
-	-- if index < 0 or index > lastValidIndex then return nil end
+-- 	-- TODO test or remove
+-- 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
+-- 	-- if index < 0 or index > lastValidIndex then return nil end
 
-	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+-- 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 
-	return event
-end
+-- 	return event
+-- end
 
--- C_Debug.DecodeBufferContentsAs(buffer, cType)
-function IncrementalHttpParser:RetrieveEvents(stringBuffer)
-	local bufferedEvents = {}
+-- function IncrementalHttpParser:RetrieveEvents(stringBuffer)
+-- 	local bufferedEvents = {}
 
-	for index = 0, self:GetNumEvents(stringBuffer) - 1, 1 do
-		local event = self:GetEvent(stringBuffer, index)
-		table_insert(bufferedEvents, event)
-	end
+-- 	for index = 0, self:GetNumEvents(stringBuffer) - 1, 1 do
+-- 		local event = self:GetEvent(stringBuffer, index)
+-- 		table_insert(bufferedEvents, event)
+-- 	end
 
-	return bufferedEvents
-end
+-- 	return bufferedEvents
+-- end
 
 function IncrementalHttpParser:GetBufferedEvents()
 	local bufferedEvents = {}
