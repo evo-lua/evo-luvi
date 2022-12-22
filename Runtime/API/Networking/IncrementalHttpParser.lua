@@ -33,7 +33,7 @@ function IncrementalHttpParser:Construct()
 	-- The parser's userdata field here serves as an "event log" of sorts:
 	-- To avoid C->Lua callbacks (which are extremely slow), buffer all events there... then replay them in Lua for fun and profit!
 	-- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 17 extra bytes/event)
-	instance.eventBuffer = string_buffer.new()
+	instance.callbackEventLog = string_buffer.new()
 	-- We can't easily pass the actual LuaJIT SBuf type to C, so use a proxy type to represent the writable area of the buffer instead
 	instance.state.data = ffi.new("luajit_stringbuffer_reference_t")
 
@@ -43,7 +43,7 @@ function IncrementalHttpParser:Construct()
 end
 
 function IncrementalHttpParser:GetNumBufferedEvents()
-	return #self.eventBuffer / ffi_sizeof("llhttp_event_t")
+	return #self.callbackEventLog / ffi_sizeof("llhttp_event_t")
 end
 
 -- TODO add tests that catch the pragma packing issue, add this to llhttp (for llhttp_event_t tests, C code)
@@ -58,45 +58,6 @@ local function llhttpEvent_ToString(event)
 
 	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
 end
-
--- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
--- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
--- TODO Extract to EventBuffer class or LineBuffer?
--- function IncrementalHttpParser:GetNumEvents(eventBuffer)
--- 	return #eventBuffer / ffi_sizeof("llhttp_event_t")
--- end
-
-
--- C_Debug.DecodeElementAtBufferIndexAs(buffer, index, cType)
--- function IncrementalHttpParser:GetEvent(eventBuffer, index)
--- 	index = index or 0
-
--- 	if #self.eventBuffer == 0 then
--- 		return
--- 	end
-
--- 	local startPointer = self.eventBuffer:ref()
--- 	local offset = index * ffi_sizeof("llhttp_event_t")
-
--- 	-- TODO test or remove
--- 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
--- 	-- if index < 0 or index > lastValidIndex then return nil end
-
--- 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-
--- 	return event
--- end
-
--- function IncrementalHttpParser:RetrieveEvents(stringBuffer)
--- 	local bufferedEvents = {}
-
--- 	for index = 0, self:GetNumEvents(stringBuffer) - 1, 1 do
--- 		local event = self:GetEvent(stringBuffer, index)
--- 		table_insert(bufferedEvents, event)
--- 	end
-
--- 	return bufferedEvents
--- end
 
 function IncrementalHttpParser:GetBufferedEvents()
 	local bufferedEvents = {}
@@ -116,11 +77,11 @@ end
 function IncrementalHttpParser:GetBufferedEvent(index)
 	index = index or 0
 
-	if #self.eventBuffer == 0 then
+	if #self.callbackEventLog == 0 then
 		return
 	end
 
-	local startPointer = self.eventBuffer:ref()
+	local startPointer = self.callbackEventLog:ref()
 	local offset = index * ffi_sizeof("llhttp_event_t")
 
 	-- TODO test or remove
@@ -150,7 +111,7 @@ function IncrementalHttpParser:ReplayParserEvent(event)
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
-	self.eventBuffer:reset()
+	self.callbackEventLog:reset()
 end
 
 -- ParseChunkAndRecordCallbackEvents(chunk)
@@ -159,15 +120,15 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	if chunk == "" then return end
 
 	-- In order to process parser events in Lua (without relying on slow C->Lua callbacks), store them in an intermediary reusable buffer
-	local eventBuffer = self.eventBuffer
+	local callbackEventLog = self.callbackEventLog
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 
-	local needsMoreSpace = #eventBuffer < maxBufferSizeToReserve
+	local needsMoreSpace = #callbackEventLog < maxBufferSizeToReserve
 	local ptr, len
 	if needsMoreSpace then
-		ptr, len = eventBuffer:reserve(maxBufferSizeToReserve)
+		ptr, len = callbackEventLog:reserve(maxBufferSizeToReserve)
 	else
-		ptr, len = eventBuffer:ref()
+		ptr, len = callbackEventLog:ref()
 	end
 
 	-- This is only used internally by the llhttp-ffi layer to access the buffer, because we can't easily pass a raw LuaJIT SBuf* object
@@ -183,9 +144,9 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	if writableBufferArea.used == 0 then
 		return
 	end
-	eventBuffer:commit(writableBufferArea.used)
+	callbackEventLog:commit(writableBufferArea.used)
 
-	return eventBuffer
+	return callbackEventLog
 end
 
 function IncrementalHttpParser:GetMaxRequiredBufferSize(chunk)
@@ -196,12 +157,12 @@ function IncrementalHttpParser:GetMaxRequiredBufferSize(chunk)
 end
 
 function IncrementalHttpParser:AddBufferedEvent(event)
-	self.eventBuffer:putcdata(event, ffi_sizeof("llhttp_event_t"))
+	self.callbackEventLog:putcdata(event, ffi_sizeof("llhttp_event_t"))
 end
 
 -- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
 function IncrementalHttpParser:GetEventBufferSize()
-	return #self.eventBuffer
+	return #self.callbackEventLog
 end
 
 -- TODO use this as default, as per event system RFC
