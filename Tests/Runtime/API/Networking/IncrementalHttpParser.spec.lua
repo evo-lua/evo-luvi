@@ -26,16 +26,16 @@ end
 
 local function assertCallbackRecordMatches(message, expectedEventList)
 	local parser = IncrementalHttpParser()
-	local stringBuffer = parser:ParseNextChunk(message)
+	local stringBuffer = parser:ParseChunkAndRecordCallbackEvents(message)
 
 	local eventList = C_Networking.DecodeBufferAsArrayOf(stringBuffer, "llhttp_event_t")
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
-describe("ParseNextChunk", function()
+describe("ParseChunkAndRecordCallbackEvents", function()
 	it("should return nil when an empty string was passed", function()
 		local parser = IncrementalHttpParser()
-		assertEquals(parser:ParseNextChunk(""), nil)
+		assertEquals(parser:ParseChunkAndRecordCallbackEvents(""), nil)
 	end)
 
 	it("should return a list of callback events when a partial message was passed", function()
@@ -50,8 +50,8 @@ describe("ParseNextChunk", function()
 
 	it("should return a list of callback events when a message was split in two and passed as two separate chunks", function()
 		local parser = IncrementalHttpParser()
-		local stringBufferA = parser:ParseNextChunk("GET /hello-")
-		local stringBufferB = parser:ParseNextChunk("world HTTP/1.1\r\n\r\n")
+		local stringBufferA = parser:ParseChunkAndRecordCallbackEvents("GET /hello-")
+		local stringBufferB = parser:ParseChunkAndRecordCallbackEvents("world HTTP/1.1\r\n\r\n")
 
 		assertEquals(stringBufferA, stringBufferB)
 
@@ -224,7 +224,7 @@ it("should end in an UPGRADE state if a TLS upgrade request was passed", functio
 it("should end in an EOF state if an unfinished message was passed ", function()	end)
 it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
 
--- describe("ParseNextChunk", function()
+-- describe("ParseChunkAndRecordCallbackEvents", function()
 -- it("should ", function() end)
 -- errorr state, upgrade state, keepalive, needs eof = parser state
 
@@ -238,7 +238,7 @@ it("should end in an KEEPALIVE state if a message with keep-alive header was pas
 -- listen to events -> collect message
 -- error handling, max request size
 
--- HttpParser.ParseNextChunk (chunk -> eventQueue/line buffer)
+-- HttpParser.ParseChunkAndRecordCallbackEvents (chunk -> eventQueue/line buffer)
 -- HttpParser.ReplayStoredEvents: (eventList -> httpMessage), pass message in payload, also trigger events
 -- Http:OnEvent (implementation detail)
 
@@ -274,14 +274,14 @@ describe("IncrementalHttpParser", function()
 		end)
 	end)
 
-	describe("ParseNextChunk", function()
+	describe("ParseChunkAndRecordCallbackEvents", function()
 		it("should not modify the event buffer if the parser didn't trigger any events", function()
 			local parser = IncrementalHttpParser()
 			local numEventsBefore = parser:GetNumBufferedEvents()
 			local bufferSizeBefore = parser:GetEventBufferSize()
 			local eventListBefore = parser:GetBufferedEvents()
 
-			parser:ParseNextChunk("") -- Parsing literally any other string WILL trigger an event, if only MESSAGE_BEGIN ...
+			parser:ParseChunkAndRecordCallbackEvents("") -- Parsing literally any other string WILL trigger an event, if only MESSAGE_BEGIN ...
 
 			local numEventsAfter = parser:GetNumBufferedEvents()
 			local bufferSizeAfter = parser:GetEventBufferSize()
@@ -295,7 +295,7 @@ describe("IncrementalHttpParser", function()
 		it("should add all events to the buffer if any were triggered and the buffer is empty", function()
 			local parser = IncrementalHttpParser()
 
-			parser:ParseNextChunk(websocketsRequestString)
+			parser:ParseChunkAndRecordCallbackEvents(websocketsRequestString)
 
 			local numEventsAfter = parser:GetNumBufferedEvents()
 			local bufferSizeAfter = parser:GetEventBufferSize()
@@ -357,7 +357,7 @@ describe("IncrementalHttpParser", function()
 			local cdataEvent = ffi.new("llhttp_event_t")
 			parser:AddBufferedEvent(cdataEvent)
 
-			parser:ParseNextChunk(websocketsRequestString)
+			parser:ParseChunkAndRecordCallbackEvents(websocketsRequestString)
 
 			local numEventsAfter = parser:GetNumBufferedEvents()
 			local bufferSizeAfter = parser:GetEventBufferSize()
