@@ -67,6 +67,7 @@ function IncrementalHttpParser:GetNumEvents(eventBuffer)
 end
 
 
+-- C_Debug.DecodeElementAtBufferIndexAs(buffer, index, cType)
 function IncrementalHttpParser:GetEvent(eventBuffer, index)
 	index = index or 0
 
@@ -86,17 +87,14 @@ function IncrementalHttpParser:GetEvent(eventBuffer, index)
 	return event
 end
 
-function IncrementalHttpParser:RetrieveEvents(eventBuffer)
+-- C_Debug.DecodeBufferContentsAs(buffer, cType)
+function IncrementalHttpParser:RetrieveEvents(stringBuffer)
 	local bufferedEvents = {}
 
-	for index = 0, self:GetNumEvents(eventBuffer) - 1, 1 do
-		local event = self:GetEvent(eventBuffer, index)
+	for index = 0, self:GetNumEvents(stringBuffer) - 1, 1 do
+		local event = self:GetEvent(stringBuffer, index)
 		table_insert(bufferedEvents, event)
 	end
-
-	-- for k, v in pairs(bufferedEvents) do
-	-- 	print(k, v, llhttpEvent_ToString(v))
-	-- end
 
 	return bufferedEvents
 end
@@ -156,6 +154,8 @@ function IncrementalHttpParser:ClearBufferedEvents()
 	self.eventBuffer:reset()
 end
 
+-- ParseChunkAndRecordCallbackEvents(chunk)
+-- ReplayRecordedCallbackEvents(callbackRecord)
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	if chunk == "" then return end
 
