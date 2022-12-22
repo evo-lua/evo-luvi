@@ -64,7 +64,7 @@ describe("HttpMessage", function()
 			assertEquals(message.statusCode, "")
 			assertEquals(message.reasonPhrase, "")
 
-			assertEquals(message.headers, {}) -- Not a string buffer, but oh well...
+			assertEquals(message.headers, {})
 			assertEquals(message.body, "")
 		end)
 	end)
