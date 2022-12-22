@@ -109,7 +109,7 @@ describe("ParseNextChunk", function()
 		assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
 	end)
 
-	it("should return a list of callback events when more than one message was passed in a single chunk", function()
+	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
 		local expectedEventList = {
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
@@ -134,9 +134,38 @@ describe("ParseNextChunk", function()
 		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
 	end)
 
-	it("should return a list of callback events when two requests were passed in a single chunk", function() end)
-
-	it("should return a list of callback events when two responses were passed in a single chunk", function() end)
+	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
+		local expectedEventList = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		 -- METHOD doesn't occur again because the parser has already switched to REPONSE mode the first time around
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	}
+	assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
+	end)
 
 	it("should return a list of callback events when a valid message was passed before an invalid one", function() end)
 
