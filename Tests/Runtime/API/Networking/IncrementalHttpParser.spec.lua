@@ -3,6 +3,7 @@ local IncrementalHttpParser = C_Networking.IncrementalHttpParser
 local llhttp = require("llhttp")
 local ffi = require("ffi")
 
+
 local ffi_string = ffi.string
 
 local function assertEventInfoMatches(actualEvents, expectedEvents)
@@ -12,6 +13,66 @@ local function assertEventInfoMatches(actualEvents, expectedEvents)
 		assertEquals(ffi_string(actualEvent.payload_start_pointer, actualEvent.payload_length), expectedEvent.payload)
 	end
 end
+-- headers as arra y vs map
+
+-- Inputs:
+-- No message
+-- Partial valid message, split fields
+-- Whole valid message
+-- One and a haf valid messages
+-- Two messages
+-- One valid and one invalid message
+
+describe("ParseNextChunk", function()
+	it("should return nil when an empty string was passed", function()
+		local parser = IncrementalHttpParser()
+		assertEquals(parser:ParseNextChunk(""), nil)
+	end)
+
+	it("should return a list of callback events when a partial message was passed", function()
+		local parser = IncrementalHttpParser()
+		local eventBuffer = parser:ParseNextChunk("GET /hello")
+
+		-- We don't want to extract events while parsing chunks since it adds significant overhead, so only do it for debugging purposes
+		local eventList = parser:RetrieveEvents(eventBuffer)
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello" },
+		}
+		dump(eventList)
+
+		assertEventInfoMatches(eventList, expectedEventList)
+	end)
+	it("should return a list of callback events when a message was passed in two chunks", function() end)
+	it("should return a list of callback events when a request was passed", function() end)
+	it("should return a list of callback events when a response was passed", function() end)
+	it("should return a list of callback events when more than one message was passed in a single chunk", function() end)
+	it("should return a list of callback events when two requests were passed in a single chunk", function() end)
+	it("should return a list of callback events when two responses were passed in a single chunk", function() end)
+	it("should return a list of callback events when a valid message was passed before an invalid one", function() end)
+	it("should return a list of callback events when an invalid message was passed before a valid one", function() end)
+
+end)
+-- describe("ParseNextChunk", function()
+-- it("should ", function() end)
+-- errorr state, upgrade state, keepalive, needs eof = parser state
+
+-- expected output:
+-- event buffer (string buffer) callback buffer
+-- event triggers
+-- buffered request/response message buffer
+
+-- convert chunk to serialized event list
+-- processEventBuffer -> trigger the actual events
+-- listen to events -> collect message
+-- error handling, max request size
+
+-- HttpParser.ParseNextChunk (chunk -> eventQueue/line buffer)
+-- HttpParser.ReplayStoredEvents: (eventList -> httpMessage), pass message in payload, also trigger events
+-- Http:OnEvent (implementation detail)
+
 
 local websocketsRequestString =
 	"GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
