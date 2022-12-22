@@ -58,48 +58,6 @@ local function llhttpEvent_ToString(event)
 	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
 end
 
--- function IncrementalHttpParser:GetBufferedEvents()
--- 	local bufferedEvents = {}
-
--- 	for index = 0, self:GetNumBufferedEvents() - 1, 1 do
--- 		local event = self:GetBufferedEvent(index)
--- 		table_insert(bufferedEvents, event)
--- 	end
-
--- 	-- for k, v in pairs(bufferedEvents) do
--- 	-- 	print(k, v, llhttpEvent_ToString(v))
--- 	-- end
-
--- 	return bufferedEvents
--- end
-
--- function IncrementalHttpParser:GetBufferedEvent(index)
--- 	index = index or 0
-
--- 	if #self.callbackEventBuffer == 0 then
--- 		return
--- 	end
-
--- 	local startPointer = self.callbackEventBuffer:ref()
--- 	local offset = index * ffi_sizeof("llhttp_event_t")
-
--- 	-- TODO test or remove
--- 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
--- 	-- if index < 0 or index > lastValidIndex then return nil end
-
--- 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-
--- 	return event
--- end
-
--- function IncrementalHttpParser:CreateLuaEvent(event)
--- 	local eventID = tonumber(event.event_id)
--- 	local luaEvent = {
--- 		eventID = llhttp.FFI_EVENTS[eventID],
--- 		payload = ffi_string(event.payload_start_pointer, event.payload_length),
--- 	}
--- 	return luaEvent
--- end
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
 function IncrementalHttpParser:ReplayParserEvent(event)
@@ -113,7 +71,6 @@ function IncrementalHttpParser:ClearBufferedEvents()
 	self.callbackEventBuffer:reset()
 end
 
--- ParseChunkAndRecordCallbackEvents(chunk)
 -- ReplayRecordedCallbackEvents(callbackRecord)
 function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)
 	if chunk == "" then return end
