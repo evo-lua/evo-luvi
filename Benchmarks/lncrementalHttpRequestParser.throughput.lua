@@ -30,7 +30,7 @@ function benchmark:OnSetup()
 end
 
 function benchmark:OnRun()
-	parser:ParseNextChunk(request)
+	local callbackEventBuffer = parser:ParseChunkAndRecordCallbackEvents(request)
 
 	for index = 0, parser:GetNumBufferedEvents() - 1, 1 do
 		local event = parser:GetBufferedEvent(index)
