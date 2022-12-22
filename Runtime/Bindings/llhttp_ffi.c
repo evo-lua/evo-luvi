@@ -56,7 +56,7 @@ int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event)
 
 	size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
 	if (num_bytes_required > event_buffer->size) {
-		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua (way too much even, just to be extra safe)
+		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua
 		DEBUG("Failed to store an llhttp event in the write buffer (not enough space reserved ahead of time?)");
 		return num_bytes_required - event_buffer->size;
 	}
