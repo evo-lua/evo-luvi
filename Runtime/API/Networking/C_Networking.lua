@@ -11,6 +11,7 @@ local C_Networking = {
 local ffi = require("ffi")
 
 local ffi_cast = ffi.cast
+local ffi_new = ffi.new
 local ffi_sizeof = ffi.sizeof
 local table_insert = table.insert
 
@@ -40,12 +41,9 @@ function C_Networking.DecodeElementAtBufferIndexAs(stringBuffer, index, cType)
 	local startPointer = stringBuffer:ref()
 	local offset = index * ffi_sizeof(cType)
 
-	-- TODO test or remove
-	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
-	-- if index < 0 or index > lastValidIndex then return nil end
-
-	-- TODO no GC anchor!
+	-- This isn't a GC anchor and might be collected if we don't copy it to create a new cdata object
 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+	event = ffi_new("llhttp_event_t*", event)
 
 	return event
 end
