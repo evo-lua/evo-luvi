@@ -63,9 +63,6 @@ describe("llhttp", function()
 		end)
 	end)
 
-	-- llhttp_store_event
-	-- stringbuffer_add_event
-
 	describe("initialize", function()
 		it("should have no effect if the bindings are already initialized", function()
 			-- The runtime already initialized them when assigning the static exports table
