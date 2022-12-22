@@ -73,33 +73,33 @@ end
 -- 	return bufferedEvents
 -- end
 
-function IncrementalHttpParser:GetBufferedEvent(index)
-	index = index or 0
+-- function IncrementalHttpParser:GetBufferedEvent(index)
+-- 	index = index or 0
 
-	if #self.callbackEventBuffer == 0 then
-		return
-	end
+-- 	if #self.callbackEventBuffer == 0 then
+-- 		return
+-- 	end
 
-	local startPointer = self.callbackEventBuffer:ref()
-	local offset = index * ffi_sizeof("llhttp_event_t")
+-- 	local startPointer = self.callbackEventBuffer:ref()
+-- 	local offset = index * ffi_sizeof("llhttp_event_t")
 
-	-- TODO test or remove
-	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
-	-- if index < 0 or index > lastValidIndex then return nil end
+-- 	-- TODO test or remove
+-- 	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
+-- 	-- if index < 0 or index > lastValidIndex then return nil end
 
-	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+-- 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
 
-	return event
-end
+-- 	return event
+-- end
 
-function IncrementalHttpParser:CreateLuaEvent(event)
-	local eventID = tonumber(event.event_id)
-	local luaEvent = {
-		eventID = llhttp.FFI_EVENTS[eventID],
-		payload = ffi_string(event.payload_start_pointer, event.payload_length),
-	}
-	return luaEvent
-end
+-- function IncrementalHttpParser:CreateLuaEvent(event)
+-- 	local eventID = tonumber(event.event_id)
+-- 	local luaEvent = {
+-- 		eventID = llhttp.FFI_EVENTS[eventID],
+-- 		payload = ffi_string(event.payload_start_pointer, event.payload_length),
+-- 	}
+-- 	return luaEvent
+-- end
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
 function IncrementalHttpParser:ReplayParserEvent(event)
