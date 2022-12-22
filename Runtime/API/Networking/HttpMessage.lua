@@ -92,7 +92,7 @@ function HttpMessage:ToString()
 	end
 
 	if #self.body > 0 then
-		lines[#lines + 1] = tostring(self.body) -- Explicit conversion to string since we don't want to store the buffer
+		lines[#lines + 1] = tostring(self.body) -- Explicit conversion since we don't want to store the buffer itself
 	end
 	lines[#lines + 1] = "\r\n" -- Must end any message with two line breaks
 
