@@ -10,6 +10,7 @@ local DEFAULT_BUFFER_SIZE_IN_BYTES = 64 -- Should avoid buffer resizes in most c
 
 local HttpMessage = {}
 
+-- TODO split into request and response?
 function HttpMessage:Construct()
 	local instance = {
 		method = buffer_new(16), -- No valid HTTP method uses more than 13 characters
@@ -76,28 +77,22 @@ function HttpMessage:ToString()
 	end
 
 	if self:IsRequest() then
-		lines[#lines + 1] = tostring(self.method)
-			.. " "
-			.. tostring(self.requestTarget)
-			.. " "
-			.. tostring(self.httpVersion)
+		local requestLine = format("%s %s %s", self.method, self.requestTarget, self.httpVersion)
+		lines[#lines + 1] = requestLine
 	end
 
 	if self:IsResponse() then
-		lines[#lines + 1] = tostring(self.httpVersion)
-			.. " "
-			.. tostring(self.statusCode)
-			.. " "
-			.. tostring(self.reasonPhrase)
+		local statusLine = format("%s %s %s", self.httpVersion, self.statusCode, self.reasonPhrase)
+		lines[#lines + 1] = statusLine
 	end
 
 	for index, header in ipairs(self.headers) do
 		local key, values = header[1], header[2]
-		lines[#lines + 1] = tostring(key) .. ": " .. tostring(values)
+		lines[#lines + 1] = format("%s: %s", key, values)
 	end
 
 	if #self.body > 0 then
-		lines[#lines + 1] = tostring(self.body)
+		lines[#lines + 1] = tostring(self.body) -- Explicit conversion to string since we don't want to store the buffer
 	end
 	lines[#lines + 1] = "\r\n" -- Must end any message with two line breaks
 
