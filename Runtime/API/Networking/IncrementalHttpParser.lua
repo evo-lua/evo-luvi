@@ -115,7 +115,7 @@ end
 
 -- ParseChunkAndRecordCallbackEvents(chunk)
 -- ReplayRecordedCallbackEvents(callbackRecord)
-function IncrementalHttpParser:ParseNextChunk(chunk)
+function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)
 	if chunk == "" then return end
 
 	-- To trigger parser events in Lua (without relying on slow C->Lua callbacks), we can store them in a buffer while we're in C land
