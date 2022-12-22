@@ -13,7 +13,8 @@ local function assertEventInfoMatches(actualEvents, expectedEvents)
 		assertEquals(ffi_string(actualEvent.payload_start_pointer, actualEvent.payload_length), expectedEvent.payload)
 	end
 end
--- headers as arra y vs map
+
+-- headers as array vs map
 
 -- Inputs:
 -- No message
@@ -21,11 +22,7 @@ end
 -- Whole valid message
 -- One and a haf valid messages
 -- Two messages
--- One valid and one invalid message
-
--- local function assert(parser)
-
--- end
+-- One valid and one invalid message (interleaved also?)
 
 local function assertCallbackRecordMatches(message, expectedEventList)
 	local parser = IncrementalHttpParser()
@@ -217,14 +214,16 @@ describe("ParseNextChunk", function()
 		assertCallbackRecordMatches("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
 	end)
 
--- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
-	it("should end in an ERROR state if an invalid message was passed", function()	end)
-	it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
-	it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
-	it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
-	it("should end in an EOF state if an unfinished message was passed ", function()	end)
-	it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
 end)
+
+-- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
+it("should end in an ERROR state if an invalid message was passed", function()	end)
+it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
+it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
+it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
+it("should end in an EOF state if an unfinished message was passed ", function()	end)
+it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
+
 -- describe("ParseNextChunk", function()
 -- it("should ", function() end)
 -- errorr state, upgrade state, keepalive, needs eof = parser state
