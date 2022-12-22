@@ -167,9 +167,55 @@ describe("ParseNextChunk", function()
 	assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
 	end)
 
-	it("should return a list of callback events when a valid message was passed before an invalid one", function() end)
+	it("should return a list of callback events when a valid message was passed before an invalid one", function()
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_RESET", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" }, -- After this, the parser is in an error state = no more events
+		}
+		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
+	end)
 
-	it("should return a list of callback events when an invalid message was passed before a valid one", function() end)
+	it("should return a list of callback events when an invalid message was passed before a valid one", function()
+		local expectedEventList = {
+			-- The parser is in an error state, so there's no events until a valid message begins again
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		}
+		assertCallbackRecordMatches("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
+	end)
+
+	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
+		local expectedEventList = {
+			-- The parser is in an error state, so there's no events until a valid message begins again
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			-- The invalid message again triggers no events (but sets the error state)
+		}
+		assertCallbackRecordMatches("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
+	end)
 
 -- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
 	it("should end in an ERROR state if an invalid message was passed", function()	end)
