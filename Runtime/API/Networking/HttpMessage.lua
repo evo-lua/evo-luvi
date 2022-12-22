@@ -10,7 +10,6 @@ local DEFAULT_BUFFER_SIZE_IN_BYTES = 64 -- Should avoid buffer resizes in most c
 
 local HttpMessage = {}
 
--- TODO split into request and response?
 function HttpMessage:Construct()
 	local instance = {
 		method = buffer_new(16), -- No valid HTTP method uses more than 13 characters
@@ -47,12 +46,6 @@ function HttpMessage:IsEmpty()
 		and (#self.reasonPhrase == 0)
 		and (#self.body == 0)
 	return areHeadersEmpty and areFieldsUninitialized
-end
-
--- TODO tests
-function HttpMessage:AppendHeaderValue(key, startPointer, length)
-	-- self.headerFields[key] = self.headerFields[key] or buffer_new()
-	-- self.headerFields[key]:putcdata(startPointer, length)
 end
 
 function HttpMessage:IsRequest()
