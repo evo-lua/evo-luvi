@@ -138,7 +138,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	writableBufferArea.ptr = ptr
 	writableBufferArea.used = 0
 
-	llhttp_execute(self.state, chunk, #chunk) -- The FFI layer "magically" buffers the events it encounters in the llhttp userdata here
+	llhttp_execute(self.state, chunk, #chunk) -- The FFI layer "magically" saves the events it encounters in the llhttp userdata here
 
 	-- If nothing needs to be written, commits can cause segfaults
 	if writableBufferArea.used == 0 then
