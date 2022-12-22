@@ -61,8 +61,6 @@ describe("llhttp", function()
 			assertEquals(type(minor), "string")
 			assertEquals(type(patch), "string")
 		end)
-		-- llhttp_get_version_string
-
 	end)
 
 	-- llhttp_store_event
@@ -81,13 +79,6 @@ describe("llhttp", function()
 	end)
 
 	describe("version", function()
-		-- it("should export the embedded llhttp version as a semantic version string", function()
-		-- 	local exportedVersion = llhttp.version
-		-- 	local cVersionString = llhttp.bindings.llhttp_get_version_string()
-		-- 	local luaVersionString = ffi.string(cVersionString)
-		-- 	assertEquals(exportedVersion, luaVersionString)
-		-- end)
-
 		it("should return the embedded llhttp version in semver format", function()
 			local embeddedVersion = llhttp.version()
 			local firstMatchedCharacterIndex, lastMatchedCharacterIndex =
