@@ -61,6 +61,46 @@ end
 
 -- -- TODO pop all events, trigger Lua event handlers, reset buffer, handle error case (buffer too small)
 -- TODO benchmark overhead (perf/memory) for this vs. raw cdata? If it's too much, add an option to only use raw cdata everywhere?
+-- TODO Extract to EventBuffer class or LineBuffer?
+function IncrementalHttpParser:GetNumEvents(eventBuffer)
+	return #eventBuffer / ffi_sizeof("llhttp_event_t")
+end
+
+
+function IncrementalHttpParser:GetEvent(eventBuffer, index)
+	index = index or 0
+
+	if #self.eventBuffer == 0 then
+		return
+	end
+
+	local startPointer = self.eventBuffer:ref()
+	local offset = index * ffi_sizeof("llhttp_event_t")
+
+	-- TODO test or remove
+	-- local lastValidIndex  = self:GetNumBufferedEvents() - 1
+	-- if index < 0 or index > lastValidIndex then return nil end
+
+	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+
+	return event
+end
+
+function IncrementalHttpParser:RetrieveEvents(eventBuffer)
+	local bufferedEvents = {}
+
+	for index = 0, self:GetNumEvents(eventBuffer) - 1, 1 do
+		local event = self:GetEvent(eventBuffer, index)
+		table_insert(bufferedEvents, event)
+	end
+
+	-- for k, v in pairs(bufferedEvents) do
+	-- 	print(k, v, llhttpEvent_ToString(v))
+	-- end
+
+	return bufferedEvents
+end
+
 function IncrementalHttpParser:GetBufferedEvents()
 	local bufferedEvents = {}
 
@@ -117,6 +157,8 @@ function IncrementalHttpParser:ClearBufferedEvents()
 end
 
 function IncrementalHttpParser:ParseNextChunk(chunk)
+	if chunk == "" then return end
+
 	-- In order to process parser events in Lua (without relying on slow C->Lua callbacks), store them in an intermediary reusable buffer
 	local eventBuffer = self.eventBuffer
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
@@ -143,6 +185,8 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 		return
 	end
 	eventBuffer:commit(writableBufferArea.used)
+
+	return eventBuffer
 end
 
 function IncrementalHttpParser:GetMaxRequiredBufferSize(chunk)
