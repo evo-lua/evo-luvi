@@ -31,13 +31,13 @@ describe("ParseNextChunk", function()
 
 	it("should return a list of callback events when a partial message was passed", function()
 		local parser = IncrementalHttpParser()
-		local eventBuffer = parser:ParseNextChunk("GET /hello")
+		local stringBuffer = parser:ParseNextChunk("POST /hello")
 
 		-- We don't want to extract events while parsing chunks since it adds significant overhead, so only do it for debugging purposes
-		local eventList = parser:RetrieveEvents(eventBuffer)
+		local eventList = parser:RetrieveEvents(stringBuffer) -- C_Debug.DecodeBufferAsArrayOf(buffer, cType)
 		local expectedEventList = {
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD", payload = "POST" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello" },
 		}
