@@ -23,6 +23,19 @@ end
 -- Two messages
 -- One valid and one invalid message
 
+-- local function assert(parser)
+
+-- end
+
+local function assertCallbackRecordMatches(message, expectedEventList)
+	local parser = IncrementalHttpParser()
+	local stringBuffer = parser:ParseNextChunk("POST /hello")
+
+	local eventList = C_Networking.DecodeBufferAsArrayOf(stringBuffer, "llhttp_event_t")
+	dump(eventList) -- TODO remove
+	assertEventInfoMatches(eventList, expectedEventList)
+end
+
 describe("ParseNextChunk", function()
 	it("should return nil when an empty string was passed", function()
 		local parser = IncrementalHttpParser()
@@ -30,27 +43,62 @@ describe("ParseNextChunk", function()
 	end)
 
 	it("should return a list of callback events when a partial message was passed", function()
-		local parser = IncrementalHttpParser()
-		local stringBuffer = parser:ParseNextChunk("POST /hello")
-
-		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBuffer, "llhttp_event_t")
 		local expectedEventList = {
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "POST" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello" },
 		}
-		assertEventInfoMatches(eventList, expectedEventList)
+		assertCallbackRecordMatches("POST /hello", expectedEventList)
 	end)
-	it("should return a list of callback events when a message was passed in two chunks", function() end)
+
+	it("should return a list of callback events when a message was passed in two separate chunks", function()
+		local parser = IncrementalHttpParser()
+		local stringBufferA = parser:ParseNextChunk("GET /hello-")
+		local stringBufferB = parser:ParseNextChunk("world HTTP/1.1\r\n\r\n")
+
+		assertEquals(stringBufferA, stringBufferB)
+
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-" },
+			{ eventID = "HTTP_ON_URL", payload = "world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		}
+
+		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBufferB, "llhttp_event_t")
+	dump(eventList) -- TODO remove
+	assertEventInfoMatches(eventList, expectedEventList)
+		-- assertCallbackRecordMatches("GET /hello", expectedEventList)
+	end)
+
 	it("should return a list of callback events when a request was passed", function() end)
+
 	it("should return a list of callback events when a response was passed", function() end)
+
 	it("should return a list of callback events when more than one message was passed in a single chunk", function() end)
+
 	it("should return a list of callback events when two requests were passed in a single chunk", function() end)
+
 	it("should return a list of callback events when two responses were passed in a single chunk", function() end)
+
 	it("should return a list of callback events when a valid message was passed before an invalid one", function() end)
+
 	it("should return a list of callback events when an invalid message was passed before a valid one", function() end)
 
+-- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
+	it("should end in an ERROR state if an invalid message was passed", function()	end)
+	it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
+	it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
+	it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
+	it("should end in an EOF state if an unfinished message was passed ", function()	end)
+	it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
 end)
 -- describe("ParseNextChunk", function()
 -- it("should ", function() end)
