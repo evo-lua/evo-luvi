@@ -58,20 +58,20 @@ local function llhttpEvent_ToString(event)
 	return bold(format("<llhttp-ffi event #%s (%s), %s>", tonumber(event.event_id), readableEventName, payloadString))
 end
 
-function IncrementalHttpParser:GetBufferedEvents()
-	local bufferedEvents = {}
+-- function IncrementalHttpParser:GetBufferedEvents()
+-- 	local bufferedEvents = {}
 
-	for index = 0, self:GetNumBufferedEvents() - 1, 1 do
-		local event = self:GetBufferedEvent(index)
-		table_insert(bufferedEvents, event)
-	end
+-- 	for index = 0, self:GetNumBufferedEvents() - 1, 1 do
+-- 		local event = self:GetBufferedEvent(index)
+-- 		table_insert(bufferedEvents, event)
+-- 	end
 
-	-- for k, v in pairs(bufferedEvents) do
-	-- 	print(k, v, llhttpEvent_ToString(v))
-	-- end
+-- 	-- for k, v in pairs(bufferedEvents) do
+-- 	-- 	print(k, v, llhttpEvent_ToString(v))
+-- 	-- end
 
-	return bufferedEvents
-end
+-- 	return bufferedEvents
+-- end
 
 function IncrementalHttpParser:GetBufferedEvent(index)
 	index = index or 0
