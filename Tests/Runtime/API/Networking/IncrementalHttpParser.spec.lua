@@ -32,6 +32,8 @@ local function assertCallbackRecordMatches(message, expectedEventList)
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
+describe("IncrementalHttpParser", function()
+
 describe("ParseChunkAndRecordCallbackEvents", function()
 	it("should return nil when an empty string was passed", function()
 		local parser = IncrementalHttpParser()
@@ -250,7 +252,7 @@ local websocketsRequestString =
 local someResponse =
 	"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nConnection: Keep-Alive\r\nContent-Encoding: gzip\r\nKeep-Alive: timeout=5, max=999\r\n\r\n"
 
-describe("IncrementalHttpParser", function()
+
 	describe("Construct", function()
 		local parser = IncrementalHttpParser()
 		it("should initialize the parser with an empty event buffer", function()
