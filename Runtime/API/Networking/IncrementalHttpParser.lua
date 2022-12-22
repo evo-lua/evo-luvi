@@ -119,7 +119,7 @@ end
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	if chunk == "" then return end
 
-	-- In order to process parser events in Lua (without relying on slow C->Lua callbacks), store them in an intermediary reusable buffer
+	-- To trigger parser events in Lua (without relying on slow C->Lua callbacks), we can store them in a buffer while we're in C land
 	local callbackEventBuffer = self.callbackEventBuffer
 	local maxBufferSizeToReserve = self:GetMaxRequiredBufferSize(chunk)
 
@@ -138,7 +138,7 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	writableBufferArea.ptr = ptr
 	writableBufferArea.used = 0
 
-	llhttp_execute(self.state, chunk, #chunk)
+	llhttp_execute(self.state, chunk, #chunk) -- The FFI layer "magically" buffers the events it encounters in the llhttp userdata here
 
 	-- If nothing needs to be written, commits can cause segfaults
 	if writableBufferArea.used == 0 then
