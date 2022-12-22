@@ -57,31 +57,6 @@ struct luajit_stringbuffer_reference {
 };
 typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
 
-struct llhttp_message {
-	// Since we don't know whether it's a request or response in Lua (where we set up the buffers), we can't be overly specific here
-	luajit_stringbuffer_reference_t* start_line; // Can easily differentiate between request and response with pattern matching in Lua
-	size_t num_header_pairs;
-	luajit_stringbuffer_reference_t** header_field_lines;
-	luajit_stringbuffer_reference_t* message_body;
-};
-typedef struct llhttp_message llhttp_message_t;
-
-struct llhttp_header_pair {
-	luajit_stringbuffer_reference_t* key;
-	luajit_stringbuffer_reference_t* value;
-};
-typedef struct llhttp_header_pair llhttp_keyvalue_t;
-
-struct llhttp_userdata {
-	bool should_buffer_events;
-	bool should_buffer_message_start_line;
-	bool should_buffer_message_headers;
-	bool should_buffer_message_body;
-	luajit_stringbuffer_reference_t* event_buffer;
-	llhttp_message_t* buffered_message;
-};
-typedef struct llhttp_userdata llhttp_userdata_t;
-
 // A thin wrapper for the llhttp API, only needed to expose the statically-linked llhttp symbols to Lua and load them via FFI
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
