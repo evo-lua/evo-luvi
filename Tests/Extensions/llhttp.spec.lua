@@ -1,4 +1,5 @@
 local llhttp = require("llhttp")
+local ffi = require("ffi")
 
 describe("llhttp", function()
 	it("should be exported as a preloaded package", function()
@@ -6,7 +7,7 @@ describe("llhttp", function()
 	end)
 
 	describe("bindings", function()
-		it("should export all of the llhttp-ffi API", function()
+		it("should export all of the llhttp API", function()
 			local exportedApiSurface = {
 				"llhttp_init",
 				"llhttp_reset",
@@ -33,7 +34,39 @@ describe("llhttp", function()
 				assertEquals(type(llhttp.bindings[functionName]), "cdata", "Should bind function " .. functionName)
 			end
 		end)
+
+		it("should export all of the llhttp-ffi API", function()
+			local exportedApiSurface = {
+				"llhttp_get_version_string",
+				"llhttp_store_event",
+				"stringbuffer_add_event",
+			}
+
+			for _, functionName in ipairs(exportedApiSurface) do
+				assertEquals(type(llhttp.bindings[functionName]), "cdata", "Should bind function " .. functionName)
+			end
+		end)
 	end)
+
+	describe("llhttp_get_version_string", function()
+		it("should return a semantic version string", function()
+			local cVersionString = llhttp.bindings.llhttp_get_version_string()
+			local luaVersionString = ffi.string(cVersionString)
+
+			assertEquals(ffi.string(cVersionString), luaVersionString)
+			local major, minor, patch =
+				string.match(luaVersionString, "(%d+).(%d+).(%d+)")
+
+			assertEquals(type(major), "string")
+			assertEquals(type(minor), "string")
+			assertEquals(type(patch), "string")
+		end)
+		-- llhttp_get_version_string
+
+	end)
+
+	-- llhttp_store_event
+	-- stringbuffer_add_event
 
 	describe("initialize", function()
 		it("should have no effect if the bindings are already initialized", function()
@@ -44,6 +77,32 @@ describe("llhttp", function()
 			llhttp.initialize()
 			-- No errors so far? Great... But the bindings should also still be available...
 			assertEquals(type(llhttp.bindings), "cdata")
+		end)
+	end)
+
+	describe("version", function()
+		-- it("should export the embedded llhttp version as a semantic version string", function()
+		-- 	local exportedVersion = llhttp.version
+		-- 	local cVersionString = llhttp.bindings.llhttp_get_version_string()
+		-- 	local luaVersionString = ffi.string(cVersionString)
+		-- 	assertEquals(exportedVersion, luaVersionString)
+		-- end)
+
+		it("should return the embedded llhttp version in semver format", function()
+			local embeddedVersion = llhttp.version()
+			local firstMatchedCharacterIndex, lastMatchedCharacterIndex =
+				string.find(embeddedVersion, "%d+.%d+.%d+")
+
+			assertEquals(firstMatchedCharacterIndex, 1)
+			assertEquals(lastMatchedCharacterIndex, string.len(embeddedVersion))
+			assertEquals(type(string.match(embeddedVersion, "%d+.%d+.%d+")), "string")
+		end)
+
+		it("should be stored in the runtime library", function()
+			-- This probably needs a rework, but for now it will just live here
+			local displayedVersion = require("runtime").libraries.llhttp
+			local embeddedVersion = llhttp.version()
+			assertEquals(displayedVersion, embeddedVersion)
 		end)
 	end)
 end)

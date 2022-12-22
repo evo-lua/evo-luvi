@@ -315,6 +315,21 @@ local llhttp = {
 	]] ..
 	-- These are copied from the runtime's FFI bindings (to access statically-linked llhttp exports via FFI)
 	[[
+		#pragma pack(1)
+		struct luajit_stringbuffer_reference {
+			size_t size;
+			uint8_t* ptr;
+			size_t used;
+		};
+		typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
+
+		struct llhttp_event {
+			uint8_t event_id;
+			const char* payload_start_pointer;
+			size_t payload_length;
+		};
+		typedef struct llhttp_event llhttp_event_t;
+
 		struct static_llhttp_exports_table {
 			void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
 			void (*llhttp_reset)(llhttp_t* parser);
@@ -335,24 +350,10 @@ local llhttp = {
 			void (*llhttp_set_lenient_headers)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
+			const char* (*llhttp_get_version_string)(void);
+			int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
+			void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
 		};
-	]] ..
-	-- And this is unlikely to ever change, based on the LuaJIT string.buffer API (needed to pass data from C to FFI without callbacks)
-	[[
-		#pragma pack(1)
-		struct luajit_stringbuffer_reference {
-			size_t size;
-			uint8_t* ptr;
-			size_t used;
-		};
-		typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
-
-		struct llhttp_event {
-			uint8_t event_id;
-			const char* payload_start_pointer;
-			size_t payload_length;
-		};
-		typedef struct llhttp_event llhttp_event_t;
 	]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
@@ -483,6 +484,10 @@ local ffi_string = ffi.string
 local format = format
 local tonumber = tonumber
 
+function llhttp.version()
+	local llhttpVersion = llhttp.bindings.llhttp_get_version_string()
+	return ffi.string(llhttpVersion)
+end
 
 -- TODO add tests that catch the pragma packing issue
 function llhttp.dumpcdata(event)

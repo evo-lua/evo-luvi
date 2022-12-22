@@ -103,6 +103,9 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_headers)(llhttp_t* parser, int enabled);
 	void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
+	const char* (*llhttp_get_version_string)(void);
+	int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
+	void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
 };
 
 const char* llhttp_get_version_string(void);
