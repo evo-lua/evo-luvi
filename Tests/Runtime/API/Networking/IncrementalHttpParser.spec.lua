@@ -202,7 +202,7 @@ describe("ParseNextChunk", function()
 
 	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
 		local expectedEventList = {
-			-- The parser is in an error state, so there's no events until a valid message begins again
+			-- The parser is in an error state, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
