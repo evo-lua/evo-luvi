@@ -61,3 +61,67 @@ void export_llhttp_bindings(lua_State* L)
 	lua_pushlightuserdata(L, &llhttp_exports_table);
 	lua_setfield(L, -2, "llhttp");
 }
+
+webview::bind
+
+Binds a native C++ callback so that it will appear under the given name as a
+global JavaScript function. Internally it uses init. Callback receives a request string. Request string is a JSON array of all the arguments passed
+to the JavaScript function.
+
+// void bind(const std::string name, sync_binding_t fn)
+
+// sync_binding_t is an alias for std::function<std::string(std::string)>
+// Thus, an example callback looks like:
+
+// std::string myBoundCallback(string args) {
+//   return "\"Return this string to the JS function 'myBoundCallback'\"";
+// }
+
+// Now you can call this JavaScript function like so:
+
+// myBoundCallback("arg1", 2, true).then(e => console.log(e));
+
+// in webview_ffi: bind("llhttp", webview_bind_llhttp_callback); // C++, not C?
+
+// TODO use C function bind, the webview docs were just incomplete.. No need for C++ at all?
+// void bind(const std::string name, sync_binding_t fn)
+
+// sync_binding_t is an alias for std::function<std::string(std::string)>
+// Thus, an example callback looks like:
+
+static const char* myBoundCallback(const char* args) {
+	printf("Hello from myBoundCallback (args: %s)! I was bound via webview_bind_llhttp_callback (in C++ land)\n", args);
+  	return "\"Return this string to the JS function 'myBoundCallback'\"";
+}
+
+
+void webview_bind_llhttp_callback(webview_t webview_handle) { // TBD How to do this with just C? (#include the webview bindings in the C++ wrapper, extern C, link with runtime objects? Might as well use only C++ then since we still need g++ in the build system...)
+	webview_bind(webview_handle, "llhttp", void (*fn)(const char *seq, const char *req,
+                                         void *arg),
+                              void *arg);
+}
+// Now you can call this JavaScript function like so:
+
+// myBoundCallback("arg1", 2, true).then(e => console.log(e));
+}
+
+
+// Binds a native C callback so that it will appear under the given name as a
+// global JavaScript function. Internally it uses webview_init(). Callback
+// receives a request string and a user-provided argument pointer. Request
+// string is a JSON array of all the arguments passed to the JavaScript
+// function.
+// WEBVIEW_API void webview_bind(webview_t w, const char *name,
+//                               void (*fn)(const char *seq, const char *req,
+//                                          void *arg),
+//                               void *arg);
+// seq = some internal window._rpc ID / sequence ??? / promise maybe? = javascript_function_identifier ?
+// req = requestString = JSON array of args passed to fund
+// arg = pointer to ???
+
+
+
+// sync resolve and bind in C, not just C++
+// Passing data obtained from C into the JS context... efficiently (buffers/TypedArrays ideally)
+// run_once_and_poll_for_updates() instead of run()
+// List of browser runtime APIs/stuff that you CANNOT do with webview
