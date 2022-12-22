@@ -24,7 +24,7 @@ end
 -- Two messages
 -- One valid and one invalid message (interleaved also?)
 
-local function assertCallbackRecordMatches(message, expectedEventList)
+local function assertRecordedCallbacksMatch(message, expectedEventList)
 	local parser = IncrementalHttpParser()
 	local stringBuffer = parser:ParseChunkAndRecordCallbackEvents(message)
 
@@ -47,7 +47,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello" },
 		}
-		assertCallbackRecordMatches("POST /hello", expectedEventList)
+		assertRecordedCallbacksMatch("POST /hello", expectedEventList)
 	end)
 
 	it("should return a list of callback events when a message was split in two and passed as two separate chunks", function()
@@ -86,7 +86,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		}
-		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
+		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
 	end)
 
 	it("should return a list of callback events when a response was passed as a single chunk", function()
@@ -105,7 +105,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		}
-		assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
+		assertRecordedCallbacksMatch("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
 	end)
 
 	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
@@ -130,7 +130,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		}
-		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
+		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
 	end)
 
 	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
@@ -163,7 +163,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
 		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 	}
-	assertCallbackRecordMatches("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
+	assertRecordedCallbacksMatch("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
 	end)
 
 	it("should return a list of callback events when a valid message was passed before an invalid one", function()
@@ -180,7 +180,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_RESET", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" }, -- After this, the parser is in an error state = no more events
 		}
-		assertCallbackRecordMatches("GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
+		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
 	end)
 
 	it("should return a list of callback events when an invalid message was passed before a valid one", function()
@@ -196,7 +196,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		}
-		assertCallbackRecordMatches("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
+		assertRecordedCallbacksMatch("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
 	end)
 
 	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
@@ -213,7 +213,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			-- The invalid message again triggers no events (but sets the error state)
 		}
-		assertCallbackRecordMatches("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
+		assertRecordedCallbacksMatch("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
 	end)
 
 end)
