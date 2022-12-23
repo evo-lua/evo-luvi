@@ -63,7 +63,7 @@ local function llhttpEvent_ToString(event)
 end
 
 
---TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen)
+--TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen) -> HTTP_INTERNAL_BUFFER_OOM_ERROR
 function IncrementalHttpParser:ReplayParserEvent(event)
 	local eventID = event.event_id
 	eventID = llhttp.FFI_EVENTS[eventID]
