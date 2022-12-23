@@ -30,17 +30,20 @@ function benchmark:OnSetup()
 end
 
 function benchmark:OnRun()
-	local callbackEventBuffer = parser:ParseChunkAndRecordCallbackEvents(request)
+	local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(request)
+	parser:ReplayRecordedCallbackEvents(callbackRecord)
+	callbackRecord:reset()
 
-	for index = 0, parser:GetNumBufferedEvents() - 1, 1 do
-		local event = parser:GetBufferedEvent(index)
-		parser:ReplayParserEvent(event)
-	end
+	parser.bufferedMessage:Reset() -- TODO
+	-- os.exit(1)
+	-- for index = 0, parser:GetNumBufferedEvents() - 1, 1 do
+		-- local event = parser:GetBufferedEvent(index)
+	-- end
 	-- print(event)
 	-- for index, event in ipairs(events) do
 	-- 	 -- Better clear the internal buffer to avoid incurring the wrath of the OOM killer...
 	-- end
-	parser:ClearBufferedEvents()
+	-- parser:ClearBufferedEvents()
 	-- parser:FinalizeBufferedRequest()
 	-- parser:HTTP_MESSAGE_COMPLETE() -- HACK (TODO fix and remove)
 	-- parser:ResetInternalState()
