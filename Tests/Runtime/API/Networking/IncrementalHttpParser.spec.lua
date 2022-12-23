@@ -145,19 +145,23 @@ local expectedCallbackEventsOnInput = {
 }
 
 local testCases = {
+-- it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
+-- it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
+-- it("should end in an EOF state if an unfinished but otherwise complete message was passed ", function()	end)
+-- it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
 	["an invalid message"] = {
 		chunk = "asdf",
 		isOK = false,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepAliveConnection = false,
+		shouldKeepConnectionAlive = false,
 	},
 	["an incomplete but otherwise valid request"]  = {
 		chunk = "POST /hello",
 		isOK = true,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepAliveConnection = false, -- TBD?
+		shouldKeepConnectionAlive = false, -- TBD?
 	},
 	-- Incomplete but otherwise valid response
 	-- Complete (and valid) request
@@ -264,21 +268,57 @@ describe("IsOK", function()
 		end)
 	end
 
-	it("should return true if an invalid message was just parsed", function()
-		local parser = IncrementalHttpParser()
-		local message = "asdf"
-
-		assertTrue(parser:IsOK())
-		parser:ParseChunkAndRecordCallbackEvents(message)
-		assertFalse(parser:IsOK())
-	end)
 end)
 
-it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
-it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
-it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
-it("should end in an EOF state if an unfinished message was passed ", function()	end)
-it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
+describe("IsExpectingUpgrade", function()
+
+	for label, testCase in pairs(testCases) do
+		local expectedState = testCase.isExpectingUpgrade
+		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+			local parser = IncrementalHttpParser()
+
+			parser:ParseChunkAndRecordCallbackEvents(testCase.chunk)
+
+			local actualState = parser:IsExpectingUpgrade()
+			assertEquals(actualState, expectedState)
+		end)
+	end
+
+end)
+
+describe("IsExpectingEOF", function()
+
+	for label, testCase in pairs(testCases) do
+		local expectedState = testCase.isExpectingEOF
+		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+			local parser = IncrementalHttpParser()
+
+			parser:ParseChunkAndRecordCallbackEvents(testCase.chunk)
+
+			local actualState = parser:IsExpectingEOF()
+			assertEquals(actualState, expectedState)
+		end)
+	end
+
+end)
+
+describe("ShouldKeepConnectionAlive", function()
+
+	for label, testCase in pairs(testCases) do
+		local expectedState = testCase.shouldKeepConnectionAlive
+		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+			local parser = IncrementalHttpParser()
+
+			parser:ParseChunkAndRecordCallbackEvents(testCase.chunk)
+
+			local actualState = parser:ShouldKeepConnectionAlive()
+			assertEquals(actualState, expectedState)
+		end)
+	end
+
+end)
+
+
 
 -- describe("ParseChunkAndRecordCallbackEvents", function()
 -- it("should ", function() end)
