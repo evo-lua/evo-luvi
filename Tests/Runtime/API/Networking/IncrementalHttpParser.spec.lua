@@ -138,31 +138,33 @@ local testCases = {
 	["an invalid message before a valid one (in a single chunk)"] = {
 		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
 		expectedCallbackEvents = {
-			-- The parser is in an error state initially, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			-- The parser is in an error state initially, so there's no additional events
+			-- { eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			-- { eventID = "HTTP_ON_METHOD", payload = "GET" },
+			-- { eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			-- { eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			-- { eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		},
 	},
 	["a valid message in between two invalid ones (in a single chunk)"] = {
 		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n",
 		expectedCallbackEvents = {
-			-- The parser is in an error state, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			-- The parser is in an error state, so there's no additional events
+			-- { eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			-- { eventID = "HTTP_ON_METHOD", payload = "GET" },
+			-- { eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			-- { eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			-- { eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			-- { eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			-- The invalid message again triggers no events (but sets the error state)
 		},
 	},
@@ -399,11 +401,22 @@ describe("ReplayStoredEvents", function()
 		it("should replay the recorded events exactly and in order when " .. label .. " is parsed", function()
 			local parser = IncrementalHttpParser()
 			local chunk = testCase.chunk
-			local eventBuffer = parser:ParseChunkAndRecordCallbackEvents(chunk)
+			local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(chunk)
 
 			local expectedCallbackEvents = testCase.expectedCallbackEvents
-			-- TODO
-			parser:ReplayStoredEvents(eventBuffer)
+
+			local codeUnderTest = function ()
+				parser:ReplayRecordedCallbackEvents(callbackRecord)
+			end
+
+			-- codeUnderTest()
+			for index, eventInfo in ipairs(expectedCallbackEvents) do
+				local eventID = eventInfo.eventID
+				assertFunctionCalls(codeUnderTest, parser, eventID)
+			end
+
+
+
 		end)
 	end
 

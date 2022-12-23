@@ -31,19 +31,19 @@ function C_Networking.GetNumElementsOfType(stringBuffer, cType)
 	return #stringBuffer / ffi_sizeof(cType)
 end
 
-function C_Networking.DecodeElementAtBufferIndexAs(stringBuffer, index, cType)
-	index = index or 0
+function C_Networking.DecodeElementAtBufferIndexAs(stringBuffer, cIndex, cType)
+	cIndex = cIndex or 0
 
 	if #stringBuffer == 0 then
 		return
 	end
 
 	local startPointer = stringBuffer:ref()
-	local offset = index * ffi_sizeof(cType)
+	local offset = cIndex * ffi_sizeof(cType)
 
-	-- This isn't a GC anchor and might be collected if we don't copy it to create a new cdata object
+	-- This isn't a GC anchor and might be collected if we don't copy it to create a new cdata object...
 	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
-	event = ffi_new("llhttp_event_t*", event)
+	-- event = ffi_new("llhttp_event_t*", event) -- Doesn't matter since the buffer is still valid?
 
 	return event
 end

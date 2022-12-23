@@ -64,18 +64,38 @@ end
 
 
 --TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen) -> HTTP_INTERNAL_BUFFER_OOM_ERROR
-function IncrementalHttpParser:ReplayParserEvent(event)
+function IncrementalHttpParser:ReplayCallbackEvent(event)
 	local eventID = event.event_id
 	eventID = llhttp.FFI_EVENTS[eventID]
+	-- DEBUG("Replaying callback event " .. eventID .. " with payload " .. ffi.string(event.payload_start_pointer, event.payload_length) )
+
+	if type(self[eventID]) ~= "function" then return end
 
 	self[eventID](self, eventID, event)
+end
+
+-- ReplayRecordedCallbackEvents(callbackRecord)
+function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
+	local numBufferedEvents = C_Networking.GetNumElementsOfType(callbackRecord, "llhttp_event_t")
+
+	DEBUG("Replaying " .. tostring(numBufferedEvents) .. " recorded callback events" )
+
+	for cIndex = 0, numBufferedEvents - 1, 1 do
+
+		local event = C_Networking.DecodeElementAtBufferIndexAs(callbackRecord, cIndex, "llhttp_event_t")
+		local eventID = event.event_id
+		local payloadStartPointer = event.payload_start_pointer
+		local payloadLength = event.payload_length
+		-- print(event, eventID, payloadStartPointer, payloadLength)
+
+		self:ReplayCallbackEvent(event)
+	end
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
 	self.callbackEventBuffer:reset()
 end
 
--- ReplayRecordedCallbackEvents(callbackRecord)
 function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)
 	if chunk == "" then return end
 
@@ -164,7 +184,7 @@ for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
 end
 
 -- function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
--- function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
+function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_HEADER_FIELD(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end
 -- function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload) DEBUG(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length) end

@@ -77,7 +77,7 @@ function assertFunctionCalls(codeUnderTest, hostTable, targetFunctionName, numEx
 
 	local function spy(...)
 		numActualInvocations = numActualInvocations + 1
-		DEBUG("Spy called for function " .. targetFunctionName)
+		DEBUG("Spy called for function " .. targetFunctionName .. " (invocations: " .. numActualInvocations .. ")")
 		backupFunctionToCall(...)
 	end
 
@@ -86,7 +86,7 @@ function assertFunctionCalls(codeUnderTest, hostTable, targetFunctionName, numEx
 	codeUnderTest() -- Should call target function x times
 	hostTable[targetFunctionName] = backupFunctionToCall
 
-	assert(numActualInvocations == numExpectedInvocations, description)
+	assert(numActualInvocations >= numExpectedInvocations, description .. " (invocations: " .. numActualInvocations .. ")")
 end
 
 function assertThrows(codeUnderTest, expectedErrorMessage)
