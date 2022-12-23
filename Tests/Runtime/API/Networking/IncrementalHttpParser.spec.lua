@@ -21,91 +21,108 @@ local function assertRecordedCallbacksMatch(message, expectedEventList)
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
-local expectedCallbackEventsOnInput = {
-	["POST /hello"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "POST" },
-		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_URL", payload = "/hello" },
+local testCases = {
+	["an incomplete but valid request (as a single chunk)"] = {
+		chunk = "POST /hello",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "POST" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello" },
+		},
 	},
-	["GET /hello-world HTTP/1.1\r\n\r\n"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	["a complete and valid request (as a single chunk)"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\n",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		},
 	},
-	["HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
-		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
-		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
-		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	["a complete and valid response (as a single chunk)"] = {
+		chunk =	"HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+			{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+			{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+			{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		},
 	},
-	["GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	["multiple valid requests (in a single chunk)"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		},
 	},
-	["HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
-		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
-		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
-		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-		 -- METHOD doesn't occur again because the parser has already switched to REPONSE mode the first time around
-		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
-		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
-		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
-		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
-		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	["multiple valid responses (in a single chunk)"] = {
+		chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+			{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+			{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+			{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			-- METHOD doesn't occur again because the parser has already switched to REPONSE mode the first time around
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+			{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+			{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+			{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		},
 	},
-	["GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"] = {
-		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+	["a valid message before an invalid one (in a single chunk)"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
@@ -116,8 +133,11 @@ local expectedCallbackEventsOnInput = {
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_RESET", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" }, -- After this, the parser is in an error state = no more events
+		},
 	},
-	["asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"] = {
+	["an invalid message before a valid one (in a single chunk)"] = {
+		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
+		expectedCallbackEvents = {
 			-- The parser is in an error state initially, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
@@ -128,8 +148,11 @@ local expectedCallbackEventsOnInput = {
 			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		},
 	},
-	["asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"] = {
+	["a valid message in between two invalid ones (in a single chunk)"] = {
+		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n",
+		expectedCallbackEvents = {
 			-- The parser is in an error state, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
@@ -141,6 +164,23 @@ local expectedCallbackEventsOnInput = {
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			-- The invalid message again triggers no events (but sets the error state)
+		},
+	},
+	["an invalid message in between two valid ones (in a single chunk)"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
+		expectedCallbackEvents = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+			-- The invalid message again triggers no events (but sets the error state)
+			-- The second valid message should be ignored (because the parser is still in an error state)
+		},
 	},
 }
 
@@ -247,10 +287,11 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 		assertEquals(parser:ParseChunkAndRecordCallbackEvents(""), nil)
 	end)
 
-	it("should return a list of callback events when a partial message was passed", function()
-		local chunk = "POST /hello"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
+	for label, testCase in pairs(testCases) do
+		it("should return a list of callback events when " .. label .. " was passed", function()
+			assertRecordedCallbacksMatch(testCase.chunk, testCase.expectedCallbackEvents)
+		end)
+	end
 
 	it("should return a list of callback events when a message was split and passed as two separate chunks", function()
 		local parser = IncrementalHttpParser()
@@ -274,41 +315,6 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 
 		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBufferB, "llhttp_event_t")
 	assertEventInfoMatches(eventList, expectedEventList)
-	end)
-
-	it("should return a list of callback events when a request was passed as a single chunk", function()
-		local chunk = "GET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when a response was passed as a single chunk", function()
-		local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
-		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
-	local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
-	assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when a valid message was passed before an invalid one", function()
-		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when an invalid message was passed before a valid one", function()
-		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
-	end)
-
-	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
-		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 end)
@@ -377,6 +383,21 @@ describe("ShouldKeepConnectionAlive", function()
 
 end)
 
+describe("ReplayStoredEvents", function()
+	for chunk, testCase in pairs(testCases) do
+
+		it("should replay the recorded events exactly and in order", function()
+			local parser = IncrementalHttpParser()
+			local eventBuffer = parser:ParseChunkAndRecordCallbackEvents(chunk)
+
+			local expectedCallbackEvents = testCase.expectedCallbackEvents
+			-- TODO
+			parser:ReplayStoredEvents(eventBuffer)
+		end)
+	end
+
+	-- it("should return a HTTP message")
+end)
 
 
 -- describe("ParseChunkAndRecordCallbackEvents", function()
