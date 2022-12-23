@@ -126,7 +126,10 @@ function IncrementalHttpParser:GetEventBufferSize()
 end
 
 function IncrementalHttpParser:IsOK()
-	return tonumber(llhttp_get_errno(self.state)) == llhttp.ERROR_TYPES.HPE_OK
+	local llhttpErrorCode = tonumber(llhttp_get_errno(self.state))
+	local isValidMessage = (llhttpErrorCode == llhttp.ERROR_TYPES.HPE_OK)
+	local isUpgradeRequest = (llhttpErrorCode == llhttp.ERROR_TYPES.HPE_PAUSED_UPGRADE) -- Not really an error...
+	return isValidMessage or isUpgradeRequest
 end
 
 function IncrementalHttpParser:IsExpectingUpgrade()
