@@ -145,10 +145,6 @@ local expectedCallbackEventsOnInput = {
 }
 
 local testCases = {
--- it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
--- it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
--- it("should end in an EOF state if an unfinished but otherwise complete message was passed ", function()	end)
--- it("should end in an KEEPALIVE state if a message with keep-alive header was passed ", function() end)
 	["an invalid message"] = {
 		chunk = "asdf",
 		isOK = false,
@@ -161,21 +157,49 @@ local testCases = {
 		isOK = true,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = false, -- TBD?
+		shouldKeepConnectionAlive = false,
 	},
-	-- Incomplete but otherwise valid response
-	-- Complete (and valid) request
-	-- ["GET /hello-world HTTP/1.1\r\n\r\n"] = {
-
-	-- },
-	-- Complete (and valid) response
+	["an incomplete but otherwise valid response"]  = {
+		chunk = "HTTP/1",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = true, -- The client should wait for the server's EOF, which can end the message at any time (RFC2616, 4.4.5)
+		shouldKeepConnectionAlive = false,
+	},
+	["a complete (and valid) HTTP/1.1 request"] = {
+		chunk= "GET /hello-world HTTP/1.1\r\n\r\n",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true, -- Default value for HTTP/1.1
+	},
+	["a complete (and valid) HTTP/1.0 request"] = {
+		chunk= "GET /hello-world HTTP/1.0\r\n\r\n",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = false, -- Default value for HTTP/1.0
+	},
+	["a complete (and valid) response"] = {
+		chunk = "HTTP/1.1 200 OK",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = true,
+		shouldKeepConnectionAlive = false,
+	},
 	-- WebSocket upgrade request
 	-- TLS upgrade request
 	-- Invalid after valid message
 	-- Valid after invalid message
 	-- Invalid message between two valid message
 	-- Valid message between two invalid ones
-	-- request with Connection: Keep-alive header
+	["a response with Connection: Keep-Alive header"] = {
+		chunk = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\n\r\n",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = true,
+		shouldKeepConnectionAlive = false,
+	}
 }
 
 describe("IncrementalHttpParser", function()
