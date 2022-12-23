@@ -201,11 +201,34 @@ local testCases = {
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
 	},
-	-- TLS upgrade request
-	-- Invalid after valid message
-	-- Valid after invalid message
-	-- Invalid message between two valid message
-	-- Valid message between two invalid ones
+	["an invalid message that comes after a valid one"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n",
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,  -- HTTP/1.1 default
+	},
+	["a valid message that comes after an invalid one"] = {
+		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = false, -- Due to the initial error state, llhttp discards the second message
+	},
+	["an invalid message that arrives between two valid ones"] = {
+		chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n",
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true, -- HTTP/1.1 default
+	},
+	["a valid message that arrives between two invalid ones"] = {
+		chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n",
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = false,
+	},
 	["a response with Connection: Keep-Alive header"] = {
 		chunk = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\n\r\n",
 		isOK = true,
