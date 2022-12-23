@@ -17,6 +17,9 @@ local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
 local llhttp_get_errno = llhttp.bindings.llhttp_get_errno
+local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
+local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
+local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
 
 local IncrementalHttpParser = {}
 
@@ -125,6 +128,20 @@ end
 function IncrementalHttpParser:IsOK()
 	return tonumber(llhttp_get_errno(self.state)) == llhttp.ERROR_TYPES.HPE_OK
 end
+
+function IncrementalHttpParser:IsExpectingUpgrade()
+	return tonumber(llhttp_get_upgrade(self.state)) == 1
+end
+
+function IncrementalHttpParser:IsExpectingEOF()
+	return tonumber(llhttp_message_needs_eof(self.state)) == 1
+end
+
+function IncrementalHttpParser:ShouldKeepConnectionAlive()
+	return tonumber(llhttp_should_keep_alive(self.state)) == 1
+end
+
+-- TODO use llhttp methods to get major, minor, method, status code, upgrade flag without copying stuff in event handlers (benchmark impact)
 
 	-- TODO use this as default, as per event system RFC
 -- function IncrementalHttpParser:OnEvent(event)

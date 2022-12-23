@@ -66,6 +66,7 @@ struct static_llhttp_exports_table {
 	llhttp_errno_t (*llhttp_finish)(llhttp_t* parser);
 	int (*llhttp_message_needs_eof)(const llhttp_t* parser);
 	int (*llhttp_should_keep_alive)(const llhttp_t* parser);
+	uint8_t  (*llhttp_get_upgrade)(llhttp_t* parser);
 	void (*llhttp_pause)(llhttp_t* parser);
 	void (*llhttp_resume)(llhttp_t* parser);
 	void (*llhttp_resume_after_upgrade)(llhttp_t* parser);

@@ -169,6 +169,7 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_finish = llhttp_finish;
 	llhttp_exports_table.llhttp_message_needs_eof = llhttp_message_needs_eof;
 	llhttp_exports_table.llhttp_should_keep_alive = llhttp_should_keep_alive;
+	llhttp_exports_table.llhttp_get_upgrade = llhttp_get_upgrade;
 	llhttp_exports_table.llhttp_pause = llhttp_pause;
 	llhttp_exports_table.llhttp_resume = llhttp_resume;
 	llhttp_exports_table.llhttp_resume_after_upgrade = llhttp_resume_after_upgrade;
