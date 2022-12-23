@@ -67,7 +67,7 @@ end
 function IncrementalHttpParser:ReplayCallbackEvent(event)
 	local eventID = event.event_id
 	eventID = llhttp.FFI_EVENTS[eventID]
-	-- DEBUG("Replaying callback event " .. eventID .. " with payload " .. ffi.string(event.payload_start_pointer, event.payload_length) )
+	DEBUG("Replaying callback event " .. eventID .. " with payload " .. ffi.string(event.payload_start_pointer, event.payload_length) )
 
 	if type(self[eventID]) ~= "function" then return end
 
