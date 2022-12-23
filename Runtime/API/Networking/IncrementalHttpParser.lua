@@ -16,6 +16,7 @@ local bold = transform.bold
 local llhttp_init = llhttp.bindings.llhttp_init
 local llhttp_settings_init = llhttp.bindings.llhttp_settings_init
 local llhttp_execute = llhttp.bindings.llhttp_execute
+local llhttp_get_errno = llhttp.bindings.llhttp_get_errno
 
 local IncrementalHttpParser = {}
 
@@ -121,7 +122,11 @@ function IncrementalHttpParser:GetEventBufferSize()
 	return #self.callbackEventBuffer
 end
 
--- TODO use this as default, as per event system RFC
+function IncrementalHttpParser:isOK()
+	return tonumber(llhttp_get_errno(self.state)) == llhttp.ERROR_TYPES.HPE_OK
+end
+
+	-- TODO use this as default, as per event system RFC
 -- function IncrementalHttpParser:OnEvent(event)
 
 -- end
