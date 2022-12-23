@@ -30,109 +30,61 @@ local function assertRecordedCallbacksMatch(message, expectedEventList)
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
-describe("IncrementalHttpParser", function()
-
-describe("ParseChunkAndRecordCallbackEvents", function()
-	it("should return nil when an empty string was passed", function()
-		local parser = IncrementalHttpParser()
-		assertEquals(parser:ParseChunkAndRecordCallbackEvents(""), nil)
-	end)
-
-	it("should return a list of callback events when a partial message was passed", function()
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "POST" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello" },
-		}
-		assertRecordedCallbacksMatch("POST /hello", expectedEventList)
-	end)
-
-	it("should return a list of callback events when a message was split in two and passed as two separate chunks", function()
-		local parser = IncrementalHttpParser()
-		local stringBufferA = parser:ParseChunkAndRecordCallbackEvents("GET /hello-")
-		local stringBufferB = parser:ParseChunkAndRecordCallbackEvents("world HTTP/1.1\r\n\r\n")
-
-		assertEquals(stringBufferA, stringBufferB)
-
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-" },
-			{ eventID = "HTTP_ON_URL", payload = "world" }, -- This redundancy is one of the "problems" llhttp has due to not buffering
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		}
-
-		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBufferB, "llhttp_event_t")
-	assertEventInfoMatches(eventList, expectedEventList)
-	end)
-
-	it("should return a list of callback events when a request was passed as a single chunk", function()
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		}
-		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
-	end)
-
-	it("should return a list of callback events when a response was passed as a single chunk", function()
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_STATUS", payload = "OK" },
-			{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
-			{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
-			{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_BODY", payload = "Hello" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		}
-		assertRecordedCallbacksMatch("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
-	end)
-
-	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
-			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
-			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
-			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
-			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
-			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		}
-		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
-	end)
-
-	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
-		local expectedEventList = {
+local expectedCallbackEvents = {
+	["POST /hello"] = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "POST" },
+		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_URL", payload = "/hello" },
+	},
+	["GET /hello-world HTTP/1.1\r\n\r\n"] = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	},
+	["HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"] = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_STATUS", payload = "OK" },
+		{ eventID = "HTTP_ON_STATUS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_FIELD", payload = "Content-Length" },
+		{ eventID = "HTTP_ON_HEADER_FIELD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADER_VALUE", payload = "5" },
+		{ eventID = "HTTP_ON_HEADER_VALUE_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	},
+	["GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"] = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_RESET", payload = "" }, -- This is really the only relevant part here as it allows us to reset the buffer
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+		{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+		{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
+		{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+		{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
+	},
+	["HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"] = {
 		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 		{ eventID = "HTTP_ON_METHOD", payload = "HTTP/" }, -- METHOD never completes because the parser switches to REPONSE mode here
 		{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
@@ -160,13 +112,9 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 		{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 		{ eventID = "HTTP_ON_BODY", payload = "Hello" },
 		{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-	}
-	assertRecordedCallbacksMatch("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello", expectedEventList)
-	end)
-
-	it("should return a list of callback events when a valid message was passed before an invalid one", function()
-		local expectedEventList = {
-			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+	},
+	["GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"] = {
+		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_URL", payload = "/hello-world" },
@@ -177,13 +125,9 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_RESET", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" }, -- After this, the parser is in an error state = no more events
-		}
-		assertRecordedCallbacksMatch("GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
-	end)
-
-	it("should return a list of callback events when an invalid message was passed before a valid one", function()
-		local expectedEventList = {
-			-- The parser is in an error state, so there's no events until a valid message begins again
+	},
+	["asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"] = {
+			-- The parser is in an error state initially, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
 			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
@@ -193,12 +137,8 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
-		}
-		assertRecordedCallbacksMatch("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n", expectedEventList)
-	end)
-
-	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
-		local expectedEventList = {
+	},
+	["asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"] = {
 			-- The parser is in an error state, so there's no events until a valid message begins
 			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
@@ -210,14 +150,97 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
 			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 			-- The invalid message again triggers no events (but sets the error state)
+	},
+}
+
+describe("IncrementalHttpParser", function()
+
+describe("ParseChunkAndRecordCallbackEvents", function()
+
+	it("should return nil when an empty string was passed", function()
+		local parser = IncrementalHttpParser()
+		assertEquals(parser:ParseChunkAndRecordCallbackEvents(""), nil)
+	end)
+
+	it("should return a list of callback events when a partial message was passed", function()
+		local chunk = "POST /hello"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when a message was split and passed as two separate chunks", function()
+		local parser = IncrementalHttpParser()
+		local stringBufferA = parser:ParseChunkAndRecordCallbackEvents("GET /hello-")
+		local stringBufferB = parser:ParseChunkAndRecordCallbackEvents("world HTTP/1.1\r\n\r\n")
+
+		assertEquals(stringBufferA, stringBufferB)
+
+		local expectedEventList = {
+			{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
+			{ eventID = "HTTP_ON_METHOD", payload = "GET" },
+			{ eventID = "HTTP_ON_METHOD_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_URL", payload = "/hello-" },
+			{ eventID = "HTTP_ON_URL", payload = "world" }, -- This redundancy is one of the "problems" llhttp has due to not buffering
+			{ eventID = "HTTP_ON_URL_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_VERSION", payload = "1.1" },
+			{ eventID = "HTTP_ON_VERSION_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_HEADERS_COMPLETE", payload = "" },
+			{ eventID = "HTTP_ON_MESSAGE_COMPLETE", payload = "" },
 		}
-		assertRecordedCallbacksMatch("asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n", expectedEventList)
+
+		local eventList = C_Networking.DecodeBufferAsArrayOf(stringBufferB, "llhttp_event_t")
+	assertEventInfoMatches(eventList, expectedEventList)
+	end)
+
+	it("should return a list of callback events when a request was passed as a single chunk", function()
+		local chunk = "GET /hello-world HTTP/1.1\r\n\r\n"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when a response was passed as a single chunk", function()
+		local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
+		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
+	local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
+	assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when a valid message was passed before an invalid one", function()
+		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when an invalid message was passed before a valid one", function()
+		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	end)
+
+	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
+		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
 	end)
 
 end)
 
 -- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
-it("should end in an ERROR state if an invalid message was passed", function()	end)
+describe("isOK", function()
+	it("should return true if an invalid message was just parsed", function()
+		local parser = IncrementalHttpParser()
+		local message = "asdf"
+
+		assertTrue(parser:isOK())
+		parser:ParseChunkAndRecordCallbackEvents(message)
+		assertFalse(parser:isOK())
+	end)
+end)
+
+
 it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
 it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
 it("should end in an UPGRADE state if a TLS upgrade request was passed", function()	end)
