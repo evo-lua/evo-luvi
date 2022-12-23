@@ -313,7 +313,6 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 
 end)
 
--- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
 describe("IsOK", function()
 
 	for label, testCase in pairs(testCases) do
