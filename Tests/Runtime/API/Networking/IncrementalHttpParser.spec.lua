@@ -398,7 +398,7 @@ end)
 describe("ReplayStoredEvents", function()
 	for label, testCase in pairs(testCases) do
 
-		it("should replay the recorded events exactly and in order when " .. label .. " is parsed", function()
+		it("should replay the recorded events when " .. label .. " is parsed", function()
 			local parser = IncrementalHttpParser()
 			local chunk = testCase.chunk
 			local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(chunk)
@@ -410,6 +410,7 @@ describe("ReplayStoredEvents", function()
 			end
 
 			-- codeUnderTest()
+			-- This is inaccurate since it calls all of them multiple times, doesn't check the exact order, and doesn't verify the payload...
 			for index, eventInfo in ipairs(expectedCallbackEvents) do
 				local eventID = eventInfo.eventID
 				assertFunctionCalls(codeUnderTest, parser, eventID)
