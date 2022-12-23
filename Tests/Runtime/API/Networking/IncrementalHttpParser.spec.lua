@@ -187,7 +187,13 @@ local testCases = {
 		isExpectingEOF = true,
 		shouldKeepConnectionAlive = false,
 	},
-	-- WebSocket upgrade request
+	["a valid WebSockets upgrade request"] = {
+		chunk = "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+		isOK = true,
+		isExpectingUpgrade = true,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+	},
 	-- TLS upgrade request
 	-- Invalid after valid message
 	-- Valid after invalid message
