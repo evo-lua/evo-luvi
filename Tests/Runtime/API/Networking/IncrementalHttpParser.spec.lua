@@ -144,7 +144,14 @@ local expectedCallbackEventsOnInput = {
 	},
 }
 
-local expectedParserStatesOnInput = {
+local testCases = {
+	["an invalid message"] = {
+		chunk = "asdf",
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepAliveConnection = false,
+	},
 	["an incomplete but otherwise valid request"]  = {
 		chunk = "POST /hello",
 		isOK = true,
@@ -243,11 +250,11 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 end)
 
 -- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
-describe("isOK", function()
+describe("IsOK", function()
 
-	for label, testCase in pairs(expectedParserStatesOnInput) do
+	for label, testCase in pairs(testCases) do
 		local expectedState = testCase.isOK
-		it("should return " .. tostring(expectedState) .. " when " .. label .. " is passed", function()
+		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
 			local parser = IncrementalHttpParser()
 
 			parser:ParseChunkAndRecordCallbackEvents(testCase.chunk)
