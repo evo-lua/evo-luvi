@@ -3,7 +3,6 @@ local IncrementalHttpParser = C_Networking.IncrementalHttpParser
 local llhttp = require("llhttp")
 local ffi = require("ffi")
 
-
 local ffi_string = ffi.string
 
 local function assertEventInfoMatches(actualEvents, expectedEvents)
@@ -14,14 +13,6 @@ local function assertEventInfoMatches(actualEvents, expectedEvents)
 	end
 end
 
--- Inputs:
--- No message
--- Partial valid message, split fields
--- Whole valid message
--- One and a haf valid messages
--- Two messages
--- One valid and one invalid message (interleaved also?)
-
 local function assertRecordedCallbacksMatch(message, expectedEventList)
 	local parser = IncrementalHttpParser()
 	local stringBuffer = parser:ParseChunkAndRecordCallbackEvents(message)
@@ -30,7 +21,7 @@ local function assertRecordedCallbacksMatch(message, expectedEventList)
 	assertEventInfoMatches(eventList, expectedEventList)
 end
 
-local expectedCallbackEvents = {
+local expectedCallbackEventsOnInput = {
 	["POST /hello"] = {
 		{ eventID = "HTTP_ON_MESSAGE_BEGIN", payload = "" },
 		{ eventID = "HTTP_ON_METHOD", payload = "POST" },
@@ -153,6 +144,29 @@ local expectedCallbackEvents = {
 	},
 }
 
+local expectedParserStatesOnInput = {
+	["an incomplete but otherwise valid request"]  = {
+		chunk = "POST /hello",
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepAliveConnection = false, -- TBD?
+	},
+	-- Incomplete but otherwise valid response
+	-- Complete (and valid) request
+	-- ["GET /hello-world HTTP/1.1\r\n\r\n"] = {
+
+	-- },
+	-- Complete (and valid) response
+	-- WebSocket upgrade request
+	-- TLS upgrade request
+	-- Invalid after valid message
+	-- Valid after invalid message
+	-- Invalid message between two valid message
+	-- Valid message between two invalid ones
+	-- request with Connection: Keep-alive header
+}
+
 describe("IncrementalHttpParser", function()
 
 describe("ParseChunkAndRecordCallbackEvents", function()
@@ -164,7 +178,7 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 
 	it("should return a list of callback events when a partial message was passed", function()
 		local chunk = "POST /hello"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when a message was split and passed as two separate chunks", function()
@@ -193,53 +207,65 @@ describe("ParseChunkAndRecordCallbackEvents", function()
 
 	it("should return a list of callback events when a request was passed as a single chunk", function()
 		local chunk = "GET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when a response was passed as a single chunk", function()
 		local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when multiple requests were passed in a single chunk", function()
 		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when multiple responses were passed in a single chunk", function()
 	local chunk = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHelloHTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nHello"
-	assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+	assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when a valid message was passed before an invalid one", function()
 		local chunk = "GET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when an invalid message was passed before a valid one", function()
 		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 	it("should return a list of callback events when a valid message was passed in between two invalid ones", function()
 		local chunk = "asadfasfthisisnotvalidatall\r\n\r\nGET /hello-world HTTP/1.1\r\n\r\nasadfasfthisisnotvalidatall\r\n\r\n"
-		assertRecordedCallbacksMatch(chunk, expectedCallbackEvents[chunk])
+		assertRecordedCallbacksMatch(chunk, expectedCallbackEventsOnInput[chunk])
 	end)
 
 end)
 
 -- TBD one per method: IsErrorState, isExpectingUpgrade, isExpectingEOF, shouldKeepAlive
 describe("isOK", function()
+
+	for label, testCase in pairs(expectedParserStatesOnInput) do
+		local expectedState = testCase.isOK
+		it("should return " .. tostring(expectedState) .. " when " .. label .. " is passed", function()
+			local parser = IncrementalHttpParser()
+
+			parser:ParseChunkAndRecordCallbackEvents(testCase.chunk)
+
+			local actualState = parser:IsOK()
+			assertEquals(actualState, expectedState)
+		end)
+	end
+
 	it("should return true if an invalid message was just parsed", function()
 		local parser = IncrementalHttpParser()
 		local message = "asdf"
 
-		assertTrue(parser:isOK())
+		assertTrue(parser:IsOK())
 		parser:ParseChunkAndRecordCallbackEvents(message)
-		assertFalse(parser:isOK())
+		assertFalse(parser:IsOK())
 	end)
 end)
-
 
 it("should end in an ERROR state if an invalid message was passed after a valid one", function()	end)
 it("should end in an UPGRADE state if a WebSocket upgrade request was passed", function()	end)
