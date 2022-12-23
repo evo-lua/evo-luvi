@@ -122,7 +122,7 @@ function IncrementalHttpParser:GetEventBufferSize()
 	return #self.callbackEventBuffer
 end
 
-function IncrementalHttpParser:isOK()
+function IncrementalHttpParser:IsOK()
 	return tonumber(llhttp_get_errno(self.state)) == llhttp.ERROR_TYPES.HPE_OK
 end
 
