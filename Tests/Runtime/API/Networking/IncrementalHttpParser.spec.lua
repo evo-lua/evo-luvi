@@ -144,7 +144,7 @@ local expectedCallbackEventsOnInput = {
 	},
 }
 
-local testCases = {
+local expectedParserStateTests = {
 	["an invalid message"] = {
 		chunk = "asdf",
 		isOK = false,
@@ -315,7 +315,7 @@ end)
 
 describe("IsOK", function()
 
-	for label, testCase in pairs(testCases) do
+	for label, testCase in pairs(expectedParserStateTests) do
 		local expectedState = testCase.isOK
 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
 			local parser = IncrementalHttpParser()
@@ -331,7 +331,7 @@ end)
 
 describe("IsExpectingUpgrade", function()
 
-	for label, testCase in pairs(testCases) do
+	for label, testCase in pairs(expectedParserStateTests) do
 		local expectedState = testCase.isExpectingUpgrade
 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
 			local parser = IncrementalHttpParser()
@@ -347,7 +347,7 @@ end)
 
 describe("IsExpectingEOF", function()
 
-	for label, testCase in pairs(testCases) do
+	for label, testCase in pairs(expectedParserStateTests) do
 		local expectedState = testCase.isExpectingEOF
 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
 			local parser = IncrementalHttpParser()
@@ -363,7 +363,7 @@ end)
 
 describe("ShouldKeepConnectionAlive", function()
 
-	for label, testCase in pairs(testCases) do
+	for label, testCase in pairs(expectedParserStateTests) do
 		local expectedState = testCase.shouldKeepConnectionAlive
 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
 			local parser = IncrementalHttpParser()
