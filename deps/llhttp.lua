@@ -355,7 +355,42 @@ local llhttp = {
 			int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
 			void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
 		};
-	]],
+	]]
+	..
+	[[
+			typedef struct llhttp_userdata_header {
+				// version, method, status_code, is_upgrade: stored by llhttp
+				// url, reason, headers, body, is_complete: stored by us
+
+				// Adjusted based on input (set by the llhttp-ffi glue code, in C)
+				bool is_message_complete;
+
+				size_t url_relative_offset;
+				size_t reason_relative_offset;
+				size_t headers_relative_offset;
+				size_t body_relative_offset;
+
+				size_t url_length;
+				size_t reason_length;
+				size_t num_headers;
+				size_t body_length;
+
+				// Configurable (set by llhttp-ffi API calls, in Lua)
+				size_t max_url_length;
+				size_t max_reason_length;
+				size_t max_num_headers;
+				size_t max_header_field_length;
+				size_t max_header_value_length;
+				size_t max_body_length;
+
+			} llhttp_userdata_header_t;
+
+			typedef struct llhttp_userdata {
+				llhttp_userdata_header_t header;
+				luajit_stringbuffer_reference_t buffer;
+			} llhttp_userdata_t;
+
+		]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
 		HTTP_REQUEST = 1,
@@ -463,6 +498,14 @@ local llhttp = {
 		"HTTP_ON_RESET",
 	},
 	SHARED_OBJECT_NAME = isWindows and "llhttp.dll" or "./libllhttp.so",
+
+	-- Sane defaults, but they may have to be adjusted for more specialized use cases or to balance RAM usage per client
+	MAX_URL_LENGTH_IN_BYTES = 1024,
+	MAX_REASON_PHRASE_LENGTH_IN_BYTES = 256,
+	MAX_NUM_HEADER_KEYVALUE_PAIRS = 32,
+	MAX_HEADER_FIELD_LENGTH_IN_BYTES = 64,
+	MAX_HEADER_VALUE_LENGTH_IN_BYTES = 256,
+	MAX_BODY_LENGTH_IN_BYTES = 1024 * 1024, -- Large messages should likely use the streaming mode and write to temporary files instead
 }
 
 -- In order to use the same bindings when statically linking the API (with a lightuserdata wrapper), defer loading
@@ -488,6 +531,82 @@ local tonumber = tonumber
 function llhttp.version()
 	local llhttpVersion = llhttp.bindings.llhttp_get_version_string()
 	return ffi.string(llhttpVersion)
+end
+
+local buffer = require("string.buffer")
+
+-- Cannot move this to the C exports table since it's dynamically sized based on parameters available in Lua (and garbage collected)
+function llhttp.llhttp_userdata_allocate_buffer()
+
+	local maxMessageSize = llhttp.get_max_supported_message_size()
+	local maxBufferSize = ffi.sizeof("llhttp_userdata_t") + maxMessageSize
+	local userdataBuffer = buffer.new(maxBufferSize)
+	local userdata = ffi.new("llhttp_userdata_t")
+
+	-- The reason to store this once per parser is that it can be adjusted on the fly (not applied retroactively)
+	userdata.header.max_url_length = llhttp.MAX_URL_LENGTH_IN_BYTES
+	userdata.header.max_reason_length = llhttp.MAX_REASON_PHRASE_LENGTH_IN_BYTES
+	userdata.header.max_num_headers = llhttp.MAX_NUM_HEADER_KEYVALUE_PAIRS
+	userdata.header.max_header_field_length = llhttp.MAX_HEADER_FIELD_LENGTH_IN_BYTES
+	userdata.header.max_header_value_length = llhttp.MAX_HEADER_VALUE_LENGTH_IN_BYTES
+	userdata.header.max_body_length = llhttp.MAX_BODY_LENGTH_IN_BYTES
+
+	-- This is just so that the FFI layer can safely write to the buffer area (since we can't easily reserve more space from C)
+	local writableAreaStartPointer, numBytesAvailable = userdataBuffer:reserve(maxBufferSize)
+
+	-- Since buffer.ptr is self-referential, set it to point to the next available memory (to skip the header when writing to it in C)
+	userdata.buffer.ptr = writableAreaStartPointer + ffi.sizeof("llhttp_userdata_t")
+	userdata.buffer.size = numBytesAvailable - ffi.sizeof("llhttp_userdata_t")
+	userdata.buffer.used = 0
+
+	userdataBuffer:putcdata(userdata, ffi.sizeof("llhttp_userdata_t")) -- NOT committed! User needs to call :commit() on the buffer later
+
+	return userdataBuffer
+end
+
+
+function llhttp.get_max_supported_message_size()
+	-- The size of all dynamic fields is semi-adjustable, but we have to pin them before allocating the buffer and passing it to C
+	return llhttp.MAX_URL_LENGTH_IN_BYTES
+	 +llhttp.MAX_REASON_PHRASE_LENGTH_IN_BYTES
+	  + llhttp.MAX_NUM_HEADER_KEYVALUE_PAIRS
+	+ llhttp.MAX_HEADER_FIELD_LENGTH_IN_BYTES
+	+ llhttp.MAX_HEADER_VALUE_LENGTH_IN_BYTES
+	+ llhttp.MAX_BODY_LENGTH_IN_BYTES
+end
+
+function llhttp.llhttp_userdata_get_header(stringBuffer)
+	local ref, length = stringBuffer:ref()
+	local userdata = ffi.cast("llhttp_userdata_t*", ref)
+
+	local userdataHeader = userdata.header
+	return userdataHeader
+end
+
+function llhttp.llhttp_userdata_get_buffer(stringBuffer)
+	local ref, length = stringBuffer:ref()
+	local userdata = ffi.cast("llhttp_userdata_t*", ref)
+
+	local userdataBuffer = userdata.buffer
+	return userdataBuffer
+end
+
+function llhttp.llhttp_userdata_get_message(stringBuffer)
+
+	local header = llhttp.llhttp_userdata_get_header(stringBuffer)
+	local buffer = llhttp.llhttp_userdata_get_buffer(stringBuffer)
+
+
+	-- TODO
+	local message = {
+		isComplete = (header.is_message_complete == 1),
+		requestTarget = ffi_string(buffer.ptr + header.url_relative_offset, header.url_length),
+		reasonPhrase = ffi_string(buffer.ptr + header.reason_relative_offset, header.reason_length),
+		body = ffi_string(buffer.ptr + header.body_relative_offset, header.body_length), -- TODO stream = file path
+		headers = {}, -- TODO
+	}
+
+	return message
 end
 
 return llhttp

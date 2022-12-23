@@ -21,6 +21,9 @@ local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
 
+local llhttp_userdata_allocate_buffer = llhttp.llhttp_userdata_allocate_buffer
+local llhttp_userdata_get_message = llhttp.llhttp_userdata_get_message
+
 local IncrementalHttpParser = {}
 
 function IncrementalHttpParser:Construct()
@@ -36,72 +39,24 @@ function IncrementalHttpParser:Construct()
     -- The parser's userdata field here serves as an "event log" of sorts:
     -- To avoid C->Lua callbacks (which are extremely slow), buffer all events there... then replay them in Lua for fun and profit!
     -- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 17 extra bytes/event)
-    instance.callbackEventBuffer = string_buffer.new()
+    -- instance.callbackEventBuffer = string_buffer.new()
     -- We can't easily pass the actual LuaJIT SBuf type to C, so use a proxy type to represent the writable area of the buffer instead
-    instance.state.data = ffi.new("luajit_stringbuffer_reference_t")
+    local userdataBuffer = llhttp_userdata_allocate_buffer()
+	instance.state.data = ffi_cast("llhttp_userdata_t*", userdataBuffer) -- This is safe because llhttp stores header + reference first
+	instance.userdataBuffer = userdataBuffer
 
     setmetatable(instance, {__index = self})
 
     return instance
 end
 
-function IncrementalHttpParser:GetNumBufferedEvents()
-    return #self.callbackEventBuffer / ffi_sizeof("llhttp_event_t")
-end
+function IncrementalHttpParser:ParseNextChunk(chunk)
+	llhttp_execute(self.state, chunk, #chunk)
 
--- TODO add tests that catch the pragma packing issue, add this to llhttp (for llhttp_event_t tests, C code)
-local function llhttpEvent_ToString(event)
-    local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
-    local NO_PAYLOAD_STRING = "no payload"
-    local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(
-                                               event.payload_start_pointer,
-                                               event.payload_length))
+	local userdata = ffi_cast("llhttp_userdata_t*", self.userdataBuffer)
+	self.userdataBuffer:commit(userdata.buffer.used)
 
-    local hasPayload = (tonumber(event.payload_length) > 0)
-    local payloadString = hasPayload and READABLE_PAYLOAD_STRING or
-                              NO_PAYLOAD_STRING
-
-    return bold(format("<llhttp-ffi event #%s (%s), %s>",
-                       tonumber(event.event_id), readableEventName,
-                       payloadString))
-end
-
--- TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen) -> HTTP_INTERNAL_BUFFER_OOM_ERROR
-function IncrementalHttpParser:ReplayCallbackEvent(event)
-    local eventID = event.event_id
-    eventID = llhttp.FFI_EVENTS[eventID]
-    -- DEBUG("Replaying callback event " .. eventID .. " with payload " ..
-            --   ffi.string(event.payload_start_pointer, event.payload_length))
-
-    if type(self[eventID]) ~= "function" then return end
-
-    self[eventID](self, eventID, event)
-end
-
--- ReplayRecordedCallbackEvents(callbackRecord)
-function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
-    local numBufferedEvents = C_Networking.GetNumElementsOfType(callbackRecord,
-                                                                "llhttp_event_t")
-
-    -- DEBUG("Replaying " .. tostring(numBufferedEvents) ..
-    --           " recorded callback events")
-
-    for cIndex = 0, numBufferedEvents - 1, 1 do
-
-        local event = C_Networking.DecodeElementAtBufferIndexAs(callbackRecord,
-                                                                cIndex,
-                                                                "llhttp_event_t")
-        -- local eventID = event.event_id
-        -- local payloadStartPointer = event.payload_start_pointer
-        -- local payloadLength = event.payload_length
-        -- print(event, eventID, payloadStartPointer, payloadLength)
-
-        self:ReplayCallbackEvent(event)
-    end
-end
-
-function IncrementalHttpParser:ClearBufferedEvents()
-    self.callbackEventBuffer:reset()
+	return llhttp_userdata_get_message(self.userdataBuffer)
 end
 
 function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)

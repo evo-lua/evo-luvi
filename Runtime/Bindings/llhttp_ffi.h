@@ -57,6 +57,79 @@ struct luajit_stringbuffer_reference {
 };
 typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
 
+
+	// -- llhttp_userdata_stringbuffer_allocate
+	// -- llhttp_userdata_get_required_size
+	// -- llhttp_userdata_get_actual_size
+	// -- llhttp_userdata_message_fits_buffer
+
+	// -- llhttp_userdata_reset
+	// -- llhttp_userdata_is_message_complete
+	// -- llhttp_userdata_is_overflow_error
+	// -- llhttp_userdata_is_streaming_body
+	// -- llhttp_userdata_get_body_tempfile_path
+	// -- lhttp_userdata_is_buffering_body
+
+	// -- llhttp_userdata_get_max_url_size
+	// -- llhttp_userdata_get_max_reason_size
+	// -- llhttp_userdata_get_max_body_size
+	// -- llhttp_userdata_get_max_header_field_size
+	// -- llhttp_userdata_get_max_header_value_size
+	// -- llhttp_userdata_get_max_headers_array_size
+	// -- llhttp_userdata_debug_dump
+
+	// stringbuffer_read_counted_string(ptr, len)
+
+// struct counted_string {
+// 	size_t length;
+
+// };
+// typedef struct counted_string counted_string_t;
+
+// struct dynamic_message_buffer {
+// 	bool is_message_complete;
+// 	uint8_t num_version_bytes_used;
+
+// };
+// typedef struct dynamic_message_buffer message_buffer_t;
+
+// struct llhttp_userdata {
+// 	luajit_stringbuffer_t message_buffer;
+// };
+// typedef struct llhttp_userdata llhttp_userdata_t;
+
+typedef struct llhttp_userdata_header {
+	// version, method, status_code, is_upgrade: stored by llhttp
+	// url, reason, headers, body, is_complete: stored by us
+
+	// Adjusted based on input (set by the llhttp-ffi glue code, in C)
+	bool is_message_complete;
+
+	size_t url_relative_offset;
+	size_t reason_relative_offset;
+	size_t headers_relative_offset;
+	size_t body_relative_offset;
+
+	size_t url_length;
+	size_t reason_length;
+	size_t num_headers;
+	size_t body_length;
+
+	// Configurable (set by llhttp-ffi API calls, in Lua)
+	size_t max_url_length;
+	size_t max_reason_length;
+	size_t max_num_headers;
+	size_t max_header_field_length;
+	size_t max_header_value_length;
+	size_t max_body_length;
+
+} llhttp_userdata_header_t;
+
+typedef struct llhttp_userdata {
+	llhttp_userdata_header_t header;
+	luajit_stringbuffer_reference_t buffer;
+} llhttp_userdata_t;
+
 // A thin wrapper for the llhttp API, only needed to expose the statically-linked llhttp symbols to Lua and load them via FFI
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
