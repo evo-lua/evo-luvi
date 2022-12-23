@@ -194,6 +194,13 @@ local testCases = {
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
 	},
+	["a mandatory TLS upgrade request"] = {
+		chunk = "OPTIONS * HTTP/1.1\r\nHost: example.bank.com\r\nUpgrade: TLS/1.0\r\nConnection: Upgrade\r\n\r\n",
+		isOK = true,
+		isExpectingUpgrade = true,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+	},
 	-- TLS upgrade request
 	-- Invalid after valid message
 	-- Valid after invalid message
