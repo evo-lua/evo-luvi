@@ -102,6 +102,9 @@ end
 
 -- ReplayRecordedCallbackEvents(callbackRecord)
 function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
+    self.bufferedMessage:Reset() -- TODO Test
+
+
     local numBufferedEvents = GetNumElementsOfType(callbackRecord,
                                                                 "llhttp_event_t")
 
@@ -113,6 +116,8 @@ function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
 
         self:ReplayCallbackEvent(event)
     end
+
+	return self.bufferedMessage
 end
 
 function IncrementalHttpParser:ClearBufferedEvents()
@@ -284,6 +289,7 @@ end
 
 -- TODO DRY
 
+-- TODO skip those that llhttp already stores for us, just copy on message complete (benchmark impact)
 function IncrementalHttpParser:HTTP_ON_METHOD(eventID, payload)
     -- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
     self.bufferedMessage.method:putcdata(payload.payload_start_pointer,                                         payload.payload_length)
@@ -314,7 +320,7 @@ function IncrementalHttpParser:HTTP_ON_MESSAGE_COMPLETE(eventID, payload)
     -- print(self.bufferedMessage:ToString())
 	-- dump(self.bufferedMessage)
 	-- print(self.bufferedMessage:ToString())
-    self.bufferedMessage:Reset()
+    -- self.bufferedMessage:Reset()
 end
 
 function IncrementalHttpParser:GetBufferedMessage() return self.bufferedMessage end
