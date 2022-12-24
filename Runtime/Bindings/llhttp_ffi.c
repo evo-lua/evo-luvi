@@ -185,6 +185,7 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_get_version_string = llhttp_get_version_string;
 	llhttp_exports_table.llhttp_store_event = llhttp_get_version_string; // TODO remove
 	llhttp_exports_table.stringbuffer_add_event =  llhttp_get_version_string; // TODO remove
+	// TODO add defines here (readonly), as functions - then test in Lua
 
 	// This wrapper must be bound to the llhttp namespace on initialization from Lua, in place of the dynamic binding (.so/.dll load)
 	lua_getglobal(L, "STATIC_FFI_EXPORTS");
