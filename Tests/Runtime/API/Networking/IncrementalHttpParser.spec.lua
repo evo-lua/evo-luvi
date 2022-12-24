@@ -426,11 +426,20 @@ describe("ReplayStoredEvents", function()
 		local parser = IncrementalHttpParser()
 		local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(chunk)
 		local message = parser:ReplayRecordedCallbackEvents(callbackRecord)
-		print(message:ToString())
 		-- assert buffer contents
-		assertEquals(message.method, "GET")
-		assertEquals(message.httpVersion, "1.1")
-		assertEquals(message.requestTarget, "/chat")
+		assertEquals(tostring(message.method), "GET")
+		assertEquals(tostring(message.httpVersion), "1.1")
+		assertEquals(tostring(message.requestTarget), "/chat")
+		assertEquals(message:ToString(), chunk)
+
+		local expectedHeaders = {
+			{ "Host", "example.com:8000" },
+			{ "Upgrade", "websocket" },
+			 { "Connection", "Upgrade" },
+			 { "Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==" },
+			 { "Sec-WebSocket-Version", "13" }
+		}
+		assertEquals(message.headers, expectedHeaders)
 		-- Headers TODO
 	end)
 end)
