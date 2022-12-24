@@ -9,6 +9,25 @@
 #include "stdint.h"
 #include "string.h"
 
+
+#define MAX_HEADERS 100
+
+// Define a structure to represent a HTTP message
+typedef struct http_message {
+  char method[16];
+  char uri[256];
+  char http_version[16];
+  struct {
+    char name[256];
+    char value[4096];
+  } headers[MAX_HEADERS];
+  size_t num_headers;
+  char body[4096];
+} http_message_t;
+
+// typedef struct http_message http_message_t;
+
+
 static void DEBUG(const char* message)
 {
 #ifdef ENABLE_LLHTTP_CALLBACK_LOGGING
@@ -118,24 +137,34 @@ LLHTTP_DATA_CALLBACK(on_url)
 LLHTTP_DATA_CALLBACK(on_status)
 // LLHTTP_DATA_CALLBACK(on_method)
 int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
-		DEBUG("on_method");
+	DEBUG("on_method");
+
+	http_message_t *http_message = (http_message_t*) parser_state->data;
+
+  	if (length > sizeof(http_message->method) - 1) {
+		// TODO
+    	length = sizeof(http_message->method) - 1;
+  	}
+  	strncpy(http_message->method, at, length);
+  	http_message->method[length] = '\0';
+// }
 
 		// TODO test truncate if max size too small
 	// if numBytesRequired > numBytesAvailable then return HPE_USER or sth;
 
-		llhttp_userdata_t* userdata = (llhttp_userdata_t*) parser_state->data;
-		llhttp_userdata_header_t* header = &userdata->header;
-		luajit_stringbuffer_reference_t* buffer = &userdata->buffer;
+		// llhttp_userdata_t* userdata = (llhttp_userdata_t*) parser_state->data;
+		// llhttp_userdata_header_t* header = &userdata->header;
+		// luajit_stringbuffer_reference_t* buffer = &userdata->buffer;
 
-		// This assumes that there has been no commit/the start pointer to the buffer itself never changes...
-		size_t url_start_pointer = (size_t) *buffer->ptr + header->url_relative_offset;
-		memcpy(&url_start_pointer, at, length);
+		// // This assumes that there has been no commit/the start pointer to the buffer itself never changes...
+		// size_t url_start_pointer = (size_t) *buffer->ptr + header->url_relative_offset;
+		// memcpy(&url_start_pointer, at, length);
 
-		// Make sure we can actually read it via ffi.string just by passing the pointer and length
-		header->url_relative_offset += length;
+		// // Make sure we can actually read it via ffi.string just by passing the pointer and length
+		// header->url_relative_offset += length;
 
-		// Indicates (to LuaJIT) how many bytes need to be committed to the buffer later (TBD: Do we even need to commit them?)
-		buffer->used += length;
+		// // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later (TBD: Do we even need to commit them?)
+		// buffer->used += length;
 
 		return HPE_OK;
 }

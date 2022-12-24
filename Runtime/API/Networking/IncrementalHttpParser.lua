@@ -41,9 +41,10 @@ function IncrementalHttpParser:Construct()
     -- This effectively trades CPU time for memory and should be "OK" for all common use cases (20-50x speedup vs. 17 extra bytes/event)
     -- instance.callbackEventBuffer = string_buffer.new()
     -- We can't easily pass the actual LuaJIT SBuf type to C, so use a proxy type to represent the writable area of the buffer instead
-    local userdataBuffer = llhttp_userdata_allocate_buffer()
-	instance.state.data = ffi_cast("llhttp_userdata_t*", userdataBuffer) -- This is safe because llhttp stores header + reference first
-	instance.userdataBuffer = userdataBuffer
+    -- local userdataBuffer = llhttp_userdata_allocate_buffer()
+	-- instance.state.data = ffi_cast("llhttp_userdata_t*", userdataBuffer) -- This is safe because llhttp stores header + reference first
+	-- instance.userdataBuffer = userdataBuffer
+	instance.state.data = ffi.new("http_message_t")
 
     setmetatable(instance, {__index = self})
 
@@ -53,10 +54,12 @@ end
 function IncrementalHttpParser:ParseNextChunk(chunk)
 	llhttp_execute(self.state, chunk, #chunk)
 
-	local userdata = ffi_cast("llhttp_userdata_t*", self.userdataBuffer)
-	self.userdataBuffer:commit(userdata.buffer.used)
+	local userdata = ffi_cast("http_message_t*", self.state.data)
+	-- self.userdataBuffer:commit(userdata.buffer.used)
 
-	return llhttp_userdata_get_message(self.userdataBuffer)
+	return userdata
+
+	-- return llhttp_userdata_get_message(self.userdataBuffer)
 end
 
 function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)

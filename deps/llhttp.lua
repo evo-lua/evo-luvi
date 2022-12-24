@@ -390,6 +390,22 @@ local llhttp = {
 				luajit_stringbuffer_reference_t buffer;
 			} llhttp_userdata_t;
 
+
+
+			// Define a structure to represent a HTTP message
+			typedef struct http_message {
+			  char method[16];
+			  char uri[256];
+			  char http_version[16];
+			  struct {
+				char name[256];
+				char value[4096];
+			  } headers[100];
+			  size_t num_headers;
+			  char body[4096];
+			};
+			typedef struct http_message http_message_t;
+
 		]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
