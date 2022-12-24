@@ -421,7 +421,18 @@ describe("ReplayStoredEvents", function()
 		end)
 	end
 
-	-- it("should return a HTTP message")
+	it("should return a HTTP message representing the accumulated data", function()
+		local chunk = "GET /chat HTTP/1.1\r\nHost: example.com:8000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n"
+		local parser = IncrementalHttpParser()
+		local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(chunk)
+		local message = parser:ReplayRecordedCallbackEvents(callbackRecord)
+		print(message:ToString())
+		-- assert buffer contents
+		assertEquals(message.method, "GET")
+		assertEquals(message.httpVersion, "1.1")
+		assertEquals(message.requestTarget, "/chat")
+		-- Headers TODO
+	end)
 end)
 
 
