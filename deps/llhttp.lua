@@ -400,7 +400,7 @@ local llhttp = {
 			  struct {
 				char name[256];
 				char value[4096];
-			  } headers[100];
+			  } headers[32];
 			  size_t num_headers;
 			  char body[4096];
 			};
