@@ -21,13 +21,21 @@ local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
 
+
+local buffer = require("string.buffer")
+local buffer_new = buffer.new
+
+
+
 local IncrementalHttpParser = {}
 
 function IncrementalHttpParser:Construct()
     local instance = {
         state = ffi.new("llhttp_t"),
         settings = ffi.new("llhttp_settings_t"),
-        bufferedMessage = HttpMessage()
+        bufferedMessage = HttpMessage(),
+		lastEncounteredHeaderFieldName = buffer_new(),
+		lastEncounteredHeaderValue = buffer_new(),
     }
 
     llhttp_settings_init(instance.settings)
@@ -224,14 +232,18 @@ end
 --     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
 --     --       payload.payload_length)
 -- end
--- function IncrementalHttpParser:HTTP_HEADER_FIELD(eventID, payload)
---     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
---     --       payload.payload_length)
--- end
--- function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload)
---     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
---     --       payload.payload_length)
--- end
+
+function IncrementalHttpParser:HTTP_ON_HEADER_FIELD(eventID, payload)
+    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+    --       payload.payload_length)
+	self.lastEncounteredHeaderFieldName:putcdata(payload.payload_start_pointer, payload.payload_length)
+end
+
+function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload)
+    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+    --       payload.payload_length)
+	self.lastEncounteredHeaderValue:putcdata(payload.payload_start_pointer, payload.payload_length)
+end
 -- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME(eventID, payload)
 --     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
 --     --       payload.payload_length)
@@ -256,14 +268,24 @@ end
 --     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
 --     --       payload.payload_length)
 -- end
+
+local tostring =tostring
 -- function IncrementalHttpParser:HTTP_ON_HEADER_FIELD_COMPLETE(eventID, payload)
 --     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
 --     --       payload.payload_length)
+
 -- end
--- function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
---     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
---     --       payload.payload_length)
--- end
+function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
+    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+    --       payload.payload_length)
+	local fieldName = tostring(self.lastEncounteredHeaderFieldName)
+	local fieldValue = tostring(self.lastEncounteredHeaderValue)
+
+	self.bufferedMessage.headers[#self.bufferedMessage.headers+1] = { fieldName, fieldValue}
+
+	self.lastEncounteredHeaderFieldName:reset()
+	self.lastEncounteredHeaderValue:reset()
+end
 -- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID,
 --                                                                      payload)
 --     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
