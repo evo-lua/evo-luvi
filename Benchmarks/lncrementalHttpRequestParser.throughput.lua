@@ -30,9 +30,9 @@ function benchmark:OnSetup()
 end
 
 function benchmark:OnRun()
-	local httpMessage = parser:ParseNextChunk(request)
-	-- parser:ReplayRecordedCallbackEvents(callbackRecord)
-	-- callbackRecord:reset()
+	local callbackRecord = parser:ParseChunkAndRecordCallbackEvents(request)
+	parser:ReplayRecordedCallbackEvents(callbackRecord)
+	callbackRecord:reset()
 
 	parser.bufferedMessage:Reset() -- TODO
 	-- os.exit(1)

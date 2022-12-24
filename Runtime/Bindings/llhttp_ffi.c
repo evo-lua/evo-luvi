@@ -49,26 +49,19 @@ void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_even
 
 int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event)
 {
-	// llhttp_userdata_t* userdata = (llhttp_userdata_t*)parser->data;
-	// http_message_t* last_message = userdata->last_http_message;
+	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
 
-	// switch(event->event_id) {
-		// case on_method:
-			// strcopy(last_message->http_method[last_message->num_method_bytes_used], event)
+	if (event_buffer == NULL)
+		return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
 
-	// }
+	size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
+	if (num_bytes_required > event_buffer->size) {
+		// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua
+		DEBUG("Failed to store an llhttp event in the write buffer (not enough space reserved ahead of time?)");
+		return num_bytes_required - event_buffer->size;
+	}
 
-	// if (event_buffer == NULL)
-	// 	return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
-
-	// size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
-	// if (num_bytes_required > event_buffer->size) {
-	// 	// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua
-	// 	DEBUG("Failed to store an llhttp event in the write buffer (not enough space reserved ahead of time?)");
-	// 	return num_bytes_required - event_buffer->size;
-	// }
-
-	// stringbuffer_add_event(event_buffer, event);
+	stringbuffer_add_event(event_buffer, event);
 
 	return 0;
 }
@@ -116,29 +109,7 @@ LLHTTP_INFO_CALLBACK(on_reset)
 
 LLHTTP_DATA_CALLBACK(on_url)
 LLHTTP_DATA_CALLBACK(on_status)
-// LLHTTP_DATA_CALLBACK(on_method)
-int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
-		DEBUG("on_method");
-
-		// TODO test truncate if max size too small
-	// if numBytesRequired > numBytesAvailable then return HPE_USER or sth;
-
-		llhttp_userdata_t* userdata = (llhttp_userdata_t*) parser_state->data;
-		llhttp_userdata_header_t* header = &userdata->header;
-		luajit_stringbuffer_reference_t* buffer = &userdata->buffer;
-
-		// This assumes that there has been no commit/the start pointer to the buffer itself never changes...
-		size_t url_start_pointer = (size_t) *buffer->ptr + header->url_relative_offset;
-		memcpy(&url_start_pointer, at, length);
-
-		// Make sure we can actually read it via ffi.string just by passing the pointer and length
-		header->url_relative_offset += length;
-
-		// Indicates (to LuaJIT) how many bytes need to be committed to the buffer later (TBD: Do we even need to commit them?)
-		buffer->used += length;
-
-		return HPE_OK;
-}
+LLHTTP_DATA_CALLBACK(on_method)
 LLHTTP_DATA_CALLBACK(on_version)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
