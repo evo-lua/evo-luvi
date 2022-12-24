@@ -78,23 +78,38 @@ function IncrementalHttpParser:ReplayCallbackEvent(event)
     self[eventID](self, eventID, event)
 end
 
+local function GetNumElementsOfType(stringBuffer, cType)
+	return #stringBuffer / ffi_sizeof(cType)
+end
+
+local function DecodeElementAtBufferIndexAs(stringBuffer, cIndex, cType)
+	-- cIndex = cIndex or 0
+
+	-- if #stringBuffer == 0 then
+	-- 	return
+	-- end
+
+	local startPointer = stringBuffer:ref()
+	local offset = cIndex * ffi_sizeof(cType)
+
+	-- This isn't a GC anchor and might be collected if we don't copy it to create a new cdata object...
+	local event = ffi_cast("llhttp_event_t*", startPointer + offset)
+	-- event = ffi_new("llhttp_event_t*", event) -- Doesn't matter since the buffer is still valid?
+
+	return event
+end
+
+
 -- ReplayRecordedCallbackEvents(callbackRecord)
 function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
-    local numBufferedEvents = C_Networking.GetNumElementsOfType(callbackRecord,
+    local numBufferedEvents = GetNumElementsOfType(callbackRecord,
                                                                 "llhttp_event_t")
-
-    -- DEBUG("Replaying " .. tostring(numBufferedEvents) ..
-    --           " recorded callback events")
 
     for cIndex = 0, numBufferedEvents - 1, 1 do
 
-        local event = C_Networking.DecodeElementAtBufferIndexAs(callbackRecord,
-                                                                cIndex,
-                                                                "llhttp_event_t")
-        -- local eventID = event.event_id
-        -- local payloadStartPointer = event.payload_start_pointer
-        -- local payloadLength = event.payload_length
-        -- print(event, eventID, payloadStartPointer, payloadLength)
+		-- TBD faster to just consume the buffer (and skip reset)?
+        local event = DecodeElementAtBufferIndexAs(callbackRecord,                                                               cIndex,                                                                "llhttp_event_t")
+
 
         self:ReplayCallbackEvent(event)
     end
@@ -192,80 +207,80 @@ for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
         end
 end
 
-function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_HEADER_FIELD(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADERS_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_URL_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_STATUS_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_VERSION_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_FIELD_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID,
-                                                                     payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID,
-                                                                      payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_HEADER(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_COMPLETE(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-        --   payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_RESET(eventID, payload)
-    -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-    --       payload.payload_length)
-end
+-- function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_HEADER_FIELD(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_HEADERS_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_URL_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_STATUS_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_VERSION_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_HEADER_FIELD_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID,
+--                                                                      payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID,
+--                                                                       payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_HEADER(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_CHUNK_COMPLETE(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--         --   payload.payload_length)
+-- end
+-- function IncrementalHttpParser:HTTP_ON_RESET(eventID, payload)
+--     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
+--     --       payload.payload_length)
+-- end
 
 -- TODO DRY
 
