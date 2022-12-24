@@ -19,6 +19,7 @@ function HttpMessage:Construct()
 		reasonPhrase = buffer_new(DEFAULT_BUFFER_SIZE_IN_BYTES),
 		headers = {},
 		body = buffer_new(DEFAULT_BUFFER_SIZE_IN_BYTES),
+		isComplete = false,
 	}
 
 	setmetatable(instance, self)
@@ -33,6 +34,7 @@ function HttpMessage:Reset()
 	self.statusCode:reset()
 	self.reasonPhrase:reset()
 	self.body:reset()
+	self.isComplete = false
 
 	table_clear(self.headers)
 end
