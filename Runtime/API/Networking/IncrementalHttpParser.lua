@@ -343,6 +343,7 @@ function IncrementalHttpParser:HTTP_ON_MESSAGE_COMPLETE(eventID, payload)
 	-- dump(self.bufferedMessage)
 	-- print(self.bufferedMessage:ToString())
     -- self.bufferedMessage:Reset()
+	self.bufferedMessage.isComplete = true
 end
 
 function IncrementalHttpParser:GetBufferedMessage() return self.bufferedMessage end
