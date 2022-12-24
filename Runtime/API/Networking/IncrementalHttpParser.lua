@@ -10,6 +10,7 @@ local ffi_string = ffi.string
 
 local format = format
 local tonumber = tonumber
+local type = type
 local table_insert = table.insert
 local bold = transform.bold
 
@@ -53,33 +54,9 @@ function IncrementalHttpParser:Construct()
     return instance
 end
 
-function IncrementalHttpParser:GetNumBufferedEvents()
-    return #self.callbackEventBuffer / ffi_sizeof("llhttp_event_t")
-end
-
--- TODO add tests that catch the pragma packing issue, add this to llhttp (for llhttp_event_t tests, C code)
-local function llhttpEvent_ToString(event)
-    local readableEventName = llhttp.FFI_EVENTS[tonumber(event.event_id)]
-    local NO_PAYLOAD_STRING = "no payload"
-    local READABLE_PAYLOAD_STRING = format("with payload: %s", ffi_string(
-                                               event.payload_start_pointer,
-                                               event.payload_length))
-
-    local hasPayload = (tonumber(event.payload_length) > 0)
-    local payloadString = hasPayload and READABLE_PAYLOAD_STRING or
-                              NO_PAYLOAD_STRING
-
-    return bold(format("<llhttp-ffi event #%s (%s), %s>",
-                       tonumber(event.event_id), readableEventName,
-                       payloadString))
-end
-
--- TODO raise error event that can be used to DC client or send an error code if eventID is 0 (should never happen) -> HTTP_INTERNAL_BUFFER_OOM_ERROR
 function IncrementalHttpParser:ReplayCallbackEvent(event)
     local eventID = event.event_id
     eventID = llhttp.FFI_EVENTS[eventID]
-    -- DEBUG("Replaying callback event " .. eventID .. " with payload " ..
-            --   ffi.string(event.payload_start_pointer, event.payload_length))
 
     if type(self[eventID]) ~= "function" then return end
 
@@ -128,10 +105,6 @@ function IncrementalHttpParser:ReplayRecordedCallbackEvents(callbackRecord)
 	return self.bufferedMessage
 end
 
-function IncrementalHttpParser:ClearBufferedEvents()
-    self.callbackEventBuffer:reset()
-end
-
 function IncrementalHttpParser:ParseChunkAndRecordCallbackEvents(chunk)
     if chunk == "" then return end
 
@@ -169,15 +142,6 @@ function IncrementalHttpParser:GetMaxRequiredBufferSize(chunk)
     -- However, since the buffer is reused for each chunk and chunks are limited by the OS' RECV buffer (i.e., 4-16k max), it's acceptable?
     local upperBound = #chunk * ffi_sizeof("llhttp_event_t")
     return upperBound
-end
-
-function IncrementalHttpParser:AddBufferedEvent(event)
-    self.callbackEventBuffer:putcdata(event, ffi_sizeof("llhttp_event_t"))
-end
-
--- TODO improve worst-case estimate: we cannot get individual characters in a single chunk (and llhttp docs are wrong, the events only trigger the first time that the character was encountered and not every single time...)
-function IncrementalHttpParser:GetEventBufferSize()
-    return #self.callbackEventBuffer
 end
 
 function IncrementalHttpParser:IsOK()
