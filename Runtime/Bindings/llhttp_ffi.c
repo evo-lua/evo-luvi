@@ -1,5 +1,4 @@
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
-// #define ENABLE_LLHTTP_BUFFER_DUMPS 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -35,72 +34,10 @@ static void DEBUG(const char* message)
 #endif
 }
 
-static void DUMP(llhttp_t* parser)
-{
-#ifdef ENABLE_LLHTTP_BUFFER_DUMPS
-
-	luajit_stringbuffer_reference_t* event_buffer = (luajit_stringbuffer_reference_t*)parser->data;
-	if (event_buffer == NULL)
-		return; // Nothing to debug here
-
-	printf("\tluajit_stringbuffer_reference_t ptr: %p\n", event_buffer->ptr);
-	printf("\tluajit_stringbuffer_reference_t size: %zu\n", event_buffer->size);
-	printf("\tluajit_stringbuffer_reference_t used: %zu\n", event_buffer->used);
-#endif
-}
-
-void stringbuffer_add_event(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event)
-{
-	uint8_t offset = 0;
-
-	memcpy(buffer->ptr + offset, &event->event_id, sizeof(event->event_id));
-	offset += sizeof(event->event_id);
-	memcpy(buffer->ptr + offset, &event->payload_start_pointer, sizeof(event->payload_start_pointer));
-	offset += sizeof(event->payload_start_pointer);
-	memcpy(buffer->ptr + offset, &event->payload_length, sizeof(event->payload_length));
-
-	// Indicates (to LuaJIT) how many bytes need to be committed to the buffer later
-	buffer->used += sizeof(llhttp_event_t);
-
-	// Don't want to overwrite the event that was just queued...
-	buffer->ptr += sizeof(llhttp_event_t);
-}
-
-int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event)
-{
-	// llhttp_userdata_t* userdata = (llhttp_userdata_t*)parser->data;
-	// http_message_t* last_message = userdata->last_http_message;
-
-	// switch(event->event_id) {
-		// case on_method:
-			// strcopy(last_message->http_method[last_message->num_method_bytes_used], event)
-
-	// }
-
-	// if (event_buffer == NULL)
-	// 	return -1; // Probably raw llhttp-ffi call (benchmarks?), no way to store events in this case
-
-	// size_t num_bytes_required = event_buffer->used + sizeof(llhttp_event_t);
-	// if (num_bytes_required > event_buffer->size) {
-	// 	// Uh-oh... That should NEVER happen since we reserve more than enough space in Lua
-	// 	DEBUG("Failed to store an llhttp event in the write buffer (not enough space reserved ahead of time?)");
-	// 	return num_bytes_required - event_buffer->size;
-	// }
-
-	// stringbuffer_add_event(event_buffer, event);
-
-	return 0;
-}
-
 #define LLHTTP_DATA_CALLBACK(event_name)                                           \
 	int llhttp_##event_name(llhttp_t* parser_state, const char* at, size_t length) \
 	{                                                                              \
 		DEBUG(#event_name);                                                        \
-                                                                                   \
-		llhttp_event_t event = { event_name, at, length };                         \
-		llhttp_store_event(parser_state, &event);                                  \
-                                                                                   \
-		DUMP(parser_state);                                                        \
                                                                                    \
 		return HPE_OK;                                                             \
 	}
@@ -109,11 +46,6 @@ int llhttp_store_event(llhttp_t* parser, llhttp_event_t* event)
 	int llhttp_##event_name(llhttp_t* parser_state)  \
 	{                                                \
 		DEBUG(#event_name);                          \
-                                                     \
-		llhttp_event_t event = { event_name, 0, 0 }; \
-		llhttp_store_event(parser_state, &event);    \
-                                                     \
-		DUMP(parser_state);                          \
                                                      \
 		return HPE_OK;                               \
 	}
@@ -133,7 +65,21 @@ LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
 LLHTTP_INFO_CALLBACK(on_reset)
 
-LLHTTP_DATA_CALLBACK(on_url)
+// LLHTTP_DATA_CALLBACK(on_url)
+int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_url");
+
+	http_message_t *http_message = (http_message_t*) parser_state->data;
+
+  	if (length > sizeof(http_message->uri) - 1) {
+		// TODO
+    	length = sizeof(http_message->uri) - 1;
+  	}
+  	strncpy(http_message->uri, at, length);
+  	http_message->uri[length] = '\0';
+
+	return HPE_OK;
+}
 LLHTTP_DATA_CALLBACK(on_status)
 // LLHTTP_DATA_CALLBACK(on_method)
 int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
@@ -147,33 +93,29 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
   	}
   	strncpy(http_message->method, at, length);
   	http_message->method[length] = '\0';
-// }
 
-		// TODO test truncate if max size too small
-	// if numBytesRequired > numBytesAvailable then return HPE_USER or sth;
-
-		// llhttp_userdata_t* userdata = (llhttp_userdata_t*) parser_state->data;
-		// llhttp_userdata_header_t* header = &userdata->header;
-		// luajit_stringbuffer_reference_t* buffer = &userdata->buffer;
-
-		// // This assumes that there has been no commit/the start pointer to the buffer itself never changes...
-		// size_t url_start_pointer = (size_t) *buffer->ptr + header->url_relative_offset;
-		// memcpy(&url_start_pointer, at, length);
-
-		// // Make sure we can actually read it via ffi.string just by passing the pointer and length
-		// header->url_relative_offset += length;
-
-		// // Indicates (to LuaJIT) how many bytes need to be committed to the buffer later (TBD: Do we even need to commit them?)
-		// buffer->used += length;
-
-		return HPE_OK;
+	return HPE_OK;
 }
 LLHTTP_DATA_CALLBACK(on_version)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
 LLHTTP_DATA_CALLBACK(on_header_field)
 LLHTTP_DATA_CALLBACK(on_header_value)
-LLHTTP_DATA_CALLBACK(on_body)
+// LLHTTP_DATA_CALLBACK(on_body)
+int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_body");
+
+	http_message_t *http_message = (http_message_t*) parser_state->data;
+
+  	if (length > sizeof(http_message->body) - 1) {
+		// TODO
+    	length = sizeof(http_message->body) - 1;
+  	}
+  	strncpy(http_message->body, at, length);
+  	http_message->body[length] = '\0';
+
+	return HPE_OK;
+}
 
 #define EXPAND_AS_STRING(text) #text
 #define TOSTRING(text) EXPAND_AS_STRING(text)
@@ -241,8 +183,8 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_set_lenient_chunked_length = llhttp_set_lenient_chunked_length;
 	llhttp_exports_table.llhttp_set_lenient_keep_alive = llhttp_set_lenient_keep_alive;
 	llhttp_exports_table.llhttp_get_version_string = llhttp_get_version_string;
-	llhttp_exports_table.llhttp_store_event = llhttp_store_event;
-	llhttp_exports_table.stringbuffer_add_event = stringbuffer_add_event;
+	llhttp_exports_table.llhttp_store_event = llhttp_get_version_string; // TODO remove
+	llhttp_exports_table.stringbuffer_add_event =  llhttp_get_version_string; // TODO remove
 
 	// This wrapper must be bound to the llhttp namespace on initialization from Lua, in place of the dynamic binding (.so/.dll load)
 	lua_getglobal(L, "STATIC_FFI_EXPORTS");
