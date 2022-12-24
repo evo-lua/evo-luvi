@@ -431,6 +431,7 @@ describe("ReplayStoredEvents", function()
 		assertEquals(tostring(message.httpVersion), "1.1")
 		assertEquals(tostring(message.requestTarget), "/chat")
 		assertEquals(message:ToString(), chunk)
+		assertTrue(message.isComplete)
 
 		local expectedHeaders = {
 			{ "Host", "example.com:8000" },
