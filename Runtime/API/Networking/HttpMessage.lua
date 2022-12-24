@@ -70,12 +70,12 @@ function HttpMessage:ToString()
 	end
 
 	if self:IsRequest() then
-		local requestLine = format("%s %s %s", self.method, self.requestTarget, self.httpVersion)
+		local requestLine = format("%s %s HTTP/%s", self.method, self.requestTarget, self.httpVersion)
 		lines[#lines + 1] = requestLine
 	end
 
 	if self:IsResponse() then
-		local statusLine = format("%s %s %s", self.httpVersion, self.statusCode, self.reasonPhrase)
+		local statusLine = format("HTTP/%s %s %s", self.httpVersion, self.statusCode, self.reasonPhrase)
 		lines[#lines + 1] = statusLine
 	end
 
