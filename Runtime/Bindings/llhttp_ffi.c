@@ -70,6 +70,8 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_url");
 
 	http_message_t *http_message = (http_message_t*) parser_state->data;
+	if(http_message == NULL) return HPE_OK;
+	// TODO test for raw llhttp calls (benchmarks)
 
   	if (length > sizeof(http_message->uri) - 1) {
 		// TODO
@@ -86,7 +88,7 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_method");
 
 	http_message_t *http_message = (http_message_t*) parser_state->data;
-
+if(http_message == NULL) return HPE_OK;
   	if (length > sizeof(http_message->method) - 1) {
 		// TODO
     	length = sizeof(http_message->method) - 1;
@@ -106,7 +108,7 @@ int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_body");
 
 	http_message_t *http_message = (http_message_t*) parser_state->data;
-
+if(http_message == NULL) return HPE_OK;
   	if (length > sizeof(http_message->body) - 1) {
 		// TODO
     	length = sizeof(http_message->body) - 1;
