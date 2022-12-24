@@ -7,6 +7,11 @@ local ffi_string = ffi.string
 
 describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
+
+		-- TODO response
+		-- TODO isCompleted flag
+		-- isUpgradeRequest, status, reason etc. handled by llhttp?
+		-- exceeds max size (for each field) -> HPE_ERROR / HPE_USER
 		it("should return a HTTP message with the request details", function()
 			local parser = IncrementalHttpParser()
 			local chunk = "GET / HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
