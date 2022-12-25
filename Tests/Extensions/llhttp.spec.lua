@@ -116,6 +116,14 @@ describe("llhttp", function()
 			end)
 		end)
 
+		describe("llhttp_get_max_url_length", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_url_length()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
+
+
 	-- llhttp_userdata_get_required_size
 	-- llhttp_userdata_get_actual_size
 	-- llhttp_userdata_message_fits_buffer

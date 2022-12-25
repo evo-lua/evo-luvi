@@ -3,10 +3,23 @@ local IncrementalHttpParser = C_Networking.IncrementalHttpParser
 local llhttp = require("llhttp")
 local ffi = require("ffi")
 
-local ffi_string = ffi.string
+local llhttp_get_max_url_length = llhttp.bindings.llhttp_get_max_url_length
 
+local ffi_string = ffi.string
+local ffi_sizeof = ffi.sizeof
+
+describe("IncrementalHttpParser", function()
+	describe("ParseNextChunk", function()
 -- Fixed-size structs
 -- URL length exceeded
+		it("should truncate overly-long request URLs after the maximum length has been reached", function()
+			local parser = IncrementalHttpParser()
+			local maxLength = llhttp_get_max_url_length()
+			local longURL = "/asdf"
+			local chunk = "GET " .. longURL .. " HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
+			local message = parser:ParseNextChunk(chunk)
+
+		end)
 -- status (reason phrase) exceeded
 --header field length exceeded
 -- header value length exceeded
@@ -19,8 +32,8 @@ local ffi_string = ffi.string
 -- body is moved to file (in Lua) -> sbuf gets and then stream to open fd -> buf should be empty, file should have body
 -- HAPPY PATH: ws upgrade req, upgrade response, split in two chunks, all the other test cases (valid/invalid msg interleaved), req/resp interleaved
 
-describe("IncrementalHttpParser", function()
-	describe("ParseNextChunk", function()
+
+
 
 		-- TODO response
 		-- TODO isCompleted flag
@@ -50,6 +63,12 @@ describe("IncrementalHttpParser", function()
 			-- assertEquals(ffi_string(message.headers[1].name), "Content-Length")
 			-- assertEquals(ffi_string(message.headers[1].value), "5")
 			assertEquals(ffi_string(message.body), "hello")
+		end)
+	end)
+
+	describe("IsOK", function()
+		it("should return false if a message with an overlong request URL has been parsed", function()
+
 		end)
 	end)
 end)

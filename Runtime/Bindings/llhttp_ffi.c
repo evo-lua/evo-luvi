@@ -10,12 +10,13 @@
 
 
 #define MAX_HEADERS 32
+#define MAX_URL_LENGTH_IN_BYTES 256
 
 typedef struct http_message {
 	uint8_t method_length;
 	char method[16];
-	uint8_t url_length;
-  	char url[256];
+	size_t url_length;
+  	char url[MAX_URL_LENGTH_IN_BYTES];
 	uint8_t version_length;
 	char http_version[16];
 	struct {
@@ -171,6 +172,10 @@ static void init_settings_with_callback_handlers(llhttp_settings_t* settings)
 	settings->on_reset = llhttp_on_reset;
 }
 
+size_t llhttp_get_max_url_length() {
+	return MAX_URL_LENGTH_IN_BYTES;
+}
+
 void export_llhttp_bindings(lua_State* L)
 {
 	static struct static_llhttp_exports_table llhttp_exports_table;
@@ -197,6 +202,8 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_get_version_string = llhttp_get_version_string;
 	llhttp_exports_table.llhttp_store_event = llhttp_get_version_string; // TODO remove
 	llhttp_exports_table.stringbuffer_add_event =  llhttp_get_version_string; // TODO remove
+	llhttp_exports_table.llhttp_get_max_url_length = llhttp_get_max_url_length;
+
 	// TODO add defines here (readonly), as functions - then test in Lua
 
 	// This wrapper must be bound to the llhttp namespace on initialization from Lua, in place of the dynamic binding (.so/.dll load)

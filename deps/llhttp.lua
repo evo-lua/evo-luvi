@@ -354,6 +354,7 @@ local llhttp = {
 			const char* (*llhttp_get_version_string)(void);
 			int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
 			void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
+			size_t (*llhttp_get_max_url_length)(void);
 		};
 	]]
 	..
@@ -393,7 +394,7 @@ local llhttp = {
 			typedef struct http_message {
 				uint8_t method_length;
 				char method[16];
-				uint8_t url_length;
+				size_t url_length;
 				  char url[256];
 				uint8_t version_length;
 				char http_version[16];
