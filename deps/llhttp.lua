@@ -355,43 +355,13 @@ local llhttp = {
 			int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
 			void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
 			size_t (*llhttp_get_max_url_length)(void);
+			size_t (*llhttp_get_max_header_key_length)(void);
 		};
 	]]
 	..
 	[[
-			typedef struct llhttp_userdata_header {
-				// version, method, status_code, is_upgrade: stored by llhttp
-				// url, reason, headers, body, is_complete: stored by us
-
-				// Adjusted based on input (set by the llhttp-ffi glue code, in C)
-				bool is_message_complete;
-
-				size_t url_relative_offset;
-				size_t reason_relative_offset;
-				size_t headers_relative_offset;
-				size_t body_relative_offset;
-
-				size_t url_length;
-				size_t reason_length;
-				size_t num_headers;
-				size_t body_length;
-
-				// Configurable (set by llhttp-ffi API calls, in Lua)
-				size_t max_url_length;
-				size_t max_reason_length;
-				size_t max_num_headers;
-				size_t max_header_field_length;
-				size_t max_header_value_length;
-				size_t max_body_length;
-
-			} llhttp_userdata_header_t;
-
-			typedef struct llhttp_userdata {
-				llhttp_userdata_header_t header;
-				luajit_stringbuffer_reference_t buffer;
-			} llhttp_userdata_t;
-
 			typedef struct http_message {
+				bool is_complete;
 				uint8_t method_length;
 				char method[16];
 				size_t url_length;

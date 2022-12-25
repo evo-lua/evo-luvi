@@ -123,7 +123,36 @@ describe("llhttp", function()
 			end)
 		end)
 
+		describe("llhttp_get_max_header_key_length", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_header_key_length()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
 
+
+		describe("llhttp_get_max_header_value_length", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_header_value_length()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
+
+
+		describe("llhttp_get_max_header_count", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_header_count()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
+
+
+		describe("llhttp_get_max_body_length", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_body_length()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
 	-- llhttp_userdata_get_required_size
 	-- llhttp_userdata_get_actual_size
 	-- llhttp_userdata_message_fits_buffer
