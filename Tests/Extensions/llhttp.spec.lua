@@ -39,8 +39,11 @@ describe("llhttp", function()
 		it("should export all of the llhttp-ffi API", function()
 			local exportedApiSurface = {
 				"llhttp_get_version_string",
-				"llhttp_store_event",
-				"stringbuffer_add_event",
+				"llhttp_get_max_url_length",
+				"llhttp_get_max_header_key_length",
+				"llhttp_get_max_header_value_length",
+				"llhttp_get_max_header_count",
+				"llhttp_get_max_body_length",
 			}
 
 			for _, functionName in ipairs(exportedApiSurface) do
@@ -80,7 +83,7 @@ describe("llhttp", function()
 		describe("llhttp_get_max_header_value_length", function()
 			it("should return a number (defined inside the FFI layer)", function()
 				local maxLength = llhttp.bindings.llhttp_get_max_header_value_length()
-				assertEquals(tonumber(maxLength), 256)
+				assertEquals(tonumber(maxLength), 4096)
 			end)
 		end)
 
@@ -88,7 +91,7 @@ describe("llhttp", function()
 		describe("llhttp_get_max_header_count", function()
 			it("should return a number (defined inside the FFI layer)", function()
 				local maxLength = llhttp.bindings.llhttp_get_max_header_count()
-				assertEquals(tonumber(maxLength), 256)
+				assertEquals(tonumber(maxLength), 32)
 			end)
 		end)
 
@@ -96,7 +99,7 @@ describe("llhttp", function()
 		describe("llhttp_get_max_body_length", function()
 			it("should return a number (defined inside the FFI layer)", function()
 				local maxLength = llhttp.bindings.llhttp_get_max_body_length()
-				assertEquals(tonumber(maxLength), 256)
+				assertEquals(tonumber(maxLength), 4096)
 			end)
 		end)
 	-- llhttp_userdata_get_required_size

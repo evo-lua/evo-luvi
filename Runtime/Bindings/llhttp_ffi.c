@@ -9,9 +9,11 @@
 #include "string.h"
 
 
-#define MAX_HEADERS 32
 #define MAX_URL_LENGTH_IN_BYTES 256
 #define MAX_HEADER_KEY_LENGTH_IN_BYTES 256
+#define MAX_HEADER_VALUE_LENGTH_IN_BYTES 4096
+#define MAX_HEADER_COUNT 32
+#define MAX_BODY_LENGTH_IN_BYTES 4096
 
 typedef struct http_message {
 	bool is_complete;
@@ -25,11 +27,11 @@ typedef struct http_message {
 		uint8_t key_length;
     	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
 		size_t value_length;
-    	char value[4096];
-  	} headers[MAX_HEADERS];
+    	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
+  	} headers[MAX_HEADER_COUNT];
 	uint8_t num_headers;
 	size_t body_length;
-	char body[4096];
+	char body[MAX_BODY_LENGTH_IN_BYTES];
 	luajit_stringbuffer_reference_t extended_payload_buffer;
 } http_message_t;
 
@@ -176,6 +178,9 @@ static void init_settings_with_callback_handlers(llhttp_settings_t* settings)
 
 size_t llhttp_get_max_url_length() {	return MAX_URL_LENGTH_IN_BYTES; }
 size_t llhttp_get_max_header_key_length() {	return MAX_HEADER_KEY_LENGTH_IN_BYTES; }
+size_t llhttp_get_max_header_value_length() {	return MAX_HEADER_VALUE_LENGTH_IN_BYTES; }
+size_t llhttp_get_max_header_count() {	return MAX_HEADER_COUNT; }
+size_t llhttp_get_max_body_length() {	return MAX_BODY_LENGTH_IN_BYTES; }
 
 void export_llhttp_bindings(lua_State* L)
 {
@@ -201,10 +206,11 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_set_lenient_chunked_length = llhttp_set_lenient_chunked_length;
 	llhttp_exports_table.llhttp_set_lenient_keep_alive = llhttp_set_lenient_keep_alive;
 	llhttp_exports_table.llhttp_get_version_string = llhttp_get_version_string;
-	llhttp_exports_table.llhttp_store_event = llhttp_get_version_string; // TODO remove
-	llhttp_exports_table.stringbuffer_add_event =  llhttp_get_version_string; // TODO remove
 	llhttp_exports_table.llhttp_get_max_url_length = llhttp_get_max_url_length;
 	llhttp_exports_table.llhttp_get_max_header_key_length = llhttp_get_max_header_key_length;
+	llhttp_exports_table.llhttp_get_max_header_value_length = llhttp_get_max_header_value_length;
+	llhttp_exports_table.llhttp_get_max_header_count = llhttp_get_max_header_count;
+	llhttp_exports_table.llhttp_get_max_body_length = llhttp_get_max_body_length;
 
 	// TODO add defines here (readonly), as functions - then test in Lua
 

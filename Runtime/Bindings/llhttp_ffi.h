@@ -153,10 +153,11 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 	const char* (*llhttp_get_version_string)(void);
-	int (*llhttp_store_event)(llhttp_t* parser, llhttp_event_t* event);
-	void (*stringbuffer_add_event)(luajit_stringbuffer_reference_t* buffer, llhttp_event_t* event);
 	size_t (*llhttp_get_max_url_length)(void);
 	size_t (*llhttp_get_max_header_key_length)(void);
+	size_t (*llhttp_get_max_header_value_length)(void);
+	size_t (*llhttp_get_max_header_count)(void);
+	size_t (*llhttp_get_max_body_length)(void);
 };
 
 const char* llhttp_get_version_string(void);
