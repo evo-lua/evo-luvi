@@ -63,59 +63,6 @@ describe("llhttp", function()
 			end)
 		end)
 
-		describe("llhttp_userdata_allocate_buffer", function()
-			it("should return a string buffer that contains an embedded userdata header initialized with default settings", function()
-
-				local stringBuffer = llhttp.llhttp_userdata_allocate_buffer()
-				assertEquals(type(stringBuffer), "userdata")
-				local _, len = stringBuffer:ref()
-				-- The limits are adjustable from Lua, but only they can't change retroactively as the C layer relies on them
-				assertEquals(len, ffi.sizeof("llhttp_userdata_t"))
-				assertEquals(#stringBuffer, ffi.sizeof("llhttp_userdata_t"))
-
-				local header = llhttp.llhttp_userdata_get_header(stringBuffer)
-				local buffer = llhttp.llhttp_userdata_get_buffer(stringBuffer)
-				assertEquals(type(header), "cdata")
-				assertEquals(type(buffer), "cdata")
-
-				-- Should have allocated enough space for maximally-sized messages (based on the current limits) and the header
-				assertTrue(buffer.size >= ffi.sizeof("llhttp_userdata_t") + llhttp.get_max_supported_message_size())
-				assertTrue(buffer.ptr ~= nil) -- Must not be a NULL pointer since we pass it to C
-				assertEquals(buffer.used, 0) -- Ignores the headers (since the FFI layer shouldn't overwrite them
-
-				assertEquals(header.is_message_complete, false)
-				assertEquals(header.url_relative_offset, 0)
-				assertEquals(header.reason_relative_offset, 0)
-				assertEquals(header.headers_relative_offset, 0)
-				assertEquals(header.body_relative_offset, 0)
-				assertEquals(header.url_length, 0)
-				assertEquals(header.reason_length, 0)
-				assertEquals(header.num_headers, 0)
-				assertEquals(header.body_length, 0)
-				assertEquals(header.max_url_length, llhttp.MAX_URL_LENGTH_IN_BYTES)
-				assertEquals(header.max_reason_length, llhttp.MAX_REASON_PHRASE_LENGTH_IN_BYTES)
-				assertEquals(header.max_num_headers, llhttp.MAX_NUM_HEADER_KEYVALUE_PAIRS)
-				assertEquals(header.max_header_field_length, llhttp.MAX_HEADER_FIELD_LENGTH_IN_BYTES)
-				assertEquals(header.max_header_value_length, llhttp.MAX_HEADER_VALUE_LENGTH_IN_BYTES)
-				assertEquals(header.max_body_length, llhttp.MAX_BODY_LENGTH_IN_BYTES)
-
-			end)
-		end)
-
-		describe("llhttp_userdata_get_message", function()
-			it("should return a Lua table representation of the message stored in the buffer", function()
-				local userdataBuffer = llhttp.llhttp_userdata_allocate_buffer()
-
-				local message = llhttp.llhttp_userdata_get_message(userdataBuffer)
-
-				assertEquals(message.isComplete, false)
-				assertEquals(message.requestTarget, "")
-				assertEquals(message.reasonPhrase, "")
-				assertEquals(message.headers, {})
-				assertEquals(message.body, "")
-			end)
-		end)
-
 		describe("llhttp_get_max_url_length", function()
 			it("should return a number (defined inside the FFI layer)", function()
 				local maxLength = llhttp.bindings.llhttp_get_max_url_length()
@@ -129,7 +76,6 @@ describe("llhttp", function()
 				assertEquals(tonumber(maxLength), 256)
 			end)
 		end)
-
 
 		describe("llhttp_get_max_header_value_length", function()
 			it("should return a number (defined inside the FFI layer)", function()
