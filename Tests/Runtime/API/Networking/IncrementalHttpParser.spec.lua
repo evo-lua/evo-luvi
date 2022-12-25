@@ -40,7 +40,7 @@ describe("IncrementalHttpParser", function()
 			-- size_t num_headers;
 			-- char body[4096];
 			assertEquals(ffi_string(message.method), "GET") -- TODO use llhttp api
-			assertEquals(ffi_string(message.uri), "/")
+			assertEquals(ffi_string(message.url), "/")
 			-- assertEquals(ffi_string(message.http_version), "1.1") -- TODO use llhttp api
 			-- assertEquals(tonumber(message.num_headers), 4)
 			-- assertEquals(ffi_string(message.headers[0].name), "Origin")

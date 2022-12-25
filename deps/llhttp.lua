@@ -390,19 +390,23 @@ local llhttp = {
 				luajit_stringbuffer_reference_t buffer;
 			} llhttp_userdata_t;
 
-
-
-			// Define a structure to represent a HTTP message
 			typedef struct http_message {
-			  char method[16];
-			  char uri[256];
-			  char http_version[16];
-			  struct {
-				char name[256];
-				char value[4096];
-			  } headers[32];
-			  size_t num_headers;
-			  char body[4096];
+				uint8_t method_length;
+				char method[16];
+				uint8_t url_length;
+				  char url[256];
+				uint8_t version_length;
+				char http_version[16];
+				struct {
+					uint8_t key_length;
+					char key[256];
+					size_t value_length;
+					char value[4096];
+				  } headers[32];
+				uint8_t num_headers;
+				size_t body_length;
+				char body[4096];
+				luajit_stringbuffer_reference_t extended_payload_buffer;
 			};
 			typedef struct http_message http_message_t;
 

@@ -11,18 +11,28 @@
 
 #define MAX_HEADERS 32
 
-// Define a structure to represent a HTTP message
 typedef struct http_message {
-  char method[16];
-  char uri[256];
-  char http_version[16];
-  struct {
-    char name[256];
-    char value[4096];
-  } headers[MAX_HEADERS];
-  size_t num_headers;
-  char body[4096];
+	uint8_t method_length;
+	char method[16];
+	uint8_t url_length;
+  	char url[256];
+	uint8_t version_length;
+	char http_version[16];
+	struct {
+		uint8_t key_length;
+    	char key[256];
+		size_t value_length;
+    	char value[4096];
+  	} headers[MAX_HEADERS];
+	uint8_t num_headers;
+	size_t body_length;
+	char body[4096];
+	luajit_stringbuffer_reference_t extended_payload_buffer;
 } http_message_t;
+
+// request_body_in_persistent_file
+// max_temp_file_size
+// FILE_FLAG_DELETE_ON_CLOSE
 
 // typedef struct http_message http_message_t;
 
@@ -73,12 +83,12 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 	if(http_message == NULL) return HPE_OK;
 	// TODO test for raw llhttp calls (benchmarks)
 
-  	if (length > sizeof(http_message->uri) - 1) {
+  	if (length > sizeof(http_message->url) - 1) {
 		// TODO
-    	length = sizeof(http_message->uri) - 1;
+    	length = sizeof(http_message->url) - 1;
   	}
-  	strncpy(http_message->uri, at, length);
-  	http_message->uri[length] = '\0';
+  	strncpy(http_message->url, at, length);
+  	http_message->url[length] = '\0';
 
 	return HPE_OK;
 }
