@@ -26,7 +26,7 @@ function benchmark:OnSetup()
 
 	-- self.iterationCount = 100 -- It's too slow to do much more in a reasonable timeframe
 
-	parser = C_Networking.IncrementalHttpParser()
+	parser = C_Networking.IncrementalHttpParser() -- todo nw scenario to benchmark allocation speed. use pool and wipe structs?
 end
 
 function benchmark:OnRun()
