@@ -5,6 +5,20 @@ local ffi = require("ffi")
 
 local ffi_string = ffi.string
 
+-- Fixed-size structs
+-- URL length exceeded
+-- status (reason phrase) exceeded
+--header field length exceeded
+-- header value length exceeded
+-- too many headers
+-- body length exceeded
+-- Dynamic-size structs (pre-allocated from Lua)
+-- body is replaced with string buffer reference
+-- Buffering mode: Body is held in memory
+-- Streaming mode: Body is outsourced to file
+-- body is moved to file (in Lua) -> sbuf gets and then stream to open fd -> buf should be empty, file should have body
+-- HAPPY PATH: ws upgrade req, upgrade response, split in two chunks, all the other test cases (valid/invalid msg interleaved), req/resp interleaved
+
 describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
 
