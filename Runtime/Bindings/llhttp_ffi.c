@@ -1,4 +1,4 @@
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -72,7 +72,13 @@ static void DEBUG(const char* message)
 	}
 
 LLHTTP_INFO_CALLBACK(on_chunk_complete)
-LLHTTP_INFO_CALLBACK(on_header_value_complete)
+// LLHTTP_INFO_CALLBACK(on_header_value_complete)
+int llhttp_on_header_value_complete(llhttp_t* parser_state) {
+	DEBUG("on_header_value_complete");
+	http_message_t* message = (http_message_t*) parser_state->data;
+	message->num_headers++;
+	return HPE_OK;
+}
 // LLHTTP_INFO_CALLBACK(on_message_complete)
 int llhttp_on_message_complete(llhttp_t* parser_state) {
 	DEBUG("on_message_complete");
@@ -87,13 +93,7 @@ LLHTTP_INFO_CALLBACK(on_headers_complete)
 LLHTTP_INFO_CALLBACK(on_status_complete)
 LLHTTP_INFO_CALLBACK(on_method_complete)
 LLHTTP_INFO_CALLBACK(on_version_complete)
-// LLHTTP_INFO_CALLBACK(on_header_field_complete)
-int llhttp_on_header_field_complete(llhttp_t* parser_state) {
-	DEBUG("on_header_field_complete");
-	http_message_t* message = (http_message_t*) parser_state->data;
-	message->num_headers++;
-	return HPE_OK;
-}
+LLHTTP_INFO_CALLBACK(on_header_field_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
@@ -176,7 +176,24 @@ int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length
 
 	return HPE_OK;
 }
-LLHTTP_DATA_CALLBACK(on_header_value)
+// LLHTTP_DATA_CALLBACK(on_header_value)
+int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_header_value");
+
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	// The count only increases after the current header field is complete
+	const uint8_t last_header_index = message->num_headers;
+
+	// TODO check size
+	http_header_t* header = &message->headers[last_header_index];
+
+  	memcpy(&header->value + header->value_length, at, length);
+	header->value_length += length;
+
+	return HPE_OK;
+}
 // LLHTTP_DATA_CALLBACK(on_body)
 int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_body");
