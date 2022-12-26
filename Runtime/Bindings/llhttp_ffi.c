@@ -16,6 +16,13 @@
 #define MAX_HEADER_COUNT 32
 #define MAX_BODY_LENGTH_IN_BYTES 4096
 
+typedef struct {
+	uint8_t key_length;
+	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
+	size_t value_length;
+	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
+} http_header_t;
+
 typedef struct http_message {
 	bool is_complete;
 	uint8_t method_length;
@@ -27,12 +34,7 @@ typedef struct http_message {
 	uint8_t status_length;
 	char status[MAX_STATUS_LENGTH_IN_BYTES];
 	uint8_t num_headers;
-	struct {
-		uint8_t key_length;
-    	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
-		size_t value_length;
-    	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
-  	} headers[MAX_HEADER_COUNT];
+	http_header_t headers[MAX_HEADER_COUNT];
 	size_t body_length;
 	char body[MAX_BODY_LENGTH_IN_BYTES];
 	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies (from Lua) if needed
@@ -156,7 +158,24 @@ if(http_message == NULL) return HPE_OK;
 
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
-LLHTTP_DATA_CALLBACK(on_header_field)
+// LLHTTP_DATA_CALLBACK(on_header_field)
+int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_header_field");
+
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	// The count only increases after the current header field is complete
+	const uint8_t last_header_index = message->num_headers;
+
+	// TODO check size
+	http_header_t* header = &message->headers[last_header_index];
+
+  	memcpy(&header->key + header->key_length, at, length);
+	header->key_length += length;
+
+	return HPE_OK;
+}
 LLHTTP_DATA_CALLBACK(on_header_value)
 // LLHTTP_DATA_CALLBACK(on_body)
 int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
