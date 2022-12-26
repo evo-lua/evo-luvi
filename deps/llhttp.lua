@@ -369,14 +369,14 @@ local llhttp = {
 				size_t url_length;
 				  char url[256];
 				uint8_t version_length;
-				char http_version[16];
+				char version[16];
+				uint8_t num_headers;
 				struct {
 					uint8_t key_length;
 					char key[256];
 					size_t value_length;
 					char value[4096];
 				  } headers[32];
-				uint8_t num_headers;
 				size_t body_length;
 				char body[4096];
 				luajit_stringbuffer_reference_t extended_payload_buffer;

@@ -22,14 +22,14 @@ typedef struct http_message {
 	size_t url_length;
   	char url[MAX_URL_LENGTH_IN_BYTES];
 	uint8_t version_length;
-	char http_version[16];
+	char version[16];
+	uint8_t num_headers;
 	struct {
 		uint8_t key_length;
     	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
 		size_t value_length;
     	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
   	} headers[MAX_HEADER_COUNT];
-	uint8_t num_headers;
 	size_t body_length;
 	char body[MAX_BODY_LENGTH_IN_BYTES];
 	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies if needed
@@ -114,7 +114,22 @@ if(http_message == NULL) return HPE_OK;
 
 	return HPE_OK;
 }
-LLHTTP_DATA_CALLBACK(on_version)
+// LLHTTP_DATA_CALLBACK(on_version)
+int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_version");
+
+	http_message_t *http_message = (http_message_t*) parser_state->data;
+if(http_message == NULL) return HPE_OK;
+  	if (length > sizeof(http_message->version) - 1) {
+		// TODO
+    	length = sizeof(http_message->version) - 1;
+  	}
+  	strncpy(http_message->version, at, length);
+  	http_message->version[length] = '\0';
+
+	return HPE_OK;
+}
+
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
 LLHTTP_DATA_CALLBACK(on_header_field)
