@@ -85,7 +85,13 @@ LLHTTP_INFO_CALLBACK(on_headers_complete)
 LLHTTP_INFO_CALLBACK(on_status_complete)
 LLHTTP_INFO_CALLBACK(on_method_complete)
 LLHTTP_INFO_CALLBACK(on_version_complete)
-LLHTTP_INFO_CALLBACK(on_header_field_complete)
+// LLHTTP_INFO_CALLBACK(on_header_field_complete)
+int llhttp_on_header_field_complete(llhttp_t* parser_state) {
+	DEBUG("on_header_field_complete");
+	http_message_t* message = (http_message_t*) parser_state->data;
+	message->num_headers++;
+	return HPE_OK;
+}
 LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
