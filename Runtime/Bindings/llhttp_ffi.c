@@ -71,7 +71,14 @@ static void DEBUG(const char* message)
 
 LLHTTP_INFO_CALLBACK(on_chunk_complete)
 LLHTTP_INFO_CALLBACK(on_header_value_complete)
-LLHTTP_INFO_CALLBACK(on_message_complete)
+// LLHTTP_INFO_CALLBACK(on_message_complete)
+int llhttp_on_message_complete(llhttp_t* parser_state) {
+	DEBUG("on_message_complete");
+	http_message_t* message = (http_message_t*) parser_state->data;
+	message->is_complete = true;
+	return HPE_OK;
+}
+
 LLHTTP_INFO_CALLBACK(on_chunk_header)
 LLHTTP_INFO_CALLBACK(on_message_begin)
 LLHTTP_INFO_CALLBACK(on_headers_complete)
@@ -82,7 +89,15 @@ LLHTTP_INFO_CALLBACK(on_header_field_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
-LLHTTP_INFO_CALLBACK(on_reset)
+// LLHTTP_INFO_CALLBACK(on_reset)
+int llhttp_on_reset(llhttp_t* parser_state) {
+	DEBUG("on_reset");
+	http_message_t* message = (http_message_t*) parser_state->data;
+	message->is_complete = false;
+	// TBD reset the other fields as well?
+	return HPE_OK;
+}
+// TODO reset message, or defer until message_begin?
 
 // LLHTTP_DATA_CALLBACK(on_url)
 int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {

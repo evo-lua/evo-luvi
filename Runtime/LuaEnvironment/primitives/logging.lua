@@ -20,6 +20,7 @@ function logging.warning(message, ...)
 	print("[WARNING]", message, ...)
 end
 function logging.error(message, showTraceback)
+	showTraceback = true
 	print("[ERROR]", message .. (showTraceback and debug.traceback("", 2) or ""), 0)
 end
 function logging.critical(message, ...)
