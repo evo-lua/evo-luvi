@@ -171,12 +171,12 @@ int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	if (length > sizeof(message->version) - 1) {
+	// if (length > sizeof(message->version) - 1) {
 		// TODO
-    	length = sizeof(message->version) - 1;
-  	}
-  	strncpy(message->version, at, length);
-  	message->version[length] = '\0';
+    	// length = sizeof(message->version) - 1;
+  	// }
+  	memcpy(&message->version + message->version_length, at, length);
+	message->version_length += length;
 
 	return HPE_OK;
 }
