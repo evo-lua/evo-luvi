@@ -110,8 +110,24 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	http_message_t* message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
+	// Since we omit safety checks in the callback handlers (for performance reasons), make sure we don't write-fault off the end
+	// memset(parser_state->data, 0, sizeof(http_message_t));
 	message->is_complete = false;
-	// TBD reset the other fields as well?
+	message->method_length = 0;
+	message->url_length = 0;
+	message->version_length = 0;
+	message->status_length = 0;
+	message->body_length = 0;
+
+	// message->headers = {};
+	for(uint8_t i = 0; i<message->num_headers; i++) {
+		message->headers[i].key_length = 0;
+		message->headers[i].value_length = 0;
+	}
+	// memset(&message->headers, 0, sizeof(http_header_t) * MAX_HEADER_COUNT);
+	message->num_headers = 0;
+
+	// TBD reset the other fields as well (luajit buffer)?
 	return HPE_OK;
 }
 // TODO reset message, or defer until message_begin?
