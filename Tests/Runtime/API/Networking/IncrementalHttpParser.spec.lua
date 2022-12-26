@@ -420,10 +420,11 @@ describe("IncrementalHttpParser", function()
 			assertEquals(message.num_headers, testCase.message.num_headers)
 			assertEquals(message.num_headers, #testCase.message.headers)
 
-			for index=0, message.num_headers, 1 do
+			for index=1, message.num_headers, 1 do
+				local cIndex = index - 1
 				if testCase.message.headers and testCase.message.headers[index] then
-					assertEquals(ffi_string(message.headers[index].key, message.headers[index].key_length), testCase.message.headers[index].key)
-					assertEquals(ffi_string(message.headers[index].value, message.headers[index].value_length), testCase.message.headers[index].value)
+					assertEquals(ffi_string(message.headers[cIndex].key, message.headers[cIndex].key_length), testCase.message.headers[index].key)
+					assertEquals(ffi_string(message.headers[cIndex].value, message.headers[cIndex].value_length), testCase.message.headers[index].value)
 				end
 			end
 
