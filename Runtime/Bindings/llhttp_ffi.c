@@ -35,7 +35,7 @@ typedef struct http_message {
   	} headers[MAX_HEADER_COUNT];
 	size_t body_length;
 	char body[MAX_BODY_LENGTH_IN_BYTES];
-	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies if needed
+	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies (from Lua) if needed
 	luajit_stringbuffer_reference_t extended_payload_buffer; // Optional feature, enabled on demand by allocating a stringBuffer here
 } http_message_t;
 
