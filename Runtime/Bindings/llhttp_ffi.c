@@ -78,7 +78,18 @@ int llhttp_on_status_complete(llhttp_t* parser_state) {
 }
 // TODO rename stauts to reason_phrase
 LLHTTP_INFO_CALLBACK(on_method_complete)
-LLHTTP_INFO_CALLBACK(on_version_complete)
+// LLHTTP_INFO_CALLBACK(on_version_complete)
+int llhttp_on_version_complete(llhttp_t* parser_state) {
+	DEBUG("on_version_complete");
+
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	message->version_major = llhttp_get_http_major(parser_state);
+	message->version_minor = llhttp_get_http_minor(parser_state);
+
+	return HPE_OK;
+}
 LLHTTP_INFO_CALLBACK(on_header_field_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
@@ -96,7 +107,7 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	message->is_complete = false;
 	message->method_length = 0;
 	message->url_length = 0;
-	message->version_length = 0;
+	// message->version_length = 0;
 	message->status_length = 0;
 	message->body_length = 0;
 	message->status_code = 0;
@@ -164,22 +175,22 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 
 	return HPE_OK;
 }
-// LLHTTP_DATA_CALLBACK(on_version)
-int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
-	DEBUG("on_version");
+LLHTTP_DATA_CALLBACK(on_version)
+// int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
+// 	DEBUG("on_version");
 
-	http_message_t *message = (http_message_t*) parser_state->data;
-	if(message == NULL) return HPE_OK;
+// 	http_message_t *message = (http_message_t*) parser_state->data;
+// 	if(message == NULL) return HPE_OK;
 
-	// if (length > sizeof(message->version) - 1) {
-		// TODO
-    	// length = sizeof(message->version) - 1;
-  	// }
-  	memcpy(&message->version + message->version_length, at, length);
-	message->version_length += length;
+// 	// if (length > sizeof(message->version) - 1) {
+// 		// TODO
+//     	// length = sizeof(message->version) - 1;
+//   	// }
+//   	memcpy(&message->version + message->version_length, at, length);
+// 	message->version_length += length;
 
-	return HPE_OK;
-}
+// 	return HPE_OK;
+// }
 
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)

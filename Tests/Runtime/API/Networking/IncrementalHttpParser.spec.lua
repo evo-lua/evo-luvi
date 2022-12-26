@@ -21,8 +21,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 0,
-			version = "",
+			version_minor = 0,
+			version_major = 0,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -49,8 +49,8 @@ local testCases = {
 			method = "POST",
 			url_length = 6,
 			url = "/hello",
-			version_length = 0,
-			version = "",
+			version_minor = 0,
+			version_major = 0,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -77,8 +77,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 1,
-			version = "1",
+			version_minor = 0,
+			version_major = 0,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -105,8 +105,8 @@ local testCases = {
 			method = "GET",
 			url_length = 12,
 			url = "/hello-world",
-			version_length = 3,
-			version = "1.1",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -133,8 +133,8 @@ local testCases = {
 			method = "GET",
 			url_length = 12,
 			url = "/hello-world",
-			version_length = 3,
-			version = "1.0",
+			version_minor = 0,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -161,8 +161,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 3,
-			version = "1.1",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 200,
 			status_length = 2,
 			status = "OK",
@@ -189,8 +189,8 @@ local testCases = {
 			method = "GET",
 			url_length = 5,
 			url = "/chat",
-			version_length = 3,
-			version = "1.1",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -223,8 +223,8 @@ local testCases = {
 			method = "OPTIONS",
 			url_length = 1,
 			url = "*",
-			version_length = 3,
-			version = "1.1",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -255,8 +255,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 0,
-			version = "",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -283,8 +283,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 0,
-			version = "",
+			version_minor = 0,
+			version_major = 0,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -311,8 +311,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 0,
-			version = "",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -339,8 +339,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 0,
-			version = "",
+			version_minor = 0,
+			version_major = 0,
 			status_code = 0,
 			status_length = 0,
 			status = "",
@@ -367,8 +367,8 @@ local testCases = {
 			method = "",
 			url_length = 0,
 			url = "",
-			version_length = 3,
-			version = "1.1",
+			version_minor = 1,
+			version_major = 1,
 			status_code = 204,
 			status_length = 10,
 			status = "No Content",
@@ -415,8 +415,9 @@ describe("IncrementalHttpParser", function()
 			assertEquals(message.status_length, testCase.message.status_length)
 			assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
 			assertEquals(message.url_length, testCase.message.url_length)
-			assertEquals(ffi_string(message.version, message.version_length), testCase.message.version)
-			assertEquals(message.version_length, testCase.message.version_length)
+			-- assertEquals(ffi_string(message.version, message.version_length), testCase.message.version)
+			assertEquals(message.version_major, testCase.message.version_major)
+			assertEquals(message.version_minor, testCase.message.version_minor)
 			assertEquals(message.num_headers, testCase.message.num_headers)
 			assertEquals(message.num_headers, #testCase.message.headers)
 			-- -- TBD headers, key values
@@ -474,7 +475,8 @@ describe("IncrementalHttpParser", function()
 			local message = parser:ParseNextChunk(chunk)
 			assertEquals(ffi_string(message.method), "GET")
 			assertEquals(ffi_string(message.url), "/")
-			assertEquals(ffi_string(message.version), "1.1")
+			assertEquals(tonumber(message.version_major), 1)
+			assertEquals(tonumber(message.version_minor), 1)
 			assertEquals(tonumber(message.num_headers), 3)
 			assertEquals(ffi_string(message.headers[0].key), "Origin")
 			assertEquals(ffi_string(message.headers[0].value), "example.org")
