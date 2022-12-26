@@ -1,4 +1,4 @@
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -88,12 +88,10 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	message->status_length = 0;
 	message->body_length = 0;
 
-	// message->headers = {};
 	for(uint8_t i = 0; i<message->num_headers; i++) {
 		message->headers[i].key_length = 0;
 		message->headers[i].value_length = 0;
 	}
-	// memset(&message->headers, 0, sizeof(http_header_t) * MAX_HEADER_COUNT);
 	message->num_headers = 0;
 
 	// TBD reset the other fields as well (luajit buffer)?
@@ -126,12 +124,13 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	if (length > sizeof(message->method) - 1) {
+	// if (length > sizeof(message->method) - 1) {
 		// TODO
-    	length = sizeof(message->method) - 1;
-  	}
-  	strncpy(message->method, at, length);
-  	message->method[length] = '\0';
+    	// length = sizeof(message->method) - 1;
+  	// }
+
+  	memcpy(&message->method + message->method_length, at, length);
+	message->method_length += length;
 
 	return HPE_OK;
 }

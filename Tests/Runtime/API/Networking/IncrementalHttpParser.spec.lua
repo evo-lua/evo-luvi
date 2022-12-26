@@ -391,14 +391,19 @@ describe("IncrementalHttpParser", function()
 			-- assertEquals(parser:IsOK(), testCase.isOK)
 
 			assertEquals(message.is_complete, testCase.message.is_complete)
-			-- assertEquals(message.method_length, testCase.message.message_length)
-			-- assertEquals(message.method, testCase.message.method)
-			-- assertEquals(message.url_length, testCase.message.url_length)
-			-- assertEquals(message.url, testCase.message.url)
+
+			if ffi_string(message.method, message.method_length) ~= "HTTP/" then -- llhttp can't do a better job at differentiating between requests and responses ...
+				assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
+				assertEquals(message.method_length, testCase.message.method_length)
+				-- assertEquals(message.url_length, testCase.message.url_length)
+				-- assertEquals(message.url, testCase.message.url)
+			else
+				-- assertEquals(message.status_length, testCase.message.status_length)
+				-- assertEquals(message.status, testCase.message.status)
+
+			end
 			-- assertEquals(message.version_length, testCase.message.version_length)
 			-- assertEquals(message.version, testCase.message.version)
-			-- assertEquals(message.status_length, testCase.message.status_length)
-			-- assertEquals(message.status, testCase.message.status)
 			assertEquals(message.num_headers, testCase.message.num_headers)
 			assertEquals(message.num_headers, #testCase.message.headers)
 			-- -- TBD headers, key values
@@ -446,26 +451,17 @@ describe("IncrementalHttpParser", function()
 
 
 
+	-- tbd some stuff can be read from llhttp apis
 		-- TODO response
-		-- TODO isCompleted flag
 		-- isUpgradeRequest, status, reason etc. handled by llhttp?
 		-- exceeds max size (for each field) -> HPE_ERROR / HPE_USER
 		it("should return a HTTP message with the request details", function()
 			local parser = IncrementalHttpParser()
 			local chunk = "GET / HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
 			local message = parser:ParseNextChunk(chunk)
-			-- char method[16];
-			-- char uri[256];
-			-- char http_version[16];
-			-- struct {
-			--   char name[256];
-			--   char value[4096];
-			-- } headers[MAX_HEADERS];
-			-- size_t num_headers;
-			-- char body[4096];
-			assertEquals(ffi_string(message.method), "GET") -- TODO use llhttp api
+			assertEquals(ffi_string(message.method), "GET")
 			assertEquals(ffi_string(message.url), "/")
-			assertEquals(ffi_string(message.version), "1.1") -- TODO use llhttp api
+			assertEquals(ffi_string(message.version), "1.1")
 			assertEquals(tonumber(message.num_headers), 3)
 			assertEquals(ffi_string(message.headers[0].key), "Origin")
 			assertEquals(ffi_string(message.headers[0].value), "example.org")
