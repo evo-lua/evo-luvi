@@ -105,17 +105,18 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
-	// TODO test for raw llhttp calls (benchmarks)
 
-  	if (length > sizeof(message->url) - 1) {
+	// if (length > sizeof(message->method) - 1) {
 		// TODO
-    	length = sizeof(message->url) - 1;
-  	}
-  	strncpy(message->url, at, length);
-  	message->url[length] = '\0';
+    	// length = sizeof(message->method) - 1;
+  	// }
+
+  	memcpy(&message->url + message->url_length, at, length);
+	message->url_length += length;
 
 	return HPE_OK;
 }
+
 LLHTTP_DATA_CALLBACK(on_status)
 // LLHTTP_DATA_CALLBACK(on_method)
 int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
