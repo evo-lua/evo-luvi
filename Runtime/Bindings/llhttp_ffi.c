@@ -1,4 +1,4 @@
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -75,14 +75,20 @@ LLHTTP_INFO_CALLBACK(on_chunk_complete)
 // LLHTTP_INFO_CALLBACK(on_header_value_complete)
 int llhttp_on_header_value_complete(llhttp_t* parser_state) {
 	DEBUG("on_header_value_complete");
+
 	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
 	message->num_headers++;
 	return HPE_OK;
 }
 // LLHTTP_INFO_CALLBACK(on_message_complete)
 int llhttp_on_message_complete(llhttp_t* parser_state) {
 	DEBUG("on_message_complete");
+
 	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
 	message->is_complete = true;
 	return HPE_OK;
 }
@@ -100,7 +106,10 @@ LLHTTP_INFO_CALLBACK(on_url_complete)
 // LLHTTP_INFO_CALLBACK(on_reset)
 int llhttp_on_reset(llhttp_t* parser_state) {
 	DEBUG("on_reset");
+
 	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
 	message->is_complete = false;
 	// TBD reset the other fields as well?
 	return HPE_OK;
@@ -111,16 +120,16 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_url");
 
-	http_message_t *http_message = (http_message_t*) parser_state->data;
-	if(http_message == NULL) return HPE_OK;
+	http_message_t *message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
 	// TODO test for raw llhttp calls (benchmarks)
 
-  	if (length > sizeof(http_message->url) - 1) {
+  	if (length > sizeof(message->url) - 1) {
 		// TODO
-    	length = sizeof(http_message->url) - 1;
+    	length = sizeof(message->url) - 1;
   	}
-  	strncpy(http_message->url, at, length);
-  	http_message->url[length] = '\0';
+  	strncpy(message->url, at, length);
+  	message->url[length] = '\0';
 
 	return HPE_OK;
 }
@@ -129,14 +138,15 @@ LLHTTP_DATA_CALLBACK(on_status)
 int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_method");
 
-	http_message_t *http_message = (http_message_t*) parser_state->data;
-if(http_message == NULL) return HPE_OK;
-  	if (length > sizeof(http_message->method) - 1) {
+	http_message_t *message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	if (length > sizeof(message->method) - 1) {
 		// TODO
-    	length = sizeof(http_message->method) - 1;
+    	length = sizeof(message->method) - 1;
   	}
-  	strncpy(http_message->method, at, length);
-  	http_message->method[length] = '\0';
+  	strncpy(message->method, at, length);
+  	message->method[length] = '\0';
 
 	return HPE_OK;
 }
@@ -144,14 +154,15 @@ if(http_message == NULL) return HPE_OK;
 int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_version");
 
-	http_message_t *http_message = (http_message_t*) parser_state->data;
-if(http_message == NULL) return HPE_OK;
-  	if (length > sizeof(http_message->version) - 1) {
+	http_message_t *message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	if (length > sizeof(message->version) - 1) {
 		// TODO
-    	length = sizeof(http_message->version) - 1;
+    	length = sizeof(message->version) - 1;
   	}
-  	strncpy(http_message->version, at, length);
-  	http_message->version[length] = '\0';
+  	strncpy(message->version, at, length);
+  	message->version[length] = '\0';
 
 	return HPE_OK;
 }
@@ -198,14 +209,15 @@ int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length
 int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_body");
 
-	http_message_t *http_message = (http_message_t*) parser_state->data;
-if(http_message == NULL) return HPE_OK;
-  	if (length > sizeof(http_message->body) - 1) {
+	http_message_t *message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	if (length > sizeof(message->body) - 1) {
 		// TODO
-    	length = sizeof(http_message->body) - 1;
+    	length = sizeof(message->body) - 1;
   	}
-  	strncpy(http_message->body, at, length);
-  	http_message->body[length] = '\0';
+  	strncpy(message->body, at, length);
+  	message->body[length] = '\0';
 
 	return HPE_OK;
 }
