@@ -158,6 +158,7 @@ struct static_llhttp_exports_table {
 	size_t (*llhttp_get_max_header_value_length)(void);
 	size_t (*llhttp_get_max_header_count)(void);
 	size_t (*llhttp_get_max_body_length)(void);
+	size_t (*llhttp_get_message_size)(void);
 };
 
 const char* llhttp_get_version_string(void);

@@ -182,6 +182,7 @@ size_t llhttp_get_max_header_key_length() {	return MAX_HEADER_KEY_LENGTH_IN_BYTE
 size_t llhttp_get_max_header_value_length() {	return MAX_HEADER_VALUE_LENGTH_IN_BYTES; }
 size_t llhttp_get_max_header_count() {	return MAX_HEADER_COUNT; }
 size_t llhttp_get_max_body_length() {	return MAX_BODY_LENGTH_IN_BYTES; }
+size_t llhttp_get_message_size() {	return sizeof(http_message_t); }
 
 void export_llhttp_bindings(lua_State* L)
 {
@@ -212,6 +213,7 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_get_max_header_value_length = llhttp_get_max_header_value_length;
 	llhttp_exports_table.llhttp_get_max_header_count = llhttp_get_max_header_count;
 	llhttp_exports_table.llhttp_get_max_body_length = llhttp_get_max_body_length;
+	llhttp_exports_table.llhttp_get_message_size = llhttp_get_message_size;
 
 	// TODO add defines here (readonly), as functions - then test in Lua
 

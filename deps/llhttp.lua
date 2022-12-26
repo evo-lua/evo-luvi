@@ -357,6 +357,7 @@ local llhttp = {
 			size_t (*llhttp_get_max_header_value_length)(void);
 			size_t (*llhttp_get_max_header_count)(void);
 			size_t (*llhttp_get_max_body_length)(void);
+			size_t (*llhttp_get_message_size)(void);
 		};
 	]]
 	..

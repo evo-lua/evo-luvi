@@ -103,6 +103,22 @@ describe("llhttp", function()
 			end)
 		end)
 
+		describe("llhttp_get_message_size", function()
+			-- Since cdefs and c headers aren't auto-synced, probably best to have another failsafe check here to avoid SEGFAULTs
+			it("should be equal to the defined http_message struct size", function()
+				local luaStructSize = ffi.sizeof("http_message_t")
+				local cStructSize = llhttp.bindings.llhttp_get_message_size()
+				assertEquals(luaStructSize, cStructSize)
+			end)
+
+			it("should be equal to the defined http_message struct size (and small enough to fit into common CPU caches)", function()
+				--Ideally, the total size (without extended payload) should be small enough to fit in a modern CPU cache
+				local maxAllowedStructSize = 1024 * 1024 -- i7 L2 cache size
+				local cStructSize = llhttp.bindings.llhttp_get_message_size()
+				assertTrue(cStructSize <= maxAllowedStructSize)
+			end)
+		end)
+
 	-- llhttp_userdata_get_required_size
 	-- llhttp_userdata_get_actual_size
 	-- llhttp_userdata_message_fits_buffer
@@ -165,18 +181,6 @@ describe("llhttp", function()
 			assertFalse(llhttp.has_extended_payload_buffer(message))
 			llhttp.allocate_extended_payload_buffer(message)
 			assertTrue(llhttp.has_extended_payload_buffer(message))
-		end)
-	end)
-
-	describe("get_message_struct_size", function()
-		-- Since cdefs and c headers aren't auto-synced, probably best to have another failsafe check here
-		it("should be equal to the defined http_message struct size (and small enough to fit into common CPU caches)", function()
-			--Ideally, the total size (without extended payload) should be small enough to fit in modern CPU cache (e.g., 8MB on i7)
-			local maxAllowedStructSize = 42
-			local luaStructSize = ffi.sizeof("http_message_t")
-			local cStructSize = llhttp.bindings.get_message_struct_size()
-			assertEquals(luaStructSize, cStructSize)
-			assertTrue(cStructSize <= maxAllowedStructSize)
 		end)
 	end)
 
