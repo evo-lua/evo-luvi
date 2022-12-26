@@ -1,4 +1,4 @@
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"

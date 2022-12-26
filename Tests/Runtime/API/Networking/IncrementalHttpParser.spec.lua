@@ -393,10 +393,10 @@ describe("IncrementalHttpParser", function()
 			assertEquals(message.is_complete, testCase.message.is_complete)
 
 			if ffi_string(message.method, message.method_length) ~= "HTTP/" then -- llhttp can't do a better job at differentiating between requests and responses ...
-				assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
 				assertEquals(message.method_length, testCase.message.method_length)
-				-- assertEquals(message.url_length, testCase.message.url_length)
-				-- assertEquals(message.url, testCase.message.url)
+				assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
+				assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
+				assertEquals(message.url_length, testCase.message.url_length)
 			else
 				-- assertEquals(message.status_length, testCase.message.status_length)
 				-- assertEquals(message.status, testCase.message.status)
