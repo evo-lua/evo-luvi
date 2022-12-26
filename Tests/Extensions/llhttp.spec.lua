@@ -111,7 +111,7 @@ describe("llhttp", function()
 				assertEquals(luaStructSize, cStructSize)
 			end)
 
-			it("should be equal to the defined http_message struct size (and small enough to fit into common CPU caches)", function()
+			it("should be small enough to fit into common CPU caches", function()
 				--Ideally, the total size (without extended payload) should be small enough to fit in a modern CPU cache
 				local maxAllowedStructSize = 1024 * 1024 -- i7 L2 cache size
 				local cStructSize = llhttp.bindings.llhttp_get_message_size()
