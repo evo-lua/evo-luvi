@@ -147,6 +147,16 @@ describe("llhttp", function()
 			assertEquals(message.extended_payload_buffer.used, 0)
 			assertFalse(message.extended_payload_buffer.ptr == nil) -- Must not be a NULL pointer!
 		end)
+
+		it("should return the linked LuaJIT string buffer as a Lua object alongside the reserved size and reference", function()
+			local message = ffi.new("http_message_t")
+			local stringBuffer, referencePointer, numReservedBytes = llhttp.allocate_extended_payload_buffer(message)
+			local numBytesUsed = #stringBuffer
+
+			assertEquals(numReservedBytes, llhttp.DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES)
+			assertEquals(numBytesUsed, 0)
+			assertFalse(referencePointer == nil) -- Must not be a NULL pointer!
+		end)
 	end)
 
 	describe("version", function()

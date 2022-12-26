@@ -524,6 +524,7 @@ function llhttp.allocate_extended_payload_buffer(httpMessageStruct)
 	local referencePointer, reservedBufferSizeInBytes = stringBuffer:reserve(0) -- Already implicitly reserved via the constructor call
 	httpMessageStruct.extended_payload_buffer.ptr = referencePointer
 	httpMessageStruct.extended_payload_buffer.size = reservedBufferSizeInBytes
+	return stringBuffer, referencePointer, reservedBufferSizeInBytes
 end
 
 local ffi_string = ffi.string
