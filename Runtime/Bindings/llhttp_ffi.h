@@ -154,6 +154,7 @@ struct static_llhttp_exports_table {
 	void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 	const char* (*llhttp_get_version_string)(void);
 	size_t (*llhttp_get_max_url_length)(void);
+	size_t (*llhttp_get_max_status_length)(void);
 	size_t (*llhttp_get_max_header_key_length)(void);
 	size_t (*llhttp_get_max_header_value_length)(void);
 	size_t (*llhttp_get_max_header_count)(void);

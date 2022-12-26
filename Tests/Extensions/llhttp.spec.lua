@@ -73,6 +73,13 @@ describe("llhttp", function()
 			end)
 		end)
 
+		describe("llhttp_get_max_status_length", function()
+			it("should return a number (defined inside the FFI layer)", function()
+				local maxLength = llhttp.bindings.llhttp_get_max_status_length()
+				assertEquals(tonumber(maxLength), 256)
+			end)
+		end)
+
 		describe("llhttp_get_max_header_key_length", function()
 			it("should return a number (defined inside the FFI layer)", function()
 				local maxLength = llhttp.bindings.llhttp_get_max_header_key_length()

@@ -10,6 +10,7 @@
 
 
 #define MAX_URL_LENGTH_IN_BYTES 256
+#define MAX_STATUS_LENGTH_IN_BYTES 256
 #define MAX_HEADER_KEY_LENGTH_IN_BYTES 256
 #define MAX_HEADER_VALUE_LENGTH_IN_BYTES 4096
 #define MAX_HEADER_COUNT 32
@@ -23,6 +24,8 @@ typedef struct http_message {
   	char url[MAX_URL_LENGTH_IN_BYTES];
 	uint8_t version_length;
 	char version[16];
+	uint8_t status_length;
+	char status[MAX_STATUS_LENGTH_IN_BYTES];
 	uint8_t num_headers;
 	struct {
 		uint8_t key_length;
@@ -193,6 +196,7 @@ static void init_settings_with_callback_handlers(llhttp_settings_t* settings)
 }
 
 size_t llhttp_get_max_url_length() {	return MAX_URL_LENGTH_IN_BYTES; }
+size_t llhttp_get_max_status_length() {	return MAX_STATUS_LENGTH_IN_BYTES; }
 size_t llhttp_get_max_header_key_length() {	return MAX_HEADER_KEY_LENGTH_IN_BYTES; }
 size_t llhttp_get_max_header_value_length() {	return MAX_HEADER_VALUE_LENGTH_IN_BYTES; }
 size_t llhttp_get_max_header_count() {	return MAX_HEADER_COUNT; }
@@ -224,6 +228,7 @@ void export_llhttp_bindings(lua_State* L)
 	llhttp_exports_table.llhttp_set_lenient_keep_alive = llhttp_set_lenient_keep_alive;
 	llhttp_exports_table.llhttp_get_version_string = llhttp_get_version_string;
 	llhttp_exports_table.llhttp_get_max_url_length = llhttp_get_max_url_length;
+	llhttp_exports_table.llhttp_get_max_status_length = llhttp_get_max_status_length;
 	llhttp_exports_table.llhttp_get_max_header_key_length = llhttp_get_max_header_key_length;
 	llhttp_exports_table.llhttp_get_max_header_value_length = llhttp_get_max_header_value_length;
 	llhttp_exports_table.llhttp_get_max_header_count = llhttp_get_max_header_count;

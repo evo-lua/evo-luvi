@@ -353,6 +353,7 @@ local llhttp = {
 			void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
 			const char* (*llhttp_get_version_string)(void);
 			size_t (*llhttp_get_max_url_length)(void);
+			size_t (*llhttp_get_max_status_length)(void);
 			size_t (*llhttp_get_max_header_key_length)(void);
 			size_t (*llhttp_get_max_header_value_length)(void);
 			size_t (*llhttp_get_max_header_count)(void);
@@ -367,9 +368,11 @@ local llhttp = {
 				uint8_t method_length;
 				char method[16];
 				size_t url_length;
-				  char url[256];
+				char url[256];
 				uint8_t version_length;
 				char version[16];
+				uint8_t status_length;
+				char status[256];
 				uint8_t num_headers;
 				struct {
 					uint8_t key_length;
