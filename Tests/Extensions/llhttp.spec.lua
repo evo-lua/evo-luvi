@@ -102,6 +102,7 @@ describe("llhttp", function()
 				assertEquals(tonumber(maxLength), 4096)
 			end)
 		end)
+
 	-- llhttp_userdata_get_required_size
 	-- llhttp_userdata_get_actual_size
 	-- llhttp_userdata_message_fits_buffer
@@ -131,6 +132,20 @@ describe("llhttp", function()
 			llhttp.initialize()
 			-- No errors so far? Great... But the bindings should also still be available...
 			assertEquals(type(llhttp.bindings), "cdata")
+		end)
+	end)
+
+	describe("allocate_extended_payload_buffer", function()
+		it("should link a LuaJIT string buffer reference to the passed llhttp_message if one was given", function()
+			local message = ffi.new("http_message_t")
+			assertTrue(ffi.istype("luajit_stringbuffer_reference_t", message.extended_payload_buffer))
+			assertEquals(message.extended_payload_buffer.size, 0)
+			assertEquals(message.extended_payload_buffer.ptr, nil) -- NULL pointer
+			assertEquals(message.extended_payload_buffer.used, 0)
+			llhttp.allocate_extended_payload_buffer(message)
+			assertEquals(message.extended_payload_buffer.size, llhttp.DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES)
+			assertEquals(message.extended_payload_buffer.used, 0)
+			assertFalse(message.extended_payload_buffer.ptr == nil) -- Must not be a NULL pointer!
 		end)
 	end)
 

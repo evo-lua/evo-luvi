@@ -490,6 +490,7 @@ local llhttp = {
 		"HTTP_ON_RESET",
 	},
 	SHARED_OBJECT_NAME = isWindows and "llhttp.dll" or "./libllhttp.so",
+	DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES = 8 * 1024, -- Not a hard limit, just enough to avoid too many re-allocations
 
 	-- Sane defaults, but they may have to be adjusted for more specialized use cases or to balance RAM usage per client
 	MAX_URL_LENGTH_IN_BYTES = 1024,
@@ -514,6 +515,15 @@ function llhttp.initialize()
 
 	llhttp.initialized = true
 
+end
+
+local buffer = require("string.buffer")
+
+function llhttp.allocate_extended_payload_buffer(httpMessageStruct)
+	local stringBuffer = buffer.new(llhttp.DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES)
+	local referencePointer, reservedBufferSizeInBytes = stringBuffer:reserve(0) -- Already implicitly reserved via the constructor call
+	httpMessageStruct.extended_payload_buffer.ptr = referencePointer
+	httpMessageStruct.extended_payload_buffer.size = reservedBufferSizeInBytes
 end
 
 local ffi_string = ffi.string
