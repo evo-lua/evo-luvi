@@ -363,6 +363,14 @@ local llhttp = {
 	]]
 	..
 	[[
+
+		typedef struct {
+			uint8_t key_length;
+			char key[256];
+			size_t value_length;
+			char value[4096];
+		} http_header_t;
+
 			typedef struct http_message {
 				bool is_complete;
 				uint8_t method_length;
@@ -374,12 +382,7 @@ local llhttp = {
 				uint8_t status_length;
 				char status[256];
 				uint8_t num_headers;
-				struct {
-					uint8_t key_length;
-					char key[256];
-					size_t value_length;
-					char value[4096];
-				  } headers[32];
+				http_header_t headers[32];
 				size_t body_length;
 				char body[4096];
 				luajit_stringbuffer_reference_t extended_payload_buffer;
