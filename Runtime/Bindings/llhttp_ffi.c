@@ -9,38 +9,6 @@
 #include "string.h"
 
 
-#define MAX_URL_LENGTH_IN_BYTES 256
-#define MAX_STATUS_LENGTH_IN_BYTES 256
-#define MAX_HEADER_KEY_LENGTH_IN_BYTES 256
-#define MAX_HEADER_VALUE_LENGTH_IN_BYTES 4096
-#define MAX_HEADER_COUNT 32
-#define MAX_BODY_LENGTH_IN_BYTES 4096
-
-typedef struct {
-	uint8_t key_length;
-	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
-	size_t value_length;
-	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
-} http_header_t;
-
-typedef struct http_message {
-	bool is_complete;
-	uint8_t method_length;
-	char method[16];
-	size_t url_length;
-  	char url[MAX_URL_LENGTH_IN_BYTES];
-	uint8_t version_length;
-	char version[16];
-	uint8_t status_length;
-	char status[MAX_STATUS_LENGTH_IN_BYTES];
-	uint8_t num_headers;
-	http_header_t headers[MAX_HEADER_COUNT];
-	size_t body_length;
-	char body[MAX_BODY_LENGTH_IN_BYTES];
-	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies (from Lua) if needed
-	luajit_stringbuffer_reference_t extended_payload_buffer; // Optional feature, enabled on demand by allocating a stringBuffer here
-} http_message_t;
-
 // request_body_in_persistent_file
 // max_temp_file_size
 // FILE_FLAG_DELETE_ON_CLOSE
@@ -105,9 +73,13 @@ LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
 // LLHTTP_INFO_CALLBACK(on_reset)
 // TODO test all exported functions in this object file
+int llhttp_on_reset(llhttp_t* parser_state) {
+	DEBUG("on_reset");
 
-static inline void llhttp_reset_userdata_message(http_message_t* message) {
-		// Since we omit safety checks in the callback handlers (for performance reasons), make sure we don't write-fault off the end
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	// Since we omit safety checks in the callback handlers (for performance reasons), make sure we don't write-fault off the end
 	// memset(parser_state->data, 0, sizeof(http_message_t));
 	message->is_complete = false;
 	message->method_length = 0;
@@ -123,19 +95,11 @@ static inline void llhttp_reset_userdata_message(http_message_t* message) {
 	}
 	// memset(&message->headers, 0, sizeof(http_header_t) * MAX_HEADER_COUNT);
 	message->num_headers = 0;
-}
-
-int llhttp_on_reset(llhttp_t* parser_state) {
-	DEBUG("on_reset");
-
-	http_message_t* message = (http_message_t*) parser_state->data;
-	if(message == NULL) return HPE_OK;
-
-	llhttp_reset_userdata_message(message);
 
 	// TBD reset the other fields as well (luajit buffer)?
 	return HPE_OK;
 }
+// TODO reset message, or defer until message_begin?
 
 // LLHTTP_DATA_CALLBACK(on_url)
 int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {

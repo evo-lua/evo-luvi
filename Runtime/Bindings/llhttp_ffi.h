@@ -130,6 +130,40 @@ typedef struct llhttp_userdata {
 	luajit_stringbuffer_reference_t buffer;
 } llhttp_userdata_t;
 
+
+#define MAX_URL_LENGTH_IN_BYTES 256
+#define MAX_STATUS_LENGTH_IN_BYTES 256
+#define MAX_HEADER_KEY_LENGTH_IN_BYTES 256
+#define MAX_HEADER_VALUE_LENGTH_IN_BYTES 4096
+#define MAX_HEADER_COUNT 32
+#define MAX_BODY_LENGTH_IN_BYTES 4096
+
+
+typedef struct {
+	uint8_t key_length;
+	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
+	size_t value_length;
+	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
+} http_header_t;
+
+typedef struct http_message {
+	bool is_complete;
+	uint8_t method_length;
+	char method[16];
+	size_t url_length;
+  	char url[MAX_URL_LENGTH_IN_BYTES];
+	uint8_t version_length;
+	char version[16];
+	uint8_t status_length;
+	char status[MAX_STATUS_LENGTH_IN_BYTES];
+	uint8_t num_headers;
+	http_header_t headers[MAX_HEADER_COUNT];
+	size_t body_length;
+	char body[MAX_BODY_LENGTH_IN_BYTES];
+	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies (from Lua) if needed
+	luajit_stringbuffer_reference_t extended_payload_buffer; // Optional feature, enabled on demand by allocating a stringBuffer here
+} http_message_t;
+
 // A thin wrapper for the llhttp API, only needed to expose the statically-linked llhttp symbols to Lua and load them via FFI
 struct static_llhttp_exports_table {
 	void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
