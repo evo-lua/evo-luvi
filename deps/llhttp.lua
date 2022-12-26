@@ -379,6 +379,7 @@ local llhttp = {
 				char url[256];
 				uint8_t version_length;
 				char version[16];
+				int status_code;
 				uint8_t status_length;
 				char status[256];
 				uint8_t num_headers;

@@ -64,7 +64,19 @@ int llhttp_on_message_complete(llhttp_t* parser_state) {
 LLHTTP_INFO_CALLBACK(on_chunk_header)
 LLHTTP_INFO_CALLBACK(on_message_begin)
 LLHTTP_INFO_CALLBACK(on_headers_complete)
-LLHTTP_INFO_CALLBACK(on_status_complete)
+// LLHTTP_INFO_CALLBACK(on_status_complete)
+int llhttp_on_status_complete(llhttp_t* parser_state) {
+	DEBUG("on_status_complete");
+
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	const int status_code = llhttp_get_status_code(parser_state);
+	message->status_code = status_code;
+
+	return HPE_OK;
+}
+// TODO rename stauts to reason_phrase
 LLHTTP_INFO_CALLBACK(on_method_complete)
 LLHTTP_INFO_CALLBACK(on_version_complete)
 LLHTTP_INFO_CALLBACK(on_header_field_complete)
@@ -87,6 +99,7 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	message->version_length = 0;
 	message->status_length = 0;
 	message->body_length = 0;
+	message->status_code = 0;
 
 	for(uint8_t i = 0; i<message->num_headers; i++) {
 		message->headers[i].key_length = 0;
@@ -117,7 +130,23 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 	return HPE_OK;
 }
 
-LLHTTP_DATA_CALLBACK(on_status)
+// LLHTTP_DATA_CALLBACK(on_status)
+int llhttp_on_status(llhttp_t* parser_state, const char* at, size_t length) {
+	DEBUG("on_status");
+
+	http_message_t *message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	// if (length > sizeof(message->method) - 1) {
+		// TODO
+    	// length = sizeof(message->method) - 1;
+  	// }
+
+  	memcpy(&message->status + message->status_length, at, length);
+	message->status_length += length;
+
+	return HPE_OK;
+}
 // LLHTTP_DATA_CALLBACK(on_method)
 int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	DEBUG("on_method");

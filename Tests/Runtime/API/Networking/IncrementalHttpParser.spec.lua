@@ -23,6 +23,7 @@ local testCases = {
 			url = "",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -50,6 +51,7 @@ local testCases = {
 			url = "/hello",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -77,6 +79,7 @@ local testCases = {
 			url = "",
 			version_length = 6,
 			version = "HTTP/1",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -104,6 +107,7 @@ local testCases = {
 			url = "/hello-world",
 			version_length = 8,
 			version = "HTTP/1.1",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -131,6 +135,7 @@ local testCases = {
 			url = "/hello-world",
 			version_length = 8,
 			version = "HTTP/1.0",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -145,7 +150,7 @@ local testCases = {
 		},
 	},
 	["a complete (and valid) response"] = {
-		chunk = "HTTP/1.1 200 OK",
+		chunk = "HTTP/1.1 200 OK\r\n\r\n",
 		isOK = true,
 		isExpectingUpgrade = false,
 		isExpectingEOF = true,
@@ -158,8 +163,9 @@ local testCases = {
 			url = "",
 			version_length = 8,
 			version = "HTTP/1.1",
-			status_length = 6,
-			status = "200 OK",
+			status_code = 200,
+			status_length = 2,
+			status = "OK",
 			num_headers = 0,
 			headers = {},
 			body_length = 0,
@@ -185,6 +191,7 @@ local testCases = {
 			url = "/chat",
 			version_length = 8,
 			version = "HTTP/1.1",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 5,
@@ -218,6 +225,7 @@ local testCases = {
 			url = "*",
 			version_length = 1,
 			version = "HTTP/1.1",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 3,
@@ -249,6 +257,7 @@ local testCases = {
 			url = "",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -276,6 +285,7 @@ local testCases = {
 			url = "",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -303,6 +313,7 @@ local testCases = {
 			url = "",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -330,6 +341,7 @@ local testCases = {
 			url = "",
 			version_length = 0,
 			version = "",
+			status_code = 0,
 			status_length = 0,
 			status = "",
 			num_headers = 0,
@@ -357,8 +369,9 @@ local testCases = {
 			url = "",
 			version_length = 8,
 			version = "HTTP/1.1",
-			status_length = 6,
-			status = "204 No Content",
+			status_code = 204,
+			status_length = 10,
+			status = "No Content",
 			num_headers = 1,
 			headers = {
 				{
@@ -397,8 +410,9 @@ describe("IncrementalHttpParser", function()
 				assertEquals(message.method_length, testCase.message.method_length)
 				assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
 			end
-			-- assertEquals(message.status, testCase.message.status)
-			-- assertEquals(message.status_length, testCase.message.status_length)
+			assertEquals(message.status_code, testCase.message.status_code)
+			assertEquals(ffi_string(message.status, message.status_length), testCase.message.status)
+			assertEquals(message.status_length, testCase.message.status_length)
 			assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
 			assertEquals(message.url_length, testCase.message.url_length)
 			-- assertEquals(message.version_length, testCase.message.version_length)

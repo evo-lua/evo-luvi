@@ -154,6 +154,7 @@ typedef struct http_message {
   	char url[MAX_URL_LENGTH_IN_BYTES];
 	uint8_t version_length;
 	char version[16];
+	int status_code;
 	uint8_t status_length;
 	char status[MAX_STATUS_LENGTH_IN_BYTES];
 	uint8_t num_headers;
