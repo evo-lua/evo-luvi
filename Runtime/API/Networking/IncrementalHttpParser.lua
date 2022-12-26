@@ -130,6 +130,9 @@ function IncrementalHttpParser:ShouldKeepConnectionAlive()
     return tonumber(llhttp_should_keep_alive(self.state)) == 1
 end
 
+function IncrementalHttpParser:IsMessageComplete()
+
+end
 -- TODO use llhttp methods to get major, minor, method, status code, upgrade flag without copying stuff in event handlers (benchmark impact)
 
 -- TODO use this as default, as per event system RFC

@@ -71,4 +71,8 @@ describe("IncrementalHttpParser", function()
 
 		end)
 	end)
+
+	describe("IsMessageComplete", function()
+
+	end)
 end)
