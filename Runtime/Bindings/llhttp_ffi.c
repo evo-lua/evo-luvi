@@ -104,13 +104,10 @@ LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
 // LLHTTP_INFO_CALLBACK(on_reset)
-int llhttp_on_reset(llhttp_t* parser_state) {
-	DEBUG("on_reset");
+// TODO test all exported functions in this object file
 
-	http_message_t* message = (http_message_t*) parser_state->data;
-	if(message == NULL) return HPE_OK;
-
-	// Since we omit safety checks in the callback handlers (for performance reasons), make sure we don't write-fault off the end
+static inline void llhttp_reset_userdata_message(http_message_t* message) {
+		// Since we omit safety checks in the callback handlers (for performance reasons), make sure we don't write-fault off the end
 	// memset(parser_state->data, 0, sizeof(http_message_t));
 	message->is_complete = false;
 	message->method_length = 0;
@@ -126,11 +123,19 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	}
 	// memset(&message->headers, 0, sizeof(http_header_t) * MAX_HEADER_COUNT);
 	message->num_headers = 0;
+}
+
+int llhttp_on_reset(llhttp_t* parser_state) {
+	DEBUG("on_reset");
+
+	http_message_t* message = (http_message_t*) parser_state->data;
+	if(message == NULL) return HPE_OK;
+
+	llhttp_reset_userdata_message(message);
 
 	// TBD reset the other fields as well (luajit buffer)?
 	return HPE_OK;
 }
-// TODO reset message, or defer until message_begin?
 
 // LLHTTP_DATA_CALLBACK(on_url)
 int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
