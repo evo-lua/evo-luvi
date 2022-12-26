@@ -44,7 +44,9 @@ function IncrementalHttpParser:Construct()
     -- local userdataBuffer = llhttp_userdata_allocate_buffer()
 	-- instance.state.data = ffi_cast("llhttp_userdata_t*", userdataBuffer) -- This is safe because llhttp stores header + reference first
 	-- instance.userdataBuffer = userdataBuffer
-	instance.state.data = ffi.new("http_message_t")
+	instance.http_message = ffi.new("http_message_t") -- Anchor so it doesn't accidentally get GC'ed and SEGFAULTS the runtime...
+	instance.state.data = instance.http_message
+	-- instance.state.data = ffi.new("http_message_t")
 
     setmetatable(instance, {__index = self})
 
