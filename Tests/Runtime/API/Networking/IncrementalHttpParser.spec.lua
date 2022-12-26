@@ -400,8 +400,11 @@ describe("IncrementalHttpParser", function()
 	for label, testCase in pairs(testCases) do
 		it("should return the expected result when " .. label .. " was passed", function()
 			local parser = IncrementalHttpParser()
-			local message = parser:ParseNextChunk(testCase.chunk)
-			-- assertEquals(parser:IsOK(), testCase.isOK)
+
+			local message
+			for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
+				message = parser:ParseNextChunk(testCase.chunk)
+			end
 
 			assertEquals(message.is_complete, testCase.message.is_complete)
 
