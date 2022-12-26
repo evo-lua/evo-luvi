@@ -415,22 +415,22 @@ describe("IncrementalHttpParser", function()
 			assertEquals(message.status_length, testCase.message.status_length)
 			assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
 			assertEquals(message.url_length, testCase.message.url_length)
-			-- assertEquals(ffi_string(message.version, message.version_length), testCase.message.version)
 			assertEquals(message.version_major, testCase.message.version_major)
 			assertEquals(message.version_minor, testCase.message.version_minor)
 			assertEquals(message.num_headers, testCase.message.num_headers)
 			assertEquals(message.num_headers, #testCase.message.headers)
-			-- -- TBD headers, key values
-			-- assertEquals(message.num_body_length, testCase.message.body_length)
-			-- assertEquals(message.num_body, testCase.message.body)
+
+			for index=0, message.num_headers, 1 do
+				if testCase.message.headers and testCase.message.headers[index] then
+					assertEquals(ffi_string(message.headers[index].key, message.headers[index].key_length), testCase.message.headers[index].key)
+					assertEquals(ffi_string(message.headers[index].value, message.headers[index].value_length), testCase.message.headers[index].value)
+				end
+			end
+
+			assertEquals(ffi_string(message.body, message.body_length), testCase.message.body)
+			assertEquals(message.body_length, testCase.message.body_length)
 			-- -- TBD ext payload
 
-			-- struct {
-			-- 	uint8_t key_length;
-			-- 	char key[MAX_HEADER_KEY_LENGTH_IN_BYTES];
-			-- 	size_t value_length;
-			-- 	char value[MAX_HEADER_VALUE_LENGTH_IN_BYTES];
-			--   } headers[MAX_HEADER_COUNT];
 		end)
 	end
 
