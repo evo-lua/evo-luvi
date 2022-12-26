@@ -32,7 +32,8 @@ typedef struct http_message {
 	uint8_t num_headers;
 	size_t body_length;
 	char body[MAX_BODY_LENGTH_IN_BYTES];
-	luajit_stringbuffer_reference_t extended_payload_buffer;
+	// We want a continuous memory area (cache locality), but also the flexiliby to stream/buffer large bodies if needed
+	luajit_stringbuffer_reference_t extended_payload_buffer; // Optional feature, enabled on demand by allocating a stringBuffer here
 } http_message_t;
 
 // request_body_in_persistent_file

@@ -159,6 +159,27 @@ describe("llhttp", function()
 		end)
 	end)
 
+	describe("has_extended_payload_buffer", function()
+		it("should return true if the given http_message is using an extended payload to store additional body chunks", function()
+			local message = ffi.new("http_message_t")
+			assertFalse(llhttp.has_extended_payload_buffer(message))
+			llhttp.allocate_extended_payload_buffer(message)
+			assertTrue(llhttp.has_extended_payload_buffer(message))
+		end)
+	end)
+
+	describe("get_message_struct_size", function()
+		-- Since cdefs and c headers aren't auto-synced, probably best to have another failsafe check here
+		it("should be equal to the defined http_message struct size (and small enough to fit into common CPU caches)", function()
+			--Ideally, the total size (without extended payload) should be small enough to fit in modern CPU cache (e.g., 8MB on i7)
+			local maxAllowedStructSize = 42
+			local luaStructSize = ffi.sizeof("http_message_t")
+			local cStructSize = llhttp.bindings.get_message_struct_size()
+			assertEquals(luaStructSize, cStructSize)
+			assertTrue(cStructSize <= maxAllowedStructSize)
+		end)
+	end)
+
 	describe("version", function()
 		it("should return the embedded llhttp version in semver format", function()
 			local embeddedVersion = llhttp.version()

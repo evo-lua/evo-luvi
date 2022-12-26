@@ -527,6 +527,12 @@ function llhttp.allocate_extended_payload_buffer(httpMessageStruct)
 	return stringBuffer, referencePointer, reservedBufferSizeInBytes
 end
 
+function llhttp.has_extended_payload_buffer(message)
+	local hasReservedBytes = message.extended_payload_buffer.size >  0
+	local isReferenceNullPointer = message.extended_payload_buffer.ptr == nil
+	return hasReservedBytes and not isReferenceNullPointer
+end
+
 local ffi_string = ffi.string
 local format = format
 local tonumber = tonumber
