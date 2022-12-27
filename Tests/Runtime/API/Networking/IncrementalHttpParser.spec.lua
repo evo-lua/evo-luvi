@@ -496,7 +496,6 @@ local testCases = {
 	},
 	-- chunked body
 	-- llhttp_interpret_message
-	-- message body (buffered), streaming = separate issue = store in LJ buffer?
 	["a request with an url string that is too large to buffer"] = {
 		chunks = {
 			"G","E",
@@ -764,6 +763,46 @@ local testCases = {
 			},
 		},
 	},
+	["a message that uses chunked transfor encoding"] = {
+		chunks ={
+		 "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n\r\n",
+		"7\r\n",
+		"Mozilla\r\n",
+		"11\r\n",
+		"Developer Network\r\n",
+		"0\r\n",
+		"\r\n",
+		},
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		message = {
+			is_complete = true,
+			method_length = 0,
+			method = "",
+			url_length = 0,
+			url = "",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 200,
+			status_length = 2,
+			status = "OK",
+			num_headers = 2,
+			headers = {
+				{ key = "Content-Type", key_length = #"Content-Type", value = "text/plain", value_length=#"text/plain"},
+				{ key = "Transfer-Encoding", key_length = #"Transfer-Encoding", value = "chunked", value_length=#"chunked"},
+			},
+			body_length = 24,
+			body = "MozillaDeveloper Network",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	}
+
 }
 
 
