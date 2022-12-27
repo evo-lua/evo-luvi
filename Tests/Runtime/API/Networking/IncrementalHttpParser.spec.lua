@@ -389,7 +389,48 @@ local testCases = {
 				used = 0,
 			},
 		},
-	}
+	},
+	["a valid message that arrives in many different chunks"] = {
+		chunks = {
+			"G","E",
+			"T /c",
+			"hat H",
+			"TTP/1.1\r",
+			"\nHo","st: ex","ample.com:8000\r\nUp","gra","de: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+			-- todo add multi chunk body
+		},
+		isOK = true,
+		isExpectingUpgrade = true,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		message = {
+			is_complete = true,
+			method_length = 3,
+			method = "GET",
+			url_length = 5,
+			url = "/chat",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 5,
+			headers = {
+				{ key_length = 4, key = "Host", value_length = #"example.com:8000", value = "example.com:8000"},
+				{ key_length = #"Upgrade", key = "Upgrade", value_length = #"websocket", value = "websocket"},
+				{ key_length = #"Connection", key = "Connection", value_length = #"Upgrade", value = "Upgrade"},
+				{ key_length = #"Sec-WebSocket-Key", key = "Sec-WebSocket-Key", value_length = #"dGhlIHNhbXBsZSBub25jZQ==", value = "dGhlIHNhbXBsZSBub25jZQ=="},
+				{ key_length = #"Sec-WebSocket-Version", key = "Sec-WebSocket-Version", value_length = 2, value = "13"},
+			},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
 }
 
 
@@ -403,7 +444,7 @@ describe("IncrementalHttpParser", function()
 
 			local message
 			for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
-				message = parser:ParseNextChunk(testCase.chunk)
+				message = parser:ParseNextChunk(chunk)
 			end
 
 			assertEquals(message.is_complete, testCase.message.is_complete)

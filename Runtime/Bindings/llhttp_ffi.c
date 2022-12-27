@@ -135,7 +135,7 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
     	// length = sizeof(message->method) - 1;
   	// }
 
-  	memcpy(&message->url + message->url_length, at, length);
+  	memcpy(message->url + message->url_length, at, length);
 	message->url_length += length;
 
 	return HPE_OK;
@@ -153,7 +153,7 @@ int llhttp_on_status(llhttp_t* parser_state, const char* at, size_t length) {
     	// length = sizeof(message->method) - 1;
   	// }
 
-  	memcpy(&message->status + message->status_length, at, length);
+  	memcpy(message->status + message->status_length, at, length);
 	message->status_length += length;
 
 	return HPE_OK;
@@ -170,7 +170,7 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
     	// length = sizeof(message->method) - 1;
   	// }
 
-  	memcpy(&message->method + message->method_length, at, length);
+  	memcpy(message->method + message->method_length, at, length);
 	message->method_length += length;
 
 	return HPE_OK;
@@ -186,7 +186,7 @@ LLHTTP_DATA_CALLBACK(on_version)
 // 		// TODO
 //     	// length = sizeof(message->version) - 1;
 //   	// }
-//   	memcpy(&message->version + message->version_length, at, length);
+//   	(message->version + message->version_length, at, length);
 // 	message->version_length += length;
 
 // 	return HPE_OK;
@@ -207,7 +207,7 @@ int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length
 	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
 
-  	memcpy(&header->key + header->key_length, at, length);
+  	memcpy(header->key + header->key_length, at, length);
 	header->key_length += length;
 
 	return HPE_OK;
@@ -225,7 +225,7 @@ int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length
 	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
 
-  	memcpy(&header->value + header->value_length, at, length);
+  	memcpy(header->value + header->value_length, at, length);
 	header->value_length += length;
 
 	return HPE_OK;
