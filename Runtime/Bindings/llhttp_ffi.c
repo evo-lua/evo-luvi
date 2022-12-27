@@ -1,4 +1,4 @@
-#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -130,10 +130,10 @@ int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	// if (length > sizeof(message->method) - 1) {
-		// TODO
-    	// length = sizeof(message->method) - 1;
-  	// }
+	if (message->method_length + length > MAX_URL_LENGTH_IN_BYTES) {
+		llhttp_set_error_reason(parser_state, "414 URI Too Long");
+		return HPE_USER;
+	}
 
   	memcpy(message->url + message->url_length, at, length);
 	message->url_length += length;

@@ -20,6 +20,7 @@ local llhttp_get_errno = llhttp.bindings.llhttp_get_errno
 local llhttp_should_keep_alive = llhttp.bindings.llhttp_should_keep_alive
 local llhttp_message_needs_eof = llhttp.bindings.llhttp_message_needs_eof
 local llhttp_get_upgrade = llhttp.bindings.llhttp_get_upgrade
+local llhttp_get_error_reason = llhttp.bindings.llhttp_get_error_reason
 
 local llhttp_userdata_allocate_buffer = llhttp.llhttp_userdata_allocate_buffer
 local llhttp_userdata_get_message = llhttp.llhttp_userdata_get_message
@@ -133,8 +134,17 @@ function IncrementalHttpParser:ShouldKeepConnectionAlive()
 end
 
 function IncrementalHttpParser:IsMessageComplete()
-
+	-- TODO?
 end
+
+function IncrementalHttpParser:GetLastError()
+	local cdata = llhttp_get_error_reason(self.state)
+
+	if cdata == nil then return end -- Cannot convert NULL pointer to Lua string (obviously)
+
+	return ffi_string(cdata)
+end
+
 -- TODO use llhttp methods to get major, minor, method, status code, upgrade flag without copying stuff in event handlers (benchmark impact)
 
 -- TODO use this as default, as per event system RFC

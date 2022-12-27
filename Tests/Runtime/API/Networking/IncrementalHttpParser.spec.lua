@@ -8,6 +8,10 @@ local llhttp_get_max_url_length = llhttp.bindings.llhttp_get_max_url_length
 local ffi_string = ffi.string
 local ffi_sizeof = ffi.sizeof
 
+-- There are two things to consider when passing extremely long inputs: NO SEGFAULT and no read-fault (buffer overflow) in memcpy
+-- The first would crash and therefore fail the tests, but the second might not - so assert that ONLY the passed in bytes are read
+local OVERLY_LONG_URL = string.rep("a", tonumber(llhttp_get_max_url_length()) + 12345)
+
 local testCases = {
 	["an invalid message"] = {
 		chunk = "asdf",
@@ -15,6 +19,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = false,
+		expectedErrorReason = "Invalid method encountered",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -183,6 +188,7 @@ local testCases = {
 		isExpectingUpgrade = true,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "Pause on CONNECT/Upgrade",
 		message = {
 			is_complete = true,
 			method_length = 3,
@@ -217,6 +223,7 @@ local testCases = {
 		isExpectingUpgrade = true,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "Pause on CONNECT/Upgrade",
 		message = {
 			is_complete = true,
 			method_length = 7,
@@ -249,6 +256,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,  -- HTTP/1.1 default
+		expectedErrorReason = "Invalid method encountered",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -277,6 +285,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = false, -- Due to the initial error state, llhttp discards the second message
+		expectedErrorReason = "Invalid method encountered",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -305,6 +314,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true, -- HTTP/1.1 default
+		expectedErrorReason = "Invalid method encountered",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -333,6 +343,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = false,
+		expectedErrorReason = "Invalid method encountered",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -403,6 +414,7 @@ local testCases = {
 		isExpectingUpgrade = true,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "Pause on CONNECT/Upgrade",
 		message = {
 			is_complete = true,
 			method_length = 3,
@@ -468,6 +480,50 @@ local testCases = {
 			},
 		},
 	},
+	-- url
+	--status
+	-- method?
+	-- header key
+	-- header value
+	-- message body
+	["a message with an url string that is too large to buffer"] = {
+		chunks = {
+			"G","E",
+			"T /",
+			OVERLY_LONG_URL,
+			" H",
+			"TTP/1.1\r",
+			"\nCont","ent-Length: 11","\r\n\r\nhell",
+			"o", " kitty\r\n\r\n"
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "414 URI Too Long",
+		message = {
+			is_complete = false,
+			method_length = 3,
+			method = "GET",
+			url_length = 1,
+			url = "/",
+			version_minor = 0,
+			version_major = 0,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
+
 }
 
 
@@ -483,6 +539,14 @@ describe("IncrementalHttpParser", function()
 			for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
 				message = parser:ParseNextChunk(chunk)
 			end
+
+			local expectedState = testCase.isOK
+			local actualState = parser:IsOK()
+			assertEquals(actualState, expectedState)
+
+			local expectedErrorString = testCase.expectedErrorReason
+			local actualErrorString = parser:GetLastError()
+			assertEquals(actualErrorString, expectedErrorString)
 
 			assertEquals(message.is_complete, testCase.message.is_complete)
 
@@ -524,14 +588,14 @@ describe("IncrementalHttpParser", function()
 
 		-- Fixed-size structs
 -- URL length exceeded
-		it("should truncate overly-long request URLs after the maximum length has been reached", function()
-			local parser = IncrementalHttpParser()
-			local maxLength = llhttp_get_max_url_length()
-			local longURL = "/asdf"
-			local chunk = "GET " .. longURL .. " HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
-			local message = parser:ParseNextChunk(chunk)
+		-- it("should truncate overly-long request URLs after the maximum length has been reached", function()
+		-- 	local parser = IncrementalHttpParser()
+		-- 	local maxLength = llhttp_get_max_url_length()
+		-- 	local longURL = "/asdf"
+		-- 	local chunk = "GET " .. longURL .. " HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
+		-- 	local message = parser:ParseNextChunk(chunk)
 
-		end)
+		-- end)
 -- status (reason phrase) exceeded
 --header field length exceeded
 -- header value length exceeded
@@ -573,20 +637,6 @@ describe("IncrementalHttpParser", function()
 	-- describe("IsMessageComplete", function()
 	-- 	-- TODO
 	-- end)
-
-	-- describe("IsOK", function()
-
-	-- 	for label, testCase in pairs(testCases) do
-	-- 		local expectedState = testCase.isOK
-	-- 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
-	-- 			local parser = IncrementalHttpParser()
-
-	-- 			parser:ParseNextChunk(testCase.chunk)
-
-	-- 			local actualState = parser:IsOK()
-	-- 			assertEquals(actualState, expectedState)
-	-- 		end)
-	-- 	end
 
 	-- 	it("should return false if a message with an overlong request URL has been parsed", function()
 	-- 		-- TODO
