@@ -146,10 +146,10 @@ int llhttp_on_status(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	// if (length > sizeof(message->method) - 1) {
-		// TODO
-    	// length = sizeof(message->method) - 1;
-  	// }
+	if (message->status_length + length > MAX_STATUS_LENGTH_IN_BYTES) {
+		llhttp_set_error_reason(parser_state, "Status or reason phrase too long");
+		return HPE_USER;
+	}
 
   	memcpy(message->status + message->status_length, at, length);
 	message->status_length += length;
@@ -163,10 +163,7 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	// if (length > sizeof(message->method) - 1) {
-		// TODO
-    	// length = sizeof(message->method) - 1;
-  	// }
+	// Can omit boundary checks here since the parser will never call this for invalid methods
 
   	memcpy(message->method + message->method_length, at, length);
 	message->method_length += length;
@@ -174,22 +171,6 @@ int llhttp_on_method(llhttp_t* parser_state, const char* at, size_t length) {
 	return HPE_OK;
 }
 LLHTTP_DATA_CALLBACK(on_version)
-// int llhttp_on_version(llhttp_t* parser_state, const char* at, size_t length) {
-// 	DEBUG("on_version");
-
-// 	http_message_t *message = (http_message_t*) parser_state->data;
-// 	if(message == NULL) return HPE_OK;
-
-// 	// if (length > sizeof(message->version) - 1) {
-// 		// TODO
-//     	// length = sizeof(message->version) - 1;
-//   	// }
-//   	(message->version + message->version_length, at, length);
-// 	message->version_length += length;
-
-// 	return HPE_OK;
-// }
-
 LLHTTP_DATA_CALLBACK(on_chunk_extension_name)
 LLHTTP_DATA_CALLBACK(on_chunk_extension_value)
 // LLHTTP_DATA_CALLBACK(on_header_field)
@@ -229,9 +210,9 @@ int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length
 	http_header_t* header = &message->headers[last_header_index];
 
 	if (header->value_length + length > MAX_HEADER_VALUE_LENGTH_IN_BYTES) {
-			llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
-			return HPE_USER;
-		}
+		llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
+		return HPE_USER;
+	}
 
   	memcpy(header->value + header->value_length, at, length);
 	header->value_length += length;

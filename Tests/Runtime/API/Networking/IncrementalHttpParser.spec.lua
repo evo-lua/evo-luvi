@@ -532,6 +532,39 @@ local testCases = {
 			},
 		},
 	},
+	["a response with a status that is too large to buffer"] = {
+		chunks = {
+			"HTTP/1.1 500 ",
+			OVERLY_LONG_STATUS,
+			"\r\n\r\n"
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "Status or reason phrase too long",
+		message = {
+			is_complete = false,
+			method_length = 0,
+			method = "",
+			url_length = 0,
+			url = "",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
 	["a message with a header key that is too large to buffer"] = {
 		chunks = {
 			"G","E",
