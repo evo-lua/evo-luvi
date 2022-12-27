@@ -20,6 +20,10 @@ local OVERLY_LONG_HEADER_KEY = string.rep("a", tonumber(llhttp_get_max_header_ke
 local OVERLY_LONG_HEADER_VALUE = string.rep("a", tonumber(llhttp_get_max_header_value_length()) * 2)
 local OVERLY_LONG_BODY_STRING = string.rep("a", tonumber(llhttp_get_max_body_length()) * 2)
 local OVERLY_LARGE_HEADERS_STRING = string.rep("Key: Value\r\n", tonumber(llhttp_get_max_header_count()) * 2)
+local OVERLY_LONG_HEADERS = {}
+for i=1, tonumber(llhttp_get_max_header_count()), 1 do
+	OVERLY_LONG_HEADERS[#OVERLY_LONG_HEADERS+1] = { key = "Key", key_length = 3, value = "Value", value_length = 5 }
+end
 
 
 local testCases = {
@@ -678,7 +682,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
-		expectedErrorReason = "Too many headers to process",
+		expectedErrorReason = "Too many headers",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -690,8 +694,8 @@ local testCases = {
 			status_code = 200,
 			status_length = 2,
 			status = "OK",
-			num_headers = 0,
-			headers = {},
+			num_headers = llhttp_get_max_header_count(),
+			headers = OVERLY_LONG_HEADERS,
 			body_length = 0,
 			body = "",
 			extended_payload_buffer = {

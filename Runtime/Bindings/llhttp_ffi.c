@@ -182,8 +182,11 @@ int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length
 
 	// The count only increases after the current header field is complete
 	const uint8_t last_header_index = message->num_headers;
+	if (last_header_index == MAX_HEADER_COUNT) {
+		llhttp_set_error_reason(parser_state, "Too many headers");
+		return HPE_USER;
+	}
 
-	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
 
 	if (header->key_length + length > MAX_HEADER_KEY_LENGTH_IN_BYTES) {
@@ -205,10 +208,9 @@ int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length
 
 	// The count only increases after the current header field is complete
 	const uint8_t last_header_index = message->num_headers;
+	// Can skip boundary checks since it's handled in on_header_key, so we'll never even get here
 
-	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
-
 	if (header->value_length + length > MAX_HEADER_VALUE_LENGTH_IN_BYTES) {
 		llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
 		return HPE_USER;
