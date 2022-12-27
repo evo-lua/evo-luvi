@@ -236,13 +236,11 @@ function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
     --       payload.payload_length)
 end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID,
-                                                                     payload)
+function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID,                                                                     payload)
     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
     --       payload.payload_length)
 end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID,
-                                                                      payload)
+function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID,                                                                      payload)
     -- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
     --       payload.payload_length)
 end
