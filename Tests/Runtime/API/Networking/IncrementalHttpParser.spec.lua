@@ -492,7 +492,8 @@ local testCases = {
 	},
 	--status
 	-- method?
-	-- header key
+	-- chunked body
+	-- llhttp_interpret_message
 	-- header value
 	-- message body
 	["a request with an url string that is too large to buffer"] = {
