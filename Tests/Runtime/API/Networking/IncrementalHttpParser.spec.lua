@@ -4,6 +4,10 @@ local llhttp = require("llhttp")
 local ffi = require("ffi")
 
 local llhttp_get_max_url_length = llhttp.bindings.llhttp_get_max_url_length
+local llhttp_get_max_status_length = llhttp.bindings.llhttp_get_max_status_length
+local llhttp_get_max_header_key_length = llhttp.bindings.llhttp_get_max_header_key_length
+local llhttp_get_max_header_value_length = llhttp.bindings.llhttp_get_max_header_value_length
+local llhttp_get_max_body_length = llhttp.bindings.llhttp_get_max_body_length
 
 local ffi_string = ffi.string
 local ffi_sizeof = ffi.sizeof
@@ -11,6 +15,12 @@ local ffi_sizeof = ffi.sizeof
 -- There are two things to consider when passing extremely long inputs: NO SEGFAULT and no read-fault (buffer overflow) in memcpy
 -- The first would crash and therefore fail the tests, but the second might not - so assert that ONLY the passed in bytes are read
 local OVERLY_LONG_URL = string.rep("a", tonumber(llhttp_get_max_url_length()) + 12345)
+local OVERLY_LONG_STATUS = string.rep("a", tonumber(llhttp_get_max_status_length()) + 12345)
+local OVERLY_LONG_HEADER_KEY = string.rep("a", tonumber(llhttp_get_max_header_key_length()) + 12345)
+local OVERLY_LONG_HEADER_VALUE = string.rep("a", tonumber(llhttp_get_max_header_value_length()) + 12345)
+local OVERLY_LONG_BODY_STRING = string.rep("a", tonumber(llhttp_get_max_body_length()) + 12345)
+-- too many headers (>32)
+
 
 local testCases = {
 	["an invalid message"] = {
@@ -480,13 +490,12 @@ local testCases = {
 			},
 		},
 	},
-	-- url
 	--status
 	-- method?
 	-- header key
 	-- header value
 	-- message body
-	["a message with an url string that is too large to buffer"] = {
+	["a request with an url string that is too large to buffer"] = {
 		chunks = {
 			"G","E",
 			"T /",
@@ -494,6 +503,44 @@ local testCases = {
 			" H",
 			"TTP/1.1\r",
 			"\nCont","ent-Length: 11","\r\n\r\nhell",
+			"o", " kitty\r\n\r\n"
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "414 URI Too Long",
+		message = {
+			is_complete = false,
+			method_length = 3,
+			method = "GET",
+			url_length = 1,
+			url = "/",
+			version_minor = 0,
+			version_major = 0,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
+	["a request with a header key that is too large to buffer"] = {
+		chunks = {
+			"G","E",
+			"T /",
+			" H",
+			"TTP/1.1\r",
+			"\n",
+			OVERLY_LONG_HEADER_KEY,
+			": 11","\r\n\r\nhell",
 			"o", " kitty\r\n\r\n"
 		},
 		isOK = false,
