@@ -2,8 +2,6 @@ local ffi = require("ffi")
 local llhttp = require("llhttp")
 local string_buffer = require("string.buffer")
 
-local HttpMessage = require("HttpMessage")
-
 local ffi_cast = ffi.cast
 local ffi_sizeof = ffi.sizeof
 local ffi_string = ffi.string
@@ -31,7 +29,6 @@ function IncrementalHttpParser:Construct()
 	local instance = {
 		state = ffi.new("llhttp_t"),
 		settings = ffi.new("llhttp_settings_t"),
-		bufferedMessage = HttpMessage(),
 	}
 
 	llhttp_settings_init(instance.settings)
@@ -176,127 +173,5 @@ end
 -- end
 
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })
-
-local EventListenerMixin = require("EventListenerMixin")
-mixin(IncrementalHttpParser, EventListenerMixin)
-
--- TBD: Do we want a default implementation that buffers the request in flight? If yes, this won't do...
-for index, readableEventName in pairs(llhttp.FFI_EVENTS) do
-	IncrementalHttpParser[readableEventName] = function(parser, eventID, payload)
-		-- TEST("EVENT", eventID, payload)
-	end
-end
-
-function IncrementalHttpParser:HTTP_EVENT_BUFFER_TOO_SMALL(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_MESSAGE_BEGIN(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_HEADER_FIELD(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_VALUE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADERS_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_URL_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_STATUS_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_VERSION_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_FIELD_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_HEADER_VALUE_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_HEADER(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_CHUNK_COMPLETE(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--   payload.payload_length)
-end
-function IncrementalHttpParser:HTTP_ON_RESET(eventID, payload)
-	-- DEBUG(eventID .. " triggered", payload.payload_start_pointer,
-	--       payload.payload_length)
-end
-
--- TODO DRY
-
-function IncrementalHttpParser:HTTP_ON_METHOD(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	self.bufferedMessage.method:putcdata(payload.payload_start_pointer, payload.payload_length)
-end
-
-function IncrementalHttpParser:HTTP_ON_VERSION(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	self.bufferedMessage.httpVersion:putcdata(payload.payload_start_pointer, payload.payload_length)
-end
-
-function IncrementalHttpParser:HTTP_ON_STATUS(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	self.bufferedMessage.statusCode:putcdata(payload.payload_start_pointer, payload.payload_length)
-end
-
-function IncrementalHttpParser:HTTP_ON_BODY(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	self.bufferedMessage.body:putcdata(payload.payload_start_pointer, payload.payload_length)
-end
-
-function IncrementalHttpParser:HTTP_ON_URL(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	self.bufferedMessage.requestTarget:putcdata(payload.payload_start_pointer, payload.payload_length)
-end
-
-function IncrementalHttpParser:HTTP_ON_MESSAGE_COMPLETE(eventID, payload)
-	-- TEST(eventID .. " triggered", payload.payload_start_pointer, payload.payload_length)
-	-- print(self.bufferedMessage:ToString())
-	-- dump(self.bufferedMessage)
-	-- print(self.bufferedMessage:ToString())
-	self.bufferedMessage:Reset()
-end
-
-function IncrementalHttpParser:GetBufferedMessage()
-	return self.bufferedMessage
-end
 
 return IncrementalHttpParser
