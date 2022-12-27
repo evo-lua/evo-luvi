@@ -698,12 +698,39 @@ local testCases = {
 			headers = {},
 			body_length = 0,
 			body = "",
-			-- TODO test these also or ignore as implementation detail?
-			extended_payload_buffer = OVERLY_LONG_BODY_STRING,
+			extended_payload_buffer = OVERLY_LONG_BODY_STRING, -- TODO remove from other test cases? test ptr, size, used fields?
 		},
 	},
-	-- ["a message with a body is too large to buffer directly and also cannot be buffered dynamically"] = {},
-
+	["a message with a body is too large to buffer directly and also cannot be buffered dynamically"] = {
+		chunks = {
+			"HTTP/1.1 200 OK",
+			"\r\n\r\n",
+			OVERLY_LONG_BODY_STRING .. OVERLY_LONG_BODY_STRING,
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		extendedPayloadBufferSize = 0, -- Should result in a buffer that is (much) too small (just the default size, basically)
+		expectedErrorReason = "Message body too large (cannot fit into extended payload buffer)",
+		message = {
+			is_complete = false,
+			method_length = 0,
+			method = "",
+			url_length = 0,
+			url = "",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 200,
+			status_length = 2,
+			status = "OK",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = "", -- Should fail to write competely and not just partially
+		},
+	},
 	["a message with too many headers to buffer directly"] = {
 		chunks = {
 			"HTTP/1.1 200 OK\r\n",
