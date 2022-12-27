@@ -814,24 +814,33 @@ local function parseChunksAndReturnMessage(parser, testCase)
 	return message
 end
 
+local function assertParserStateMatchesExpectation(parser, testCase)
+
+	local expectedState = testCase.isOK
+	local actualState = parser:IsOK()
+	assertEquals(actualState, expectedState)
+
+end
+
+local function assertBufferedMessageMatchesExpectation(message, testCase)
+
+end
+
 describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
-
 
 	for label, testCase in pairs(testCases) do
 		it("should return the expected result when " .. label .. " was passed", function()
 			local parser = IncrementalHttpParser()
 
 			if testCase.extendedPayloadBufferSize then
-				-- LJ StringBuffer test
 				parser:EnableExtendedPayloadBuffer(testCase.extendedPayloadBufferSize)
 			end
 
-			local message = parseChunksAndReturnMessage(parser, testCase)
 
-			local expectedState = testCase.isOK
-			local actualState = parser:IsOK()
-			assertEquals(actualState, expectedState)
+			local message = parseChunksAndReturnMessage(parser, testCase)
+			assertBufferedMessageMatchesExpectation(message, testCase)
+			assertParserStateMatchesExpectation(parser, testCase)
 
 			local expectedErrorString = testCase.expectedErrorReason
 			local actualErrorString = parser:GetLastError()
