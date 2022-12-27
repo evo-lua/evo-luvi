@@ -431,6 +431,43 @@ local testCases = {
 			},
 		},
 	},
+	["a valid message that splits the body into different chunks"] = {
+		chunks = {
+			"G","E",
+			"T /c",
+			"hat H",
+			"TTP/1.1\r",
+			"\nCont","ent-Length: 11","\r\n\r\nhell",
+			"o", " kitty\r\n\r\n"
+		},
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		message = {
+			is_complete = true,
+			method_length = 3,
+			method = "GET",
+			url_length = 5,
+			url = "/chat",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 1,
+			headers = {
+				{ key_length = #"Content-Length", key = "Content-Length", value_length = 2, value = "11"},
+			},
+			body_length = 11,
+			body = "hello kitty",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
 }
 
 

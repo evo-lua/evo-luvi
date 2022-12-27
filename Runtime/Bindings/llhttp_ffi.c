@@ -1,4 +1,4 @@
-// #define ENABLE_LLHTTP_CALLBACK_LOGGING 1
+#define ENABLE_LLHTTP_CALLBACK_LOGGING 1
 
 #include "llhttp.h"
 #include "llhttp_ffi.h"
@@ -237,12 +237,13 @@ int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	if (length > sizeof(message->body) - 1) {
-		// TODO
-    	length = sizeof(message->body) - 1;
-  	}
-  	strncpy(message->body, at, length);
-  	message->body[length] = '\0';
+	// if (length > sizeof(message->body) - 1) {
+	// 	// TODO
+    // 	length = sizeof(message->body) - 1;
+  	// }
+
+  	memcpy(message->body + message->body_length, at, length);
+	message->body_length += length;
 
 	return HPE_OK;
 }
