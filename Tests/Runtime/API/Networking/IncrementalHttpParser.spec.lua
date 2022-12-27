@@ -384,7 +384,7 @@ local testCases = {
 		chunk = "HTTP/1.1 204 No Content\r\nConnection: Keep-Alive\r\n\r\n",
 		isOK = true,
 		isExpectingUpgrade = false,
-		isExpectingEOF = true,
+		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
 		message = {
 			is_complete = true,
@@ -644,7 +644,7 @@ local testCases = {
 		},
 		isOK = false,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
+		isExpectingEOF = true,
 		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "Message body too large (and extended payloads are disabled)",
 		message = {
@@ -706,7 +706,7 @@ local testCases = {
 		},
 		isOK = false,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
+		isExpectingEOF = true,
 		shouldKeepConnectionAlive = false,
 		extendedPayloadBufferSize = 0, -- Should result in a buffer that is (much) too small (just the default size, basically)
 		expectedErrorReason = "Message body too large (cannot fit into extended payload buffer)",
@@ -736,7 +736,7 @@ local testCases = {
 		},
 		isOK = false,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
+		isExpectingEOF = true,
 		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "Too many headers",
 		message = {
@@ -773,7 +773,7 @@ local testCases = {
 		},
 		isOK = true,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
+		isExpectingEOF = true,
 		shouldKeepConnectionAlive = false,
 		message = {
 			is_complete = true,
