@@ -229,9 +229,27 @@ int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	if(message == NULL) return HPE_OK;
 
 	if (message->body_length + length > MAX_BODY_LENGTH_IN_BYTES) {
+
+		// return try_write_extended_payload(parser_state, at, length)
+		if(message->extended_payload_buffer.ptr != NULL) {
+			// Try to write to the buffer, if it has enough capacity. If not, error (TODO)
+			bool has_buffer_enough_space = (message->extended_payload_buffer.size - message->extended_payload_buffer.used) >= length;
+			if(has_buffer_enough_space)
+			{
+				// write_extended_payload(parser_state, at, length)
+				memcpy(message->extended_payload_buffer.ptr, at, length);
+				message->extended_payload_buffer.used += length;
+				return HPE_OK;
+			}
+			else
+			{
+			llhttp_set_error_reason(parser_state, "Message body too large (cannot fit into extended payload buffer)");
+			 return HPE_USER;
+			}
+		}
 		// Technically, we can (and probably should) store the body in the extended_payload_buffer here
 		// But since I haven't bothered to implement this yet, exiting early is the best we can do...
-		llhttp_set_error_reason(parser_state, "Message body too large (and dynamic buffering is NYI)");
+		llhttp_set_error_reason(parser_state, "Message body too large (and extended payloads are disabled)");
 		return HPE_USER;
 	}
 

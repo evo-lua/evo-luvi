@@ -60,6 +60,11 @@ function IncrementalHttpParser:ParseNextChunk(chunk)
 	local userdata = ffi_cast("http_message_t*", self.state.data)
 	-- self.userdataBuffer:commit(userdata.buffer.used)
 
+	if self.extendedPayloadBuffer then
+		self.extendedPayloadBuffer:commit(self.http_message.extended_payload_buffer.used)
+		-- TODO reinit buffer so it can be used again?
+	end
+
 	return userdata
 
 	-- return llhttp_userdata_get_message(self.userdataBuffer)
@@ -143,6 +148,20 @@ function IncrementalHttpParser:GetLastError()
 	if cdata == nil then return end -- Cannot convert NULL pointer to Lua string (obviously)
 
 	return ffi_string(cdata)
+end
+
+-- TODO tests
+function IncrementalHttpParser:EnableExtendedPayloadBuffer(expectedPayloadSizeInBytes)
+	local message = self.http_message
+	local stringBuffer, referencePointer, numReservedBytes = llhttp.allocate_extended_payload_buffer(message)
+	self.extendedPayloadBuffer = stringBuffer
+	message.extended_payload_buffer.ptr = referencePointer
+	message.extended_payload_buffer.size = numReservedBytes
+	message.extended_payload_buffer.used = 0
+end
+
+function IncrementalHttpParser:GetExtendedPayload()
+	return tostring(self.extendedPayloadBuffer)
 end
 
 -- TODO use llhttp methods to get major, minor, method, status code, upgrade flag without copying stuff in event handlers (benchmark impact)

@@ -649,7 +649,7 @@ local testCases = {
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
 		shouldKeepConnectionAlive = true,
-		expectedErrorReason = "Message body too large (and dynamic buffering is NYI)",
+		expectedErrorReason = "Message body too large (and extended payloads are disabled)",
 		message = {
 			is_complete = false,
 			method_length = 0,
@@ -672,6 +672,38 @@ local testCases = {
 			},
 		},
 	},
+	["a message with a body is too large to buffer directly but can be buffered dynamically"] = {
+		chunks = {
+			"HTTP/1.1 200 OK",
+			"\r\n\r\n",
+			OVERLY_LONG_BODY_STRING,
+		},
+		isOK = true,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		extendedPayloadBufferSize = #OVERLY_LONG_BODY_STRING,
+		message = {
+			is_complete = false,
+			method_length = 0,
+			method = "",
+			url_length = 0,
+			url = "",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 200,
+			status_length = 2,
+			status = "OK",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			-- TODO test these also or ignore as implementation detail?
+			extended_payload_buffer = OVERLY_LONG_BODY_STRING,
+		},
+	},
+	-- ["a message with a body is too large to buffer directly and also cannot be buffered dynamically"] = {},
+
 	["a message with too many headers to buffer directly"] = {
 		chunks = {
 			"HTTP/1.1 200 OK\r\n",
@@ -716,6 +748,11 @@ describe("IncrementalHttpParser", function()
 		it("should return the expected result when " .. label .. " was passed", function()
 			local parser = IncrementalHttpParser()
 
+			if testCase.extendedPayloadBufferSize then
+				-- LJ StringBuffer test
+				parser:EnableExtendedPayloadBuffer(testCase.extendedPayloadBufferSize)
+			end
+
 			local message
 			for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
 				message = parser:ParseNextChunk(chunk)
@@ -730,6 +767,9 @@ describe("IncrementalHttpParser", function()
 			assertEquals(actualErrorString, expectedErrorString)
 
 			assertEquals(message.is_complete, testCase.message.is_complete)
+			if testCase.extendedPayloadBufferSize then
+				assertEquals(parser:GetExtendedPayload(), testCase.message.extended_payload_buffer)
+			end
 
 			if ffi_string(message.method, message.method_length) ~= "HTTP/" then
 				-- llhttp can't do a better job at differentiating between requests and responses for the first few tokens...
