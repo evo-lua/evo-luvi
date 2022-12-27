@@ -10,7 +10,6 @@ local llhttp_get_max_header_value_length = llhttp.bindings.llhttp_get_max_header
 local llhttp_get_max_body_length = llhttp.bindings.llhttp_get_max_body_length
 
 local ffi_string = ffi.string
-local ffi_sizeof = ffi.sizeof
 
 -- There are two things to consider when passing extremely long inputs: NO SEGFAULT and no read-fault (buffer overflow) in memcpy
 -- The first would crash and therefore fail the tests, but the second might not - so assert that ONLY the passed in bytes are read
@@ -490,8 +489,7 @@ local testCases = {
 			},
 		},
 	},
-	--status
-	-- method?
+	-- too many headers (>32)
 	-- chunked body
 	-- llhttp_interpret_message
 	-- message body (buffered), streaming = separate issue = store in LJ buffer?
@@ -637,7 +635,39 @@ local testCases = {
 			},
 		},
 	},
-
+	["a message with a body that is too large to buffer directly"] = {
+		chunks = {
+			"HTTP/1.1 200 OK",
+			"\r\n\r\n",
+			OVERLY_LONG_BODY_STRING,
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "Message body too large (and dynamic buffering is NYI)",
+		message = {
+			is_complete = false,
+			method_length = 0,
+			method = "",
+			url_length = 0,
+			url = "",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 200,
+			status_length = 2,
+			status = "OK",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
 }
 
 

@@ -226,10 +226,12 @@ int llhttp_on_body(llhttp_t* parser_state, const char* at, size_t length) {
 	http_message_t *message = (http_message_t*) parser_state->data;
 	if(message == NULL) return HPE_OK;
 
-	// if (length > sizeof(message->body) - 1) {
-	// 	// TODO
-    // 	length = sizeof(message->body) - 1;
-  	// }
+	if (message->body_length + length > MAX_BODY_LENGTH_IN_BYTES) {
+		// Technically, we can (and probably should) store the body in the extended_payload_buffer here
+		// But since I haven't bothered to implement this yet, exiting early is the best we can do...
+		llhttp_set_error_reason(parser_state, "Message body too large (and dynamic buffering is NYI)");
+		return HPE_USER;
+	}
 
   	memcpy(message->body + message->body_length, at, length);
 	message->body_length += length;
