@@ -95,7 +95,6 @@ LLHTTP_INFO_CALLBACK(on_chunk_extension_name_complete)
 LLHTTP_INFO_CALLBACK(on_chunk_extension_value_complete)
 LLHTTP_INFO_CALLBACK(on_url_complete)
 // LLHTTP_INFO_CALLBACK(on_reset)
-// TODO test all exported functions in this object file
 int llhttp_on_reset(llhttp_t* parser_state) {
 	DEBUG("on_reset");
 
@@ -121,7 +120,6 @@ int llhttp_on_reset(llhttp_t* parser_state) {
 	// TBD reset the other fields as well (luajit buffer)?
 	return HPE_OK;
 }
-// TODO reset message, or defer until message_begin?
 
 // LLHTTP_DATA_CALLBACK(on_url)
 int llhttp_on_url(llhttp_t* parser_state, const char* at, size_t length) {
@@ -206,6 +204,12 @@ int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length
 
 	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
+
+	if (header->key_length + length > MAX_HEADER_KEY_LENGTH_IN_BYTES) {
+		// I suppose more information should be given, but that's left for the HTTP server itself to handle...
+		llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
+		return HPE_USER;
+	}
 
   	memcpy(header->key + header->key_length, at, length);
 	header->key_length += length;
