@@ -315,6 +315,21 @@ local llhttp = {
 	]] ..
 	-- These are copied from the runtime's FFI bindings (to access statically-linked llhttp exports via FFI)
 	[[
+		#pragma pack(1)
+		struct luajit_stringbuffer_reference {
+			size_t size;
+			uint8_t* ptr;
+			size_t used;
+		};
+		typedef struct luajit_stringbuffer_reference luajit_stringbuffer_reference_t;
+
+		struct llhttp_event {
+			uint8_t event_id;
+			const char* payload_start_pointer;
+			size_t payload_length;
+		};
+		typedef struct llhttp_event llhttp_event_t;
+
 		struct static_llhttp_exports_table {
 			void (*llhttp_init)(llhttp_t* parser, llhttp_type_t type, const llhttp_settings_t* settings);
 			void (*llhttp_reset)(llhttp_t* parser);
@@ -323,6 +338,7 @@ local llhttp = {
 			llhttp_errno_t (*llhttp_finish)(llhttp_t* parser);
 			int (*llhttp_message_needs_eof)(const llhttp_t* parser);
 			int (*llhttp_should_keep_alive)(const llhttp_t* parser);
+			uint8_t  (*llhttp_get_upgrade)(llhttp_t* parser);
 			void (*llhttp_pause)(llhttp_t* parser);
 			void (*llhttp_resume)(llhttp_t* parser);
 			void (*llhttp_resume_after_upgrade)(llhttp_t* parser);
@@ -335,8 +351,46 @@ local llhttp = {
 			void (*llhttp_set_lenient_headers)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_chunked_length)(llhttp_t* parser, int enabled);
 			void (*llhttp_set_lenient_keep_alive)(llhttp_t* parser, int enabled);
+			const char* (*llhttp_get_version_string)(void);
+			size_t (*llhttp_get_max_url_length)(void);
+			size_t (*llhttp_get_max_status_length)(void);
+			size_t (*llhttp_get_max_header_key_length)(void);
+			size_t (*llhttp_get_max_header_value_length)(void);
+			size_t (*llhttp_get_max_header_count)(void);
+			size_t (*llhttp_get_max_body_length)(void);
+			size_t (*llhttp_get_message_size)(void);
 		};
-	]],
+	]]
+	..
+	[[
+
+		typedef struct {
+			uint8_t key_length;
+			char key[256];
+			size_t value_length;
+			char value[4096];
+		} http_header_t;
+
+			typedef struct http_message {
+				bool is_complete;
+				uint8_t method_length;
+				char method[16];
+				size_t url_length;
+				char url[256];
+				uint8_t version_major;
+				uint8_t version_minor;
+				int status_code;
+				uint8_t status_length;
+				char status[256];
+				uint8_t num_headers;
+				http_header_t headers[32];
+				size_t body_length;
+				char body[4096];
+				luajit_stringbuffer_reference_t extended_payload_buffer;
+			};
+			typedef struct http_message http_message_t;
+
+		]],
 	PARSER_TYPES = {
 		HTTP_BOTH = 0,
 		HTTP_REQUEST = 1,
@@ -417,7 +471,42 @@ local llhttp = {
 		HTTP_RECORD = 44,
 		HTTP_FLUSH = 45
 	},
+	FFI_EVENTS = {
+		[0] = "HTTP_EVENT_BUFFER_TOO_SMALL",
+		"HTTP_ON_MESSAGE_BEGIN",
+		"HTTP_ON_URL",
+		"HTTP_ON_STATUS",
+		"HTTP_ON_METHOD",
+		"HTTP_ON_VERSION",
+		"HTTP_ON_HEADER_FIELD",
+		"HTTP_ON_HEADER_VALUE",
+		"HTTP_ON_CHUNK_EXTENSION_NAME",
+		"HTTP_ON_CHUNK_EXTENSION_VALUE",
+		"HTTP_ON_HEADERS_COMPLETE",
+		"HTTP_ON_BODY",
+		"HTTP_ON_MESSAGE_COMPLETE",
+		"HTTP_ON_URL_COMPLETE",
+		"HTTP_ON_STATUS_COMPLETE",
+		"HTTP_ON_METHOD_COMPLETE",
+		"HTTP_ON_VERSION_COMPLETE",
+		"HTTP_ON_HEADER_FIELD_COMPLETE",
+		"HTTP_ON_HEADER_VALUE_COMPLETE",
+		"HTTP_ON_CHUNK_EXTENSION_NAME_COMPLETE",
+		"HTTP_ON_CHUNK_EXTENSION_VALUE_COMPLETE",
+		"HTTP_ON_CHUNK_HEADER",
+		"HTTP_ON_CHUNK_COMPLETE",
+		"HTTP_ON_RESET",
+	},
 	SHARED_OBJECT_NAME = isWindows and "llhttp.dll" or "./libllhttp.so",
+	DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES = 8 * 1024, -- Not a hard limit, just enough to avoid too many re-allocations
+
+	-- Sane defaults, but they may have to be adjusted for more specialized use cases or to balance RAM usage per client
+	MAX_URL_LENGTH_IN_BYTES = 1024,
+	MAX_REASON_PHRASE_LENGTH_IN_BYTES = 256,
+	MAX_NUM_HEADER_KEYVALUE_PAIRS = 32,
+	MAX_HEADER_FIELD_LENGTH_IN_BYTES = 64,
+	MAX_HEADER_VALUE_LENGTH_IN_BYTES = 256,
+	MAX_BODY_LENGTH_IN_BYTES = 1024 * 1024, -- Large messages should likely use the streaming mode and write to temporary files instead
 }
 
 -- In order to use the same bindings when statically linking the API (with a lightuserdata wrapper), defer loading
@@ -434,6 +523,31 @@ function llhttp.initialize()
 
 	llhttp.initialized = true
 
+end
+
+local buffer = require("string.buffer")
+
+function llhttp.allocate_extended_payload_buffer(httpMessageStruct)
+	local stringBuffer = buffer.new(llhttp.DEFAULT_EXTENDED_PAYLOAD_BUFFER_SIZE_IN_BYTES)
+	local referencePointer, reservedBufferSizeInBytes = stringBuffer:reserve(0) -- Already implicitly reserved via the constructor call
+	httpMessageStruct.extended_payload_buffer.ptr = referencePointer
+	httpMessageStruct.extended_payload_buffer.size = reservedBufferSizeInBytes
+	return stringBuffer, referencePointer, reservedBufferSizeInBytes
+end
+
+function llhttp.has_extended_payload_buffer(message)
+	local hasReservedBytes = message.extended_payload_buffer.size >  0
+	local isReferenceNullPointer = message.extended_payload_buffer.ptr == nil
+	return hasReservedBytes and not isReferenceNullPointer
+end
+
+local ffi_string = ffi.string
+local format = format
+local tonumber = tonumber
+
+function llhttp.version()
+	local llhttpVersion = llhttp.bindings.llhttp_get_version_string()
+	return ffi.string(llhttpVersion)
 end
 
 return llhttp
