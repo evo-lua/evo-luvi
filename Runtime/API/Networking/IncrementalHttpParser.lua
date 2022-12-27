@@ -165,13 +165,6 @@ function IncrementalHttpParser:GetExtendedPayload()
 	return tostring(self.extendedPayloadBuffer)
 end
 
--- TODO use llhttp methods to get major, minor, method, status code, upgrade flag without copying stuff in event handlers (benchmark impact)
-
--- TODO use this as default, as per event system RFC
--- function IncrementalHttpParser:OnEvent(event)
-
--- end
-
 setmetatable(IncrementalHttpParser, { __call = IncrementalHttpParser.Construct })
 
 return IncrementalHttpParser
