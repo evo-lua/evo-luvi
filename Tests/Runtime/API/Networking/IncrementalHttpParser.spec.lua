@@ -820,10 +820,41 @@ local function assertParserStateMatchesExpectation(parser, testCase)
 	local actualState = parser:IsOK()
 	assertEquals(actualState, expectedState)
 
+	local expectedErrorString = testCase.expectedErrorReason
+	local actualErrorString = parser:GetLastError()
+	assertEquals(actualErrorString, expectedErrorString)
+
 end
 
 local function assertBufferedMessageMatchesExpectation(message, testCase)
 
+	assertEquals(message.is_complete, testCase.message.is_complete)
+
+	if ffi_string(message.method, message.method_length) ~= "HTTP/" then
+		-- llhttp can't do a better job at differentiating between requests and responses for the first few tokens...
+		assertEquals(message.method_length, testCase.message.method_length)
+		assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
+	end
+	assertEquals(message.status_code, testCase.message.status_code)
+	assertEquals(ffi_string(message.status, message.status_length), testCase.message.status)
+	assertEquals(message.status_length, testCase.message.status_length)
+	assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
+	assertEquals(message.url_length, testCase.message.url_length)
+	assertEquals(message.version_major, testCase.message.version_major)
+	assertEquals(message.version_minor, testCase.message.version_minor)
+	assertEquals(message.num_headers, testCase.message.num_headers)
+	assertEquals(message.num_headers, #testCase.message.headers)
+
+	for index=1, message.num_headers, 1 do
+		local cIndex = index - 1
+		if testCase.message.headers and testCase.message.headers[index] then
+			assertEquals(ffi_string(message.headers[cIndex].key, message.headers[cIndex].key_length), testCase.message.headers[index].key)
+			assertEquals(ffi_string(message.headers[cIndex].value, message.headers[cIndex].value_length), testCase.message.headers[index].value)
+		end
+	end
+
+	assertEquals(ffi_string(message.body, message.body_length), testCase.message.body)
+	assertEquals(message.body_length, testCase.message.body_length)
 end
 
 describe("IncrementalHttpParser", function()
@@ -837,51 +868,16 @@ describe("IncrementalHttpParser", function()
 				parser:EnableExtendedPayloadBuffer(testCase.extendedPayloadBufferSize)
 			end
 
-
 			local message = parseChunksAndReturnMessage(parser, testCase)
 			assertBufferedMessageMatchesExpectation(message, testCase)
 			assertParserStateMatchesExpectation(parser, testCase)
 
-			local expectedErrorString = testCase.expectedErrorReason
-			local actualErrorString = parser:GetLastError()
-			assertEquals(actualErrorString, expectedErrorString)
-
-			assertEquals(message.is_complete, testCase.message.is_complete)
 			if testCase.extendedPayloadBufferSize then
 				assertEquals(parser:GetExtendedPayload(), testCase.message.extended_payload_buffer)
 			end
 
-			if ffi_string(message.method, message.method_length) ~= "HTTP/" then
-				-- llhttp can't do a better job at differentiating between requests and responses for the first few tokens...
-				assertEquals(message.method_length, testCase.message.method_length)
-				assertEquals(ffi_string(message.method, message.method_length), testCase.message.method)
-			end
-			assertEquals(message.status_code, testCase.message.status_code)
-			assertEquals(ffi_string(message.status, message.status_length), testCase.message.status)
-			assertEquals(message.status_length, testCase.message.status_length)
-			assertEquals(ffi_string(message.url, message.url_length), testCase.message.url)
-			assertEquals(message.url_length, testCase.message.url_length)
-			assertEquals(message.version_major, testCase.message.version_major)
-			assertEquals(message.version_minor, testCase.message.version_minor)
-			assertEquals(message.num_headers, testCase.message.num_headers)
-			assertEquals(message.num_headers, #testCase.message.headers)
-
-			for index=1, message.num_headers, 1 do
-				local cIndex = index - 1
-				if testCase.message.headers and testCase.message.headers[index] then
-					assertEquals(ffi_string(message.headers[cIndex].key, message.headers[cIndex].key_length), testCase.message.headers[index].key)
-					assertEquals(ffi_string(message.headers[cIndex].value, message.headers[cIndex].value_length), testCase.message.headers[index].value)
-				end
-			end
-
-			assertEquals(ffi_string(message.body, message.body_length), testCase.message.body)
-			assertEquals(message.body_length, testCase.message.body_length)
-			-- -- TBD ext payload
-
 		end)
 	end
-
-	-- todo very large req body
 
 
 -- empty string
