@@ -806,6 +806,14 @@ local testCases = {
 }
 
 
+local function parseChunksAndReturnMessage(parser, testCase)
+	local message
+	for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
+		message = parser:ParseNextChunk(chunk)
+	end
+	return message
+end
+
 describe("IncrementalHttpParser", function()
 	describe("ParseNextChunk", function()
 
@@ -819,10 +827,7 @@ describe("IncrementalHttpParser", function()
 				parser:EnableExtendedPayloadBuffer(testCase.extendedPayloadBufferSize)
 			end
 
-			local message
-			for index, chunk in ipairs(testCase.chunks or { testCase.chunk }) do
-				message = parser:ParseNextChunk(chunk)
-			end
+			local message = parseChunksAndReturnMessage(parser, testCase)
 
 			local expectedState = testCase.isOK
 			local actualState = parser:IsOK()
@@ -932,21 +937,21 @@ describe("IncrementalHttpParser", function()
 
 	-- end)
 
-	-- describe("IsExpectingUpgrade", function()
+	describe("IsExpectingUpgrade", function()
 
-	-- 	for label, testCase in pairs(testCases) do
-	-- 		local expectedState = testCase.isExpectingUpgrade
-	-- 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
-	-- 			local parser = IncrementalHttpParser()
+		for label, testCase in pairs(testCases) do
+			local expectedState = testCase.isExpectingUpgrade
+			it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+				local parser = IncrementalHttpParser()
 
-	-- 			parser:ParseNextChunk(testCase.chunk)
+				parseChunksAndReturnMessage(parser, testCase)
 
-	-- 			local actualState = parser:IsExpectingUpgrade()
-	-- 			assertEquals(actualState, expectedState)
-	-- 		end)
-	-- 	end
+				local actualState = parser:IsExpectingUpgrade()
+				assertEquals(actualState, expectedState)
+			end)
+		end
 
-	-- end)
+	end)
 
 	-- describe("IsExpectingEOF", function()
 
