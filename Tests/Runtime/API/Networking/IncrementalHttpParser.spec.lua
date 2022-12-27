@@ -494,8 +494,7 @@ local testCases = {
 	-- method?
 	-- chunked body
 	-- llhttp_interpret_message
-	-- header value
-	-- message body
+	-- message body (buffered), streaming = separate issue = store in LJ buffer?
 	["a request with an url string that is too large to buffer"] = {
 		chunks = {
 			"G","E",
@@ -533,7 +532,7 @@ local testCases = {
 			},
 		},
 	},
-	["a request with a header key that is too large to buffer"] = {
+	["a message with a header key that is too large to buffer"] = {
 		chunks = {
 			"G","E",
 			"T /",
@@ -543,6 +542,40 @@ local testCases = {
 			OVERLY_LONG_HEADER_KEY,
 			": 11","\r\n\r\nhell",
 			"o", " kitty\r\n\r\n"
+		},
+		isOK = false,
+		isExpectingUpgrade = false,
+		isExpectingEOF = false,
+		shouldKeepConnectionAlive = true,
+		expectedErrorReason = "431 Request Header Fields Too Large",
+		message = {
+			is_complete = false,
+			method_length = 3,
+			method = "GET",
+			url_length = 1,
+			url = "/",
+			version_minor = 1,
+			version_major = 1,
+			status_code = 0,
+			status_length = 0,
+			status = "",
+			num_headers = 0,
+			headers = {},
+			body_length = 0,
+			body = "",
+			extended_payload_buffer = {
+				ptr = nil,
+				size = 0,
+				used = 0,
+			},
+		},
+	},
+	["a message with a header value that is too large to buffer"] = {
+		chunks = {
+			"GET / HTTP/1.1\r\n",
+			"Origin: ",
+			OVERLY_LONG_HEADER_VALUE,
+			"\r\n\r\n"
 		},
 		isOK = false,
 		isExpectingUpgrade = false,

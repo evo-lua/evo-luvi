@@ -206,8 +206,7 @@ int llhttp_on_header_field(llhttp_t* parser_state, const char* at, size_t length
 	http_header_t* header = &message->headers[last_header_index];
 
 	if (header->key_length + length > MAX_HEADER_KEY_LENGTH_IN_BYTES) {
-		// I suppose more information should be given, but that's left for the HTTP server itself to handle...
-		llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
+			llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
 		return HPE_USER;
 	}
 
@@ -228,6 +227,11 @@ int llhttp_on_header_value(llhttp_t* parser_state, const char* at, size_t length
 
 	// TODO check size
 	http_header_t* header = &message->headers[last_header_index];
+
+	if (header->value_length + length > MAX_HEADER_VALUE_LENGTH_IN_BYTES) {
+			llhttp_set_error_reason(parser_state, "431 Request Header Fields Too Large");
+			return HPE_USER;
+		}
 
   	memcpy(header->value + header->value_length, at, length);
 	header->value_length += length;
