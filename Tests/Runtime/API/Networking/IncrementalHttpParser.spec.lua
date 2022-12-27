@@ -12,7 +12,7 @@ local llhttp_get_max_header_count = llhttp.bindings.llhttp_get_max_header_count
 
 local ffi_string = ffi.string
 
--- There are two things to consider when passing extremely long inputs: NO SEGFAULT and no read-fault (buffer overflow) in memcpy
+-- There are two things to consider when passing extremely long inputs: Write-SEGFAULT and read-fault via memcpy (buffer overflow)
 -- The first would crash and therefore fail the tests, but the second might not - so assert that ONLY the passed in bytes are read
 local OVERLY_LONG_URL = string.rep("a", tonumber(llhttp_get_max_url_length()) * 2)
 local OVERLY_LONG_STATUS = string.rep("a", tonumber(llhttp_get_max_status_length()) * 2)
@@ -494,8 +494,6 @@ local testCases = {
 			},
 		},
 	},
-	-- chunked body
-	-- llhttp_interpret_message
 	["a request with an url string that is too large to buffer"] = {
 		chunks = {
 			"G","E",
@@ -509,7 +507,7 @@ local testCases = {
 		isOK = false,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "414 URI Too Long",
 		message = {
 			is_complete = false,
@@ -541,8 +539,8 @@ local testCases = {
 		},
 		isOK = false,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		isExpectingEOF = true,
+		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "Status or reason phrase too long",
 		message = {
 			is_complete = false,
@@ -647,7 +645,7 @@ local testCases = {
 		isOK = false,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "Message body too large (and extended payloads are disabled)",
 		message = {
 			is_complete = false,
@@ -679,8 +677,8 @@ local testCases = {
 		},
 		isOK = true,
 		isExpectingUpgrade = false,
-		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		isExpectingEOF = true,
+		shouldKeepConnectionAlive = false,
 		extendedPayloadBufferSize = #OVERLY_LONG_BODY_STRING,
 		message = {
 			is_complete = false,
@@ -709,7 +707,7 @@ local testCases = {
 		isOK = false,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		shouldKeepConnectionAlive = false,
 		extendedPayloadBufferSize = 0, -- Should result in a buffer that is (much) too small (just the default size, basically)
 		expectedErrorReason = "Message body too large (cannot fit into extended payload buffer)",
 		message = {
@@ -739,7 +737,7 @@ local testCases = {
 		isOK = false,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		shouldKeepConnectionAlive = false,
 		expectedErrorReason = "Too many headers",
 		message = {
 			is_complete = false,
@@ -776,7 +774,7 @@ local testCases = {
 		isOK = true,
 		isExpectingUpgrade = false,
 		isExpectingEOF = false,
-		shouldKeepConnectionAlive = true,
+		shouldKeepConnectionAlive = false,
 		message = {
 			is_complete = true,
 			method_length = 0,
@@ -879,40 +877,7 @@ describe("IncrementalHttpParser", function()
 		end)
 	end
 
-
--- empty string
--- split message in several chunks (test for each field!!)
-
-		-- Fixed-size structs
--- URL length exceeded
-		-- it("should truncate overly-long request URLs after the maximum length has been reached", function()
-		-- 	local parser = IncrementalHttpParser()
-		-- 	local maxLength = llhttp_get_max_url_length()
-		-- 	local longURL = "/asdf"
-		-- 	local chunk = "GET " .. longURL .. " HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
-		-- 	local message = parser:ParseNextChunk(chunk)
-
-		-- end)
--- status (reason phrase) exceeded
---header field length exceeded
--- header value length exceeded
--- too many headers
--- body length exceeded
--- Dynamic-size structs (pre-allocated from Lua)
--- body is replaced with string buffer reference
--- Buffering mode: Body is held in memory
--- Streaming mode: Body is outsourced to file
--- body is moved to file (in Lua) -> sbuf gets and then stream to open fd -> buf should be empty, file should have body
--- HAPPY PATH: ws upgrade req, upgrade response, split in two chunks, all the other test cases (valid/invalid msg interleaved), req/resp interleaved
-
-
-
-
-	-- tbd some stuff can be read from llhttp apis
-		-- TODO response
-		-- isUpgradeRequest, status, reason etc. handled by llhttp?
-		-- exceeds max size (for each field) -> HPE_ERROR / HPE_USER
-		it("should return a HTTP message with the request details", function()
+	it("should return a HTTP message with the request details", function()
 			local parser = IncrementalHttpParser()
 			local chunk = "GET / HTTP/1.1\r\nOrigin: example.org\r\nConnection: close\r\nContent-Length: 5\r\n\r\nhello\r\n\r\n"
 			local message = parser:ParseNextChunk(chunk)
@@ -931,17 +896,6 @@ describe("IncrementalHttpParser", function()
 		end)
 	end)
 
-	-- describe("IsMessageComplete", function()
-	-- 	-- TODO
-	-- end)
-
-	-- 	it("should return false if a message with an overlong request URL has been parsed", function()
-	-- 		-- TODO
-	-- 	end)
-
-
-	-- end)
-
 	describe("IsExpectingUpgrade", function()
 
 		for label, testCase in pairs(testCases) do
@@ -958,37 +912,37 @@ describe("IncrementalHttpParser", function()
 
 	end)
 
-	-- describe("IsExpectingEOF", function()
+	describe("IsExpectingEOF", function()
 
-	-- 	for label, testCase in pairs(testCases) do
-	-- 		local expectedState = testCase.isExpectingEOF
-	-- 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
-	-- 			local parser = IncrementalHttpParser()
+		for label, testCase in pairs(testCases) do
+			local expectedState = testCase.isExpectingEOF
+			it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+				local parser = IncrementalHttpParser()
 
-	-- 			parser:ParseNextChunk(testCase.chunk)
+				parseChunksAndReturnMessage(parser, testCase)
 
-	-- 			local actualState = parser:IsExpectingEOF()
-	-- 			assertEquals(actualState, expectedState)
-	-- 		end)
-	-- 	end
+				local actualState = parser:IsExpectingEOF()
+				assertEquals(actualState, expectedState)
+			end)
+		end
 
-	-- end)
+	end)
 
-	-- describe("ShouldKeepConnectionAlive", function()
+	describe("ShouldKeepConnectionAlive", function()
 
-	-- 	for label, testCase in pairs(testCases) do
-	-- 		local expectedState = testCase.shouldKeepConnectionAlive
-	-- 		it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
-	-- 			local parser = IncrementalHttpParser()
+			for label, testCase in pairs(testCases) do
+				local expectedState = testCase.shouldKeepConnectionAlive
+					it("should return " .. tostring(expectedState) .. " after parsing " .. label, function()
+							local parser = IncrementalHttpParser()
 
-	-- 			parser:ParseNextChunk(testCase.chunk)
+				parseChunksAndReturnMessage(parser, testCase)
 
-	-- 			local actualState = parser:ShouldKeepConnectionAlive()
-	-- 			assertEquals(actualState, expectedState)
-	-- 		end)
-	-- 	end
+				local actualState = parser:ShouldKeepConnectionAlive()
+				assertEquals(actualState, expectedState)
+			end)
+		end
 
-	-- end)
+	end)
 
 
 end)
