@@ -191,6 +191,9 @@ describe("llhttp", function()
 		end)
 	end)
 
+	-- llhttp_interpret_message
+	-- TODO
+
 	describe("version", function()
 		it("should return the embedded llhttp version in semver format", function()
 			local embeddedVersion = llhttp.version()
