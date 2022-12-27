@@ -49,6 +49,7 @@ local EvoBuildTarget = {
 		"Runtime/API/FileSystem/C_FileSystem.lua",
 		"Runtime/API/Testing/Scenario.lua",
 		"Runtime/API/Testing/TestSuite.lua",
+		"Runtime/API/Networking/IncrementalHttpParser.lua",
 		"Runtime/API/Networking/TcpSocket.lua",
 		"Runtime/API/Networking/TcpClient.lua",
 		"Runtime/API/Networking/TcpServer.lua",
