@@ -38,6 +38,7 @@ local EvoBuildTarget = {
 		"Runtime/LuaEnvironment/extensions/stringx.lua",
 		"Runtime/LuaEnvironment/extensions/tablex.lua",
 		"Runtime/LuaEnvironment/extensions/transform.lua",
+		"Runtime/LuaEnvironment/extensions/url.lua",
 		"Runtime/LuaEnvironment/namespaces.lua",
 		"Runtime/API/EventSystem/EventListenerMixin.lua",
 		"Runtime/API/EventSystem/C_EventSystem.lua",
