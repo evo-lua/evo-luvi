@@ -53,6 +53,8 @@ local EvoBuildTarget = {
 		"Runtime/API/Networking/TcpSocket.lua",
 		"Runtime/API/Networking/TcpClient.lua",
 		"Runtime/API/Networking/TcpServer.lua",
+		"Runtime/API/Networking/HttpClient.lua",
+		"Runtime/API/Networking/HttpServer.lua",
 		"Runtime/API/Networking/C_Networking.lua",
 		"Runtime/API/Testing/C_Testing.lua",
 		"deps/lpeg/re.lua",
