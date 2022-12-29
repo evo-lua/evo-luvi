@@ -32,9 +32,9 @@ function HttpClient:Construct(hostName, port)
 	return instance
 end
 
-function HttpClient:SendHttpRequest(request)
-	print("SendHttpRequest", request)
-	self:Send(request:ToString())
+function HttpClient:SendHttpRequest(requestString)
+	print("SendHttpRequest", requestString)
+	self:Send(requestString)
 end
 
 HttpClient.__call = HttpClient.Construct
