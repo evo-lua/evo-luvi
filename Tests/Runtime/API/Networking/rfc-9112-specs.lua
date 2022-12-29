@@ -1,0 +1,37 @@
+-- Section	Scope	Description
+
+-- 2.1 Message Format
+	-- SERVER	should accept requests without a body payload
+	-- 			should accept requests with a body payload
+	-- 			should accept requests without headers
+	-- 			should accept requests with headers
+	-- 			should not accept responses
+	-- CLIENT	should accept responses without a body payload
+	-- 			should accept responses with a body payload
+	-- 			should accept responses without headers
+	-- 			should accept responses with headers
+	-- 			should not accept requests
+-- 2.2 Message Parsing
+-- 			ANY	must parse unicode message as ASCII characters
+-- 				must reject messages containing CR without LF in control structures
+-- 				should accept messages containing CR without LF in the body payload
+-- 			SERVER	should ignore empty CRLF lines before a new request line starts
+-- 			ANY	must reject as invalid any message containing whitespace between start line and headers
+-- 			SERVER	should respond to invalid request messages with 400 Bad Request and close the connection
+-- 2.3 HTTP Version
+--			 ANY	should be able to process HTTP/1.0 request?
+-- 3. Request Line
+			-- SERVER	should reject messages that require lenient parsing (use alternative whitespace characters)
+-- 				should respond with 501 Not Implemented to any request using a method that is not supported (no handler registered)
+-- 				must respond with 414 URI Too Long to any message whose request target URL exceeds the maximum supported URL length
+-- 				should support messages containing URLs that are at least 8000 octets long (8192)
+-- 3.1 Method
+				-- should reject messages containing case-insensitive method names
+-- 3.2 Request Target
+				-- should respond with 400 Bad Request to messages that fail to encode whitespaces in the request target
+-- 			SERVER	must respond with 400 Bad Request to messages that omit the Host header field
+-- 				must respond with 400 Bad Request to messages that include multiple Host header lines
+-- 				must respond with 400 Bad Request to messages that include an invalid Host header field value
+-- 			CLIENT	must send a Host header in all HTTP/1.1 requests (as the first header line)
+-- 				must send a Host value that is identical to the authority component (sans userinfo subcomponent and @ delimiter)
+-- 				must send an empty Host value if the authority component is missing or undefined for the target URI
