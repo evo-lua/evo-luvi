@@ -3,7 +3,7 @@ local setmetatable = setmetatable
 
 local TcpSocket = require("TcpSocket")
 local TcpServer = require("TcpServer")
-local IncrementalHttpRequestParser = require("IncrementalHttpRequestParser")
+local IncrementalHttpParser = require("IncrementalHttpParser")
 
 local HttpServer = {}
 
@@ -33,7 +33,7 @@ HttpServer.__call = HttpServer.Construct
 setmetatable(HttpServer, HttpServer)
 
 function HttpServer:InitializeRequestParser(client)
-	local requestParser = IncrementalHttpRequestParser()
+	local requestParser = IncrementalHttpParser()
 	self.httpParsers[client] = requestParser
 end
 
@@ -48,7 +48,7 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 
 	local parser = self.httpParsers[client]
 	local wasParserExpectingUpgrade = parser:IsExpectingUpgrade()
-	local wasParserExpectingEOF = parser:IsExpectingEndOfTransmission()
+	local wasParserExpectingEOF = parser:IsExpectingEOF()
 
 	if wasParserExpectingUpgrade then
 		-- Upgraded protocol handlers should override this event listener and take care of incoming chunks instead
@@ -78,7 +78,7 @@ function HttpServer:TCP_CHUNK_RECEIVED(client, chunk)
 		end
 	end
 
-	if parser:IsExpectingEndOfTransmission() and not wasParserExpectingEOF then
+	if parser:IsExpectingEOF() and not wasParserExpectingEOF then
 		DEBUG("Received end of request, waiting for EOF now")
 		return
 	end
@@ -113,7 +113,7 @@ end
 function HttpServer:TCP_EOF_RECEIVED(client)
 	DEBUG("[HttpServer] TCP_EOF_RECEIVED triggered", self:GetClientInfo(client))
 	local parser = self.httpParsers[client]
-	local isParserExpectingEOF = parser:IsExpectingEndOfTransmission()
+	local isParserExpectingEOF = parser:IsExpectingEOF()
 
 	if not isParserExpectingEOF then
 		WARNING("Received EOF in the middle of an ongoing HTTP request (connection failed or misbehaving client?)")
