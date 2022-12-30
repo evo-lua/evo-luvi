@@ -1,5 +1,7 @@
 describe("url", function()
 
+	local fixtures = import("./../Fixtures/webkit-url-examples.lua")
+	dump(fixtures)
 
 	error("nyi")
 end)
