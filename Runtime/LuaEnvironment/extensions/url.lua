@@ -32,8 +32,22 @@ local function advanceFSM(state, input, pointer)
 	processInput(input, pointer)
 end
 
+local function createNewUrlRecord()
+	DEBUG("createNewUrlRecord")
+	return urlRecord -- TBD return new instance
+end
+
+local function hasLeadingControlZeroOrSpace(input) DEBUG("hasLeadingControlZeroOrSpace") end
+local function hasTrailingControlZeroOrSpace(input) DEBUG("hasTrailingControlZeroOrSpace") end
+local function removeLeadingControlZeroOrSpace(input) DEBUG("removeLeadingControlZeroOrSpace") end
+local function removeTrailingControlZeroOrSpace(input) DEBUG("removeTrailingControlZeroOrSpace") end
+local function validationError(input) DEBUG("validationError") end
+local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine") end
+local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
+local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
+
 -- This implementation is a direct translation of https://url.spec.whatwg.org/#concept-basic-url-parser
-local function parseBasicURL(input, base, encoding, optionalURL, optionalStateOverride)
+local function parseBasicURL(input, base, encoding, url, optionalStateOverride)
 	if not url then
 		url = createNewUrlRecord()
 		if hasLeadingControlZeroOrSpace(input) or hasTrailingControlZeroOrSpace(input) then
