@@ -19,13 +19,13 @@ local BASIC_URL_PARSER_STATES = {
 }
 
 local function advanceFSM(state, input, pointer)
-	local c = string.sub(input, pointer, pointer + 1)
+	local c = string.sub(input, pointer, pointer)
 	local remaining = string.sub(input, pointer + 1)
 	DEBUG("advanceFSM", state, pointer, c, remaining)
 
 	local processInput = BASIC_URL_PARSER_STATES[state]
 	if not processInput then
-		ERROR(format("Failed to advance Basic URL parser FSM from state %s(no such state exists)", state))
+		ERROR(format("Failed to advance Basic URL parser FSM from state %s (no such state exists)", state))
 		return
 	end
 
@@ -68,11 +68,11 @@ local function parseBasicURL(input, base, encoding, url, optionalStateOverride)
 
 	local buffer = ""
 	local atSignSeen, insideBrackets, passwordTokenSeen = false, false, false
-	local pointer = 0
+	local pointer = 1
 
 	local EOF_CODE_POINT = #input
 
-	while pointer < EOF_CODE_POINT do
+	while pointer <= EOF_CODE_POINT do
 		advanceFSM(state, input, pointer)
 		pointer = pointer + 1
 	end
