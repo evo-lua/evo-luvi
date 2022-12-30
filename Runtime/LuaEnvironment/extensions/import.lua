@@ -102,7 +102,7 @@ local function import(modulePath)
 	-- to Lua, where executing the chunk causes yields to hand control back to THIS function (in Lua land) instead
 	-- Note: This can't easily be tested in evo-luvi's test suite, so we must rely on evo's API tests to reveal issues
 	print("Loading from disk: " .. absolutePath)
-	local loadedModule = loadfile(absolutePath)
+	local loadedModule, err = loadfile(absolutePath)
 	if loadedModule then
 		loadedModule = loadedModule()
 	elseif vfs.hasFile(modulePath) then
@@ -116,8 +116,8 @@ local function import(modulePath)
 		assert(
 			loadedModule,
 			string.format(
-				"\n\tFailed to import module from %s\n\tPlease ensure this file exists and returns its exports.",
-				absolutePath
+				"\n\tFailed to import module from %s\n\tPlease ensure this file exists and returns its exports.\n%s",
+				absolutePath, err
 			)
 		)
 	end
