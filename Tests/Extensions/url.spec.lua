@@ -1,9 +1,57 @@
+local urllib = require("url")
+
 describe("url", function()
 
 	local fixtures = import("./../Fixtures/webkit-url-examples.lua")
-	dump(fixtures)
+	-- dump(fixtures)
+	describe("create", function()
 
-	error("nyi")
+local function bURL(url, base)
+  return base and urllib.create(url, base)  or urllib.create(url)
+end
+
+local function runURLTests(urltests)
+  for i = 1, #urltests, 1 do
+    local expected = urltests[i]
+	-- skip comments
+    if type(expected) ~= "string" then
+
+		-- test(function()
+			if (expected.failure) then
+
+				assertThrows(function()
+					bURL(expected.input, expected.base)
+				end, "TBD TypeError")
+				return
+			end
+		-- end)
+
+    	local url = bURL(expected.input, expected.base)
+      assertEquals(url.href, expected.href, "href")
+      assertEquals(url.protocol, expected.protocol, "protocol")
+      assertEquals(url.username, expected.username, "username")
+      assertEquals(url.password, expected.password, "password")
+      assertEquals(url.host, expected.host, "host")
+      assertEquals(url.hostname, expected.hostname, "hostname")
+      assertEquals(url.port, expected.port, "port")
+      assertEquals(url.pathname, expected.pathname, "pathname")
+      assertEquals(url.search, expected.search, "search")
+      if expected.searchParams then
+        assertTrue(url.searchParams)
+		-- TBD
+        assertEquals(url.searchParams.toString(), expected.searchParams, "searchParams")
+	  end
+	assertEquals(url.hash, expected.hash, "hash")
+-- "Parsing: <" + expected.input + "> against <" + expected.base + ">")
+end
+end
+end
+
+runURLTests(fixtures)
+
+end)
+
+error("nyi")
 end)
 
 -- Class: URL
