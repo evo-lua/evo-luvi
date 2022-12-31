@@ -1,13 +1,13 @@
-local urllib = require("url")
+local URL = require("url")
 
-describe("url", function()
+describe("URL", function()
 
 	local fixtures = import("./../Fixtures/webkit-url-examples.lua")
 	-- dump(fixtures)
 	describe("create", function()
 
 local function bURL(url, base)
-  return base and urllib.create(url, base)  or urllib.create(url)
+  return base and URL:Parse(url, base)  or URL:Parse(url)
 end
 
 local function runURLTests(urltests)
