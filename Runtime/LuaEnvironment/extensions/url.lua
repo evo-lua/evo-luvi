@@ -45,29 +45,39 @@ function URL:Parse(input, base, encoding, url, stateOverride)
 		removeAllAsciiTabsOrNewLines(input)
 	end
 
-	local state = stateOverride or "SCHEME_START_STATE"
+	self.state = stateOverride or "SCHEME_START_STATE"
 
 	encoding = getOutputEncoding(encoding)
 
-	local buffer = ""
-	local atSignSeen, insideBrackets, passwordTokenSeen = false, false, false
-	local pointer = 1
+	self.buffer = ""
+	self.atSignSeen = false
+	self.insideBrackets = false
+	self.passwordTokenSeen = false
 
-	local EOF_CODE_POINT = #input
+	self.pointer = 1
+	self.EOF_CODE_POINT = #input
 
-	while pointer <= EOF_CODE_POINT do
-		self:AdvanceFSM(state, input, pointer)
-		pointer = pointer + 1
+	while self.pointer <= self.EOF_CODE_POINT do
+		self:AdvanceFSM(input)
+		self.pointer = self.pointer + 1
 	end
 
 	return url
 end
 
+function URL:Dump()
+	dump(self)
+end
 
-function URL:AdvanceFSM(state, input, pointer)
+function URL:AdvanceFSM(input)
+	local pointer = self.pointer
+	local state = self.state
+
 	local c = string.sub(input, pointer, pointer)
 	local remaining = string.sub(input, pointer + 1)
-	DEBUG("advanceFSM", state, pointer, c, remaining)
+
+	self.c = c
+	self.remaining = remaining
 
 	local handler = self[state]
 	if not handler then
@@ -75,11 +85,12 @@ function URL:AdvanceFSM(state, input, pointer)
 		return
 	end
 
-	handler(self, input, pointer)
+	handler(self, input)
 end
 
-function URL:SCHEME_START_STATE(input, pointer)
-	DEBUG("SCHEME_START_STATE", input, pointer)
+function URL:SCHEME_START_STATE(input)
+	DEBUG("SCHEME_START_STATE", input)
+	self:Dump()
 	-- NYI
 end
 
