@@ -90,7 +90,7 @@ end
 
 function URL:SCHEME_START_STATE(input)
 	DEBUG("SCHEME_START_STATE", input)
-	self:Dump()
+	-- self:Dump()
 	-- NYI
 end
 
