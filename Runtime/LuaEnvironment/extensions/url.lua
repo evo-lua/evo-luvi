@@ -19,6 +19,7 @@ local function validationError(input) DEBUG("validationError") end
 local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine") end
 local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
 local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
+local function isAsciiAlpha(input) DEBUG("isAsciiAlpha") end
 
 local URL = {}
 
