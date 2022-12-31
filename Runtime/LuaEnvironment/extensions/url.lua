@@ -7,27 +7,6 @@ local urlRecord = {
 	host = "",
 }
 
-local BASIC_URL_PARSER_STATES = {
-	SCHEME_START_STATE = function(input, pointer)
-		DEBUG("SCHEME_START_STATE")
-		-- NYI
-	end
-}
-
-local function advanceFSM(state, input, pointer)
-	local c = string.sub(input, pointer, pointer)
-	local remaining = string.sub(input, pointer + 1)
-	DEBUG("advanceFSM", state, pointer, c, remaining)
-
-	local processInput = BASIC_URL_PARSER_STATES[state]
-	if not processInput then
-		ERROR(format("Failed to advance Basic URL parser FSM from state %s (no such state exists)", state))
-		return
-	end
-
-	processInput(input, pointer)
-end
-
 local function hasLeadingControlZeroOrSpace(input) DEBUG("hasLeadingControlZeroOrSpace") end
 local function hasTrailingControlZeroOrSpace(input) DEBUG("hasTrailingControlZeroOrSpace") end
 local function removeLeadingControlZeroOrSpace(input) DEBUG("removeLeadingControlZeroOrSpace") end
@@ -66,7 +45,7 @@ function URL:Parse(input, base, encoding, url, stateOverride)
 		removeAllAsciiTabsOrNewLines(input)
 	end
 
-	local state = stateOverride or BASIC_URL_PARSER_STATES.SCHEME_START_STATE
+	local state = stateOverride or "SCHEME_START_STATE"
 
 	encoding = getOutputEncoding(encoding)
 
@@ -77,11 +56,32 @@ function URL:Parse(input, base, encoding, url, stateOverride)
 	local EOF_CODE_POINT = #input
 
 	while pointer <= EOF_CODE_POINT do
-		advanceFSM(state, input, pointer)
+		self:AdvanceFSM(state, input, pointer)
 		pointer = pointer + 1
 	end
 
 	return url
 end
+
+
+function URL:AdvanceFSM(state, input, pointer)
+	local c = string.sub(input, pointer, pointer)
+	local remaining = string.sub(input, pointer + 1)
+	DEBUG("advanceFSM", state, pointer, c, remaining)
+
+	local handler = self[state]
+	if not handler then
+		ERROR(format("Failed to advance Basic URL parser FSM from state %s (no such state exists)", state))
+		return
+	end
+
+	handler(self, input, pointer)
+end
+
+function URL:SCHEME_START_STATE(input, pointer)
+	DEBUG("SCHEME_START_STATE", input, pointer)
+	-- NYI
+end
+
 
 return URL
