@@ -7,6 +7,10 @@ local urlRecord = {
 	host = "",
 }
 
+local SCHEME_START_STATE = "SCHEME_START_STATE"
+local SCHEME_STATE = "SCHEME_STATE"
+local NO_SCHEME_STATE = "NO_SCHEME_STATE"
+
 local function hasLeadingControlZeroOrSpace(input) DEBUG("hasLeadingControlZeroOrSpace") end
 local function hasTrailingControlZeroOrSpace(input) DEBUG("hasTrailingControlZeroOrSpace") end
 local function removeLeadingControlZeroOrSpace(input) DEBUG("removeLeadingControlZeroOrSpace") end
@@ -45,7 +49,7 @@ function URL:Parse(input, base, encoding, url, stateOverride)
 		removeAllAsciiTabsOrNewLines(input)
 	end
 
-	self.state = stateOverride or "SCHEME_START_STATE"
+	self.state = stateOverride or SCHEME_START_STATE
 
 	encoding = getOutputEncoding(encoding)
 
@@ -90,6 +94,18 @@ end
 
 function URL:SCHEME_START_STATE(input)
 	DEBUG("SCHEME_START_STATE", input)
+
+	local c = self.c
+	if isAsciiAlpha(c) then
+		self.buffer = self.buffer .. string.lower(c)
+		self.state = SCHEME_STATE
+	else
+		-- if self.stateOverride then -- TBD not used?
+
+		-- end
+		self.state = NO_SCHEME_STATE
+		self.pointer = self.pointer - 1
+	end
 	-- self:Dump()
 	-- NYI
 end
