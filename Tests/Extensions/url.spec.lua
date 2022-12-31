@@ -12,6 +12,8 @@ end
 
 local function runURLTests(urltests)
   for i = 1, #urltests, 1 do
+
+	TEST(format("Running URL test %d/%d ...", i, #urltests))
     local expected = urltests[i]
 	-- skip comments
     if type(expected) ~= "string" then
