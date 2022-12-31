@@ -1,7 +1,3 @@
-local URL = {}
-
-local url = {}
-
 local urlHost = ""
 
 local urlRecord = {
@@ -32,11 +28,6 @@ local function advanceFSM(state, input, pointer)
 	processInput(input, pointer)
 end
 
-local function createNewUrlRecord()
-	DEBUG("createNewUrlRecord")
-	return urlRecord -- TBD return new instance
-end
-
 local function hasLeadingControlZeroOrSpace(input) DEBUG("hasLeadingControlZeroOrSpace") end
 local function hasTrailingControlZeroOrSpace(input) DEBUG("hasTrailingControlZeroOrSpace") end
 local function removeLeadingControlZeroOrSpace(input) DEBUG("removeLeadingControlZeroOrSpace") end
@@ -46,10 +37,23 @@ local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine
 local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
 local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
 
+local URL = {}
+
+function URL:Construct()
+	local instance = {}
+
+	setmetatable(instance, self)
+
+	return instance
+end
+
+URL.__call = URL.Construct
+setmetatable(URL, URL)
+
 -- This implementation is a direct translation of https://url.spec.whatwg.org/#concept-basic-url-parser
-local function parseBasicURL(input, base, encoding, url, optionalStateOverride)
+function URL:Parse(input, base, encoding, url, stateOverride)
 	if not url then
-		url = createNewUrlRecord()
+		url = URL()
 		if hasLeadingControlZeroOrSpace(input) or hasTrailingControlZeroOrSpace(input) then
 			validationError(input, base)
 			removeLeadingControlZeroOrSpace(input)
@@ -62,7 +66,7 @@ local function parseBasicURL(input, base, encoding, url, optionalStateOverride)
 		removeAllAsciiTabsOrNewLines(input)
 	end
 
-	local state = optionalStateOverride or BASIC_URL_PARSER_STATES.SCHEME_START_STATE
+	local state = stateOverride or BASIC_URL_PARSER_STATES.SCHEME_START_STATE
 
 	encoding = getOutputEncoding(encoding)
 
@@ -80,25 +84,4 @@ local function parseBasicURL(input, base, encoding, url, optionalStateOverride)
 	return url
 end
 
--- function url.create(input, base)
--- 	local instance = {}
-
--- 	--  toUSVString is not needed. [Why?]
---     input = tostring(input)
---     local base_context;
---     if (base ~= nil) then
---       base_context = url.create(base).context
--- 	end
---     instance.context = URLContext();
---     parse(input, -1, base_context, nil,
---           FunctionPrototypeBind(onParseComplete, this),
---           FunctionPrototypeBind(onParseError, this, input));
-
--- 	return instance
--- end
-
-function url.create(input, base)
-	return parseBasicURL(input, base)
-end
-
-return url
+return URL
