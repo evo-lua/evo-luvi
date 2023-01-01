@@ -261,7 +261,7 @@ function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base)
 		self.password = base.password
 		self.host = base.host
 		self.port = base.port
-		self.path = base.path -- Cloning doesn't make sense since strings are immutable
+		self.path = base.path -- Cloning doesn't make sense since strings are immutable.. and we don't support path objects?
 		self.query = base.query
 
 		if c == "?" then
