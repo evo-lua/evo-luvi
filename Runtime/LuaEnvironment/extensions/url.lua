@@ -40,6 +40,42 @@ local function isAsciiAlpha(character) DEBUG("isAsciiAlpha")
 	return isAsciiUpperAlpha(character) or isAsciiLowerAlpha(character)
 end
 
+local PLUS_SIGN = 0x2B
+local MINUS_SIGN = 0x2D
+local FULL_STOP = 0x2E
+local DIGIT_ZERO = 0x30
+local DIGIT_NINE = 0x39
+local COLON = 0x3A
+
+local function isAsciiNumeric(character) DEBUG("isAsciiNumeric")
+	local codePoint = string.byte(character)
+	return codePoint >= DIGIT_ZERO and codePoint <= DIGIT_NINE
+end
+
+local function isAsciiAlphaNumeric(character) DEBUG("isAsciiAlphaNumeric")
+	return isAsciiNumeric(character) or isAsciiAlpha(character)
+end
+
+local function isPlus(character) DEBUG("isPlus")
+	local codePoint = string.byte(character)
+	return codePoint == PLUS_SIGN
+end
+
+local function isMinus(character) DEBUG("isMinus")
+	local codePoint = string.byte(character)
+	return codePoint == MINUS_SIGN
+end
+
+local function isDot(character) DEBUG("isDot")
+	local codePoint = string.byte(character)
+	return codePoint == FULL_STOP
+end
+
+local function isColon(character) DEBUG("isColon")
+	local codePoint = string.byte(character)
+	return codePoint == COLON
+end
+
 local URL = {}
 
 function URL:Construct()
@@ -109,7 +145,6 @@ function URL:AdvanceFSM(input)
 end
 
 function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
-
 	local c = self.c
 	if isAsciiAlpha(c) then
 		self.buffer = self.buffer .. string.lower(c)
@@ -121,7 +156,16 @@ function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
 end
 
 function URL:SCHEME_STATE(input) DEBUG(self.state, input)
-
+	local c = self.c
+	if isAsciiAlphaNumeric(c) or isPlus(c) or isMinus(c) or isDot(c) then
+		self.buffer = self.buffer .. string.lower(c)
+	elseif isColon(c) then
+		-- NYI
+	else
+		self.buffer = ""
+		self.state = NO_SCHEME_STATE
+		self.pointer = 0
+	end
 end
 
 function URL:NO_SCHEME_STATE(input) DEBUG(self.state, input)
