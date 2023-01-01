@@ -208,8 +208,10 @@ function URL:SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 	end
 end
 
-function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base)
-
-end
+function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:SPECIAL_RELATIVE_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:SPECIAL_AUTHORITY_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:OPAQUE_PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
 return URL
