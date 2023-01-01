@@ -28,23 +28,23 @@ local function runURLTests(urltests)
 			end
 		-- end)
 
-    	local url = bURL(expected.input, expected.base)
-      assertEquals(url.href, expected.href, "href")
-      assertEquals(url.protocol, expected.protocol, "protocol")
-      assertEquals(url.username, expected.username, "username")
-      assertEquals(url.password, expected.password, "password")
-      assertEquals(url.host, expected.host, "host")
-      assertEquals(url.hostname, expected.hostname, "hostname")
-      assertEquals(url.port, expected.port, "port")
-      assertEquals(url.pathname, expected.pathname, "pathname")
-      assertEquals(url.search, expected.search, "search")
-      if expected.searchParams then
-        assertTrue(url.searchParams)
-		-- TBD
-        assertEquals(url.searchParams.toString(), expected.searchParams, "searchParams")
-	  end
+	local url = bURL(expected.input, expected.base)
+	assertEquals(url.href, expected.href, "href")
+	assertEquals(url.protocol, expected.protocol, "protocol")
+	assertEquals(url.username, expected.username, "username")
+	assertEquals(url.password, expected.password, "password")
+	assertEquals(url.host, expected.host, "host")
+	assertEquals(url.hostname, expected.hostname, "hostname")
+	assertEquals(url.port, expected.port, "port")
+	assertEquals(url.pathname, expected.pathname, "pathname")
+	assertEquals(url.search, expected.search, "search")
+	if expected.searchParams then
+	assertTrue(url.searchParams)
+	-- TBD
+	assertEquals(url.searchParams.toString(), expected.searchParams, "searchParams")
+	end
 	assertEquals(url.hash, expected.hash, "hash")
--- "Parsing: <" + expected.input + "> against <" + expected.base + ">")
+	-- "Parsing: <" + expected.input + "> against <" + expected.base + ">")
 end
 end
 end
