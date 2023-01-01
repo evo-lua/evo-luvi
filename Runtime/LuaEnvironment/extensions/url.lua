@@ -24,7 +24,7 @@ local function removeTrailingControlZeroOrSpace(input) DEBUG("removeTrailingCont
 local function validationError(input) DEBUG("validationError") end
 local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine") end
 local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
-local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
+-- local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
 
 local function isAsciiUpperAlpha(character) DEBUG("isAsciiUpperAlpha")
 	local codePoint = string.byte(character)
