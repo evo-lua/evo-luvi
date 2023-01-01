@@ -11,6 +11,12 @@ local SCHEME_START_STATE = "SCHEME_START_STATE"
 local SCHEME_STATE = "SCHEME_STATE"
 local NO_SCHEME_STATE = "NO_SCHEME_STATE"
 
+-- TBD Move to unicode namespace?
+local LATIN_CAPITAL_LETTER_A = 0x41
+local LATIN_CAPITAL_LETTER_Z = 0x5A
+local LATIN_SMALL_LETTER_A = 0x61
+local LATIN_SMALL_LETTER_Z = 0x7A
+
 local function hasLeadingControlZeroOrSpace(input) DEBUG("hasLeadingControlZeroOrSpace") end
 local function hasTrailingControlZeroOrSpace(input) DEBUG("hasTrailingControlZeroOrSpace") end
 local function removeLeadingControlZeroOrSpace(input) DEBUG("removeLeadingControlZeroOrSpace") end
@@ -19,10 +25,19 @@ local function validationError(input) DEBUG("validationError") end
 local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine") end
 local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
 local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
-local function isAsciiUpperAlpha(input) DEBUG("isAsciiUpperAlpha") end
-local function isAsciiLowerAlpha(input) DEBUG("isAsciiLowerAlpha") end
-local function isAsciiAlpha(input) DEBUG("isAsciiAlpha")
-	return isAsciiUpperAlpha(input) or isAsciiLowerAlpha(input)
+
+local function isAsciiUpperAlpha(character) DEBUG("isAsciiUpperAlpha")
+	local codePoint = string.byte(character)
+	return codePoint >= LATIN_CAPITAL_LETTER_A and codePoint <= LATIN_CAPITAL_LETTER_Z
+end
+
+local function isAsciiLowerAlpha(character) DEBUG("isAsciiLowerAlpha")
+	local codePoint = string.byte(character)
+	return codePoint >= LATIN_SMALL_LETTER_A and codePoint <= LATIN_SMALL_LETTER_Z
+end
+
+local function isAsciiAlpha(character) DEBUG("isAsciiAlpha")
+	return isAsciiUpperAlpha(character) or isAsciiLowerAlpha(character)
 end
 
 local URL = {}
