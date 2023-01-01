@@ -252,7 +252,16 @@ function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
 end
 
 function URL:OPAQUE_PATH_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
+
+function URL:SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+	if c ~= "/" and c ~= "\\" then
+		self.state = AUTHORITY_STATE
+		self.pointer = self.pointer - 1
+	else
+		validationError("Unexpected slashes in SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE")
+	end
+end
 
 function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base)
 	assert(base.scheme ~= "file", "Base scheme must not be 'file'")
