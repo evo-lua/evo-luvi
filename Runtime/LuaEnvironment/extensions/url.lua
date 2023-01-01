@@ -9,6 +9,11 @@ local SCHEME_START_STATE = "SCHEME_START_STATE"
 local SCHEME_STATE = "SCHEME_STATE"
 local NO_SCHEME_STATE = "NO_SCHEME_STATE"
 local FILE_STATE = "FILE_STATE"
+local SPECIAL_RELATIVE_OR_AUTHORITY_STATE = "SPECIAL_RELATIVE_OR_AUTHORITY_STATE"
+local SPECIAL_AUTHORITY_SLASHES_STATE = "SPECIAL_AUTHORITY_SLASHES_STATE"
+local PATH_OR_AUTHORITY_STATE = "PATH_OR_AUTHORITY_STATE"
+local OPAQUE_PATH_STATE = "OPAQUE_PATH_STATE"
+
 
 -- TBD Move to unicode namespace?
 local LATIN_CAPITAL_LETTER_A = 0x41
@@ -90,7 +95,7 @@ setmetatable(URL, URL)
 
 -- This implementation is a direct translation of https://url.spec.whatwg.org/#concept-basic-url-parser
 function URL:Parse(input, base)
-	local url = URL()
+	-- local url = URL()
 	if hasLeadingControlZeroOrSpace(input) or hasTrailingControlZeroOrSpace(input) then
 		validationError(input, base)
 		removeLeadingControlZeroOrSpace(input)
@@ -172,11 +177,6 @@ function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
 		self.pointer = self.pointer - 1
 	end
 end
-
-local SPECIAL_RELATIVE_OR_AUTHORITY_STATE = "SPECIAL_RELATIVE_OR_AUTHORITY_STATE"
-local SPECIAL_AUTHORITY_SLASHES_STATE = "SPECIAL_AUTHORITY_SLASHES_STATE"
-local PATH_OR_AUTHORITY_STATE = "PATH_OR_AUTHORITY_STATE"
-local OPAQUE_PATH_STATE = "OPAQUE_PATH_STATE"
 
 function URL:SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 	local c = self.c
