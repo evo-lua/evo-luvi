@@ -281,7 +281,28 @@ end
 
 function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base) end
+
+function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+	if self:IsSpecial() and c == "/" or c == "\\" then
+		if c == "\\" then validationError("Unexpected backslash in RELATIVE_SLASH_STATE")
+		end
+
+		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
+	elseif c == "/" then
+		self.state = AUTHORITY_STATE
+	else
+		self.username = base.username
+		self.password = base.password
+		self.host = base.host
+		self.port = base.port
+
+		self.state = PATH_STATE
+
+		self.pointer = self.pointer - 1
+	end
+end
+
 function URL:QUERY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:FRAGMENT_STATE(input, base) DEBUG(self.state, input, base) end
 
