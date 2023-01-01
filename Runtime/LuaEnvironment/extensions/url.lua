@@ -48,9 +48,7 @@ function URL:Parse(input, base)
 		removeAllAsciiTabsOrNewLines(input)
 	end
 
-	self.state = stateOverride or SCHEME_START_STATE
-
-	encoding = getOutputEncoding(encoding)
+	self.state = SCHEME_START_STATE
 
 	self.buffer = ""
 	self.atSignSeen = false
