@@ -108,23 +108,24 @@ function URL:AdvanceFSM(input)
 	handler(self, input)
 end
 
-function URL:SCHEME_START_STATE(input)
-	DEBUG("SCHEME_START_STATE", input)
+function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
 
 	local c = self.c
 	if isAsciiAlpha(c) then
 		self.buffer = self.buffer .. string.lower(c)
 		self.state = SCHEME_STATE
 	else
-		-- if self.stateOverride then -- TBD not used?
-
-		-- end
 		self.state = NO_SCHEME_STATE
 		self.pointer = self.pointer - 1
 	end
-	-- self:Dump()
-	-- NYI
 end
 
+function URL:SCHEME_STATE(input) DEBUG(self.state, input)
+
+end
+
+function URL:NO_SCHEME_STATE(input) DEBUG(self.state, input)
+
+end
 
 return URL
