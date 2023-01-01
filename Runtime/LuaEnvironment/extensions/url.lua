@@ -242,7 +242,40 @@ end
 
 function URL:OPAQUE_PATH_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base) end
+
+function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base)
+	assert(base.scheme ~= "file", "Base scheme must not be 'file'")
+	self.scheme = base.scheme
+
+	local c = self.c
+	if c == "/" then
+		self.state = RELATIVE_SLASH_STATE
+	elseif self:IsSpecial() and c == "\\" then
+		validationError("Unexpected backslash in RELATIVE_STATE")
+		self.state = RELATIVE_SLASH_STATE
+	else
+		self.username = base.username
+		self.password = base.password
+		self.host = base.host
+		self.port = base.port
+		self.path = base.path -- Cloning doesn't make sense since strings are immutable
+		self.query = base.query
+
+		if c == "?" then
+			self.query = ""
+			self.state = QUERY_STATE
+		elseif c == "#" then
+			self.fragment = ""
+			self.state = FRAGMENT_STATE
+		elseif c ~= nil then -- EOF_CODE_POINT ?
+			self.query = nil
+			self:ShortenPath()
+			self.state = PATH_STATE
+			self.pointer = self.pointer - 1
+		end
+	end
+end
+
 function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
