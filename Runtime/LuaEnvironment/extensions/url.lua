@@ -210,6 +210,8 @@ end
 
 local SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE = "SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE"
 local RELATIVE_STATE = "RELATIVE_STATE"
+local AUTHORITY_STATE = "AUTHORITY_STATE"
+local PATH_STATE = "PATH_STATE"
 
 function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base) end
 
@@ -229,9 +231,19 @@ function URL:SPECIAL_AUTHORITY_SLASHES_STATE(input, base) DEBUG(self.state, inpu
 
 end
 
-function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
+	if self.c == "/" then
+		self.state = AUTHORITY_STATE
+	else
+		self.state = PATH_STATE
+		self.pointer = self.pointer - 1
+	end
+end
+
 function URL:OPAQUE_PATH_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
 return URL
