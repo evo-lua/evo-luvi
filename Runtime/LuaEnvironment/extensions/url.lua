@@ -318,20 +318,20 @@ function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
 			-- If passwordTokenSeen is true, then append encodedCodePoints to url’s password.
 				-- Otherwise, append encodedCodePoints to url’s username.
 				error("Percent-encoding shenanigans are NYI")
-			end
-			self.buffer = ""
-		elseif (c == nil or c == "/" or c == "?" or c == "#") or (self:IsSpecial() and c == "\\") then
-			if self.atSignSeen and self.buffer == "" then
-				validationError("Buffer is empty, but @ was seen")
-				-- return nil, "Failure" -- Makes no sense... we won't reach the HOST state if we return here?
-				self.pointer = self.pointer - #self.buffer - 1
-				self.buffer = ""
-				self.state = HOST_STATE
-			else
-				self.buffer = self.buffer .. c
-			end
 		end
+		self.buffer = ""
+	elseif (c == nil or c == "/" or c == "?" or c == "#") or (self:IsSpecial() and c == "\\") then
+		if self.atSignSeen and self.buffer == "" then
+			validationError("Buffer is empty, but @ was seen")
+			return nil, "Failure"
+		end
+		self.pointer = self.pointer - #self.buffer - 1
+		self.buffer = ""
+		self.state = HOST_STATE
+	else
+		self.buffer = self.buffer .. c
 	end
+end
 
 function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
