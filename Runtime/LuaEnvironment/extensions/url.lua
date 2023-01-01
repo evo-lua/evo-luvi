@@ -113,7 +113,7 @@ function URL:Parse(input, base)
 	self.EOF_CODE_POINT = #input
 
 	while self.pointer <= self.EOF_CODE_POINT do
-		self:AdvanceFSM(input)
+		self:AdvanceFSM(input, base)
 		self.pointer = self.pointer + 1
 	end
 
@@ -126,7 +126,7 @@ function URL:Dump()
 	dump(self)
 end
 
-function URL:AdvanceFSM(input)
+function URL:AdvanceFSM(input, base)
 	local pointer = self.pointer
 	local state = self.state
 
@@ -142,7 +142,7 @@ function URL:AdvanceFSM(input)
 		return
 	end
 
-	handler(self, input)
+	handler(self, input, base)
 end
 
 function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
@@ -175,7 +175,7 @@ function URL:SCHEME_STATE(input) DEBUG(self.state, input)
 	end
 end
 
-function URL:NO_SCHEME_STATE(input) DEBUG(self.state, input)
+function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 
 end
 
