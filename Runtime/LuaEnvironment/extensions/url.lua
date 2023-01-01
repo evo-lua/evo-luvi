@@ -19,7 +19,11 @@ local function validationError(input) DEBUG("validationError") end
 local function containsAsciiTabOrNewLine(input) DEBUG("containsAsciiTabOrNewLine") end
 local function removeAllAsciiTabsOrNewLines(input) DEBUG("removeAllAsciiTabsOrNewLines") end
 local function getOutputEncoding(input) DEBUG("getOutputEncoding") end
-local function isAsciiAlpha(input) DEBUG("isAsciiAlpha") end
+local function isAsciiUpperAlpha(input) DEBUG("isAsciiUpperAlpha") end
+local function isAsciiLowerAlpha(input) DEBUG("isAsciiLowerAlpha") end
+local function isAsciiAlpha(input) DEBUG("isAsciiAlpha")
+	return isAsciiUpperAlpha(input) or isAsciiLowerAlpha(input)
+end
 
 local URL = {}
 
