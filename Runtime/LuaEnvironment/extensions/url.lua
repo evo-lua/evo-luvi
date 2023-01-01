@@ -167,6 +167,17 @@ function URL:SCHEME_STATE(input) DEBUG(self.state, input)
 		if self.scheme == "file" then
 			if not self.scheme:startswith("//") then validationError("Expected // after file scheme in SCHEME_STATE") end
 			self.state = FILE_STATE
+		elseif self:IsSpecial() and base ~= nil and base.scheme ~= self.scheme then
+			assert(base:IsSpecial())
+			self.state = SPECIAL_RELATIVE_OR_AUTHORITY_STATE
+		elseif self:IsSpecial() then
+			self.state = SPECIAL_AUTHORITY_SLASHES_STATE
+		elseif self.remaining:startswith("/") then
+			self.state = PATH_OR_AUTHORITY_STATE
+			self.pointer = self.pointer + 1
+		else
+			self.path = ""
+			self.state = OPAQUE_PATH_STATE
 		end
 	else
 		self.buffer = ""
