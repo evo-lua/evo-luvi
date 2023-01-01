@@ -1,15 +1,14 @@
-local urlHost = ""
+-- TBD move to stringx or inline?
+function _G.string:startswith(start)
+    return self:sub(1, #start) == start
+end
 
-local urlRecord = {
-	scheme = "",
-	username = "",
-	password = "",
-	host = "",
-}
+---
 
 local SCHEME_START_STATE = "SCHEME_START_STATE"
 local SCHEME_STATE = "SCHEME_STATE"
 local NO_SCHEME_STATE = "NO_SCHEME_STATE"
+local FILE_STATE = "FILE_STATE"
 
 -- TBD Move to unicode namespace?
 local LATIN_CAPITAL_LETTER_A = 0x41
@@ -160,7 +159,13 @@ function URL:SCHEME_STATE(input) DEBUG(self.state, input)
 	if isAsciiAlphaNumeric(c) or isPlus(c) or isMinus(c) or isDot(c) then
 		self.buffer = self.buffer .. string.lower(c)
 	elseif isColon(c) then
-		-- NYI
+		self.scheme = self.buffer
+		self.buffer = ""
+
+		if self.scheme == "file" then
+			if not self.scheme:startswith("//") then validationError("Expected // after file scheme in SCHEME_STATE") end
+			self.state = FILE_STATE
+		end
 	else
 		self.buffer = ""
 		self.state = NO_SCHEME_STATE
