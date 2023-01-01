@@ -212,6 +212,9 @@ local SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE = "SPECIAL_AUTHORITY_IGNORE_SLASHES
 local RELATIVE_STATE = "RELATIVE_STATE"
 local AUTHORITY_STATE = "AUTHORITY_STATE"
 local PATH_STATE = "PATH_STATE"
+local RELATIVE_SLASH_STATE = "RELATIVE_SLASH_STATE"
+local QUERY_STATE = "QUERY_STATE"
+local FRAGMENT_STATE = "FRAGMENT_STATE"
 
 function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base) end
 
@@ -278,5 +281,8 @@ end
 
 function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:QUERY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:FRAGMENT_STATE(input, base) DEBUG(self.state, input, base) end
 
 return URL
