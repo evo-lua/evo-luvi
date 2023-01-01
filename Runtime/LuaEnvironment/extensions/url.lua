@@ -208,10 +208,30 @@ function URL:SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 	end
 end
 
+local SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE = "SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE"
+local RELATIVE_STATE = "RELATIVE_STATE"
+
 function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:SPECIAL_RELATIVE_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:SPECIAL_AUTHORITY_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
+
+function URL:SPECIAL_RELATIVE_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+	if c == "/" and self.remaining:startswith("/") then
+		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
+		self.pointer = self.pointer + 1
+	else
+		validationError("Expected authority slashes or relative path?")
+		self.state = RELATIVE_STATE
+		self.pointer = self.pointer - 1
+	end
+end
+
+function URL:SPECIAL_AUTHORITY_SLASHES_STATE(input, base) DEBUG(self.state, input, base)
+
+end
+
 function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:OPAQUE_PATH_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base) end
 
 return URL
