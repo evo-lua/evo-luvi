@@ -316,32 +316,33 @@ function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
 			-- Let encodedCodePoints be the result of running UTF-8 percent-encode codePoint using the userinfo percent-encode set.
 			-- If passwordTokenSeen is true, then append encodedCodePoints to url’s password.
 				-- Otherwise, append encodedCodePoints to url’s username.
+				error("Percent-encoding shenanigans are NYI")
+			end
+			self.buffer = ""
+			-- elseif
+			-- if one of the following is true:
 
+			-- c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
+
+			-- url is special and c is U+005C (\)
+			-- then:
+
+				-- If atSignSeen is true and buffer is the empty string, validation error, return failure.
+
+				-- Decrease pointer by the number of code points in buffer plus one, set buffer to the empty string, and set state to host state.
+				error("at sign shenanigans NYI")
+
+			else
+				self.buffer = self.buffer .. c
+			end
 		end
-		self.buffer = ""
-	-- elseif
-		-- if one of the following is true:
 
-    	-- c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
+		function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
-    	-- url is special and c is U+005C (\)
-		-- then:
-
-			-- If atSignSeen is true and buffer is the empty string, validation error, return failure.
-
-			-- Decrease pointer by the number of code points in buffer plus one, set buffer to the empty string, and set state to host state.
-
-	else
-		self.buffer = self.buffer .. c
-	end
-end
-
-function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
-
-function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
-	local c = self.c
-	if self:IsSpecial() and c == "/" or c == "\\" then
-		if c == "\\" then validationError("Unexpected backslash in RELATIVE_SLASH_STATE")
+		function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
+			local c = self.c
+			if self:IsSpecial() and c == "/" or c == "\\" then
+				if c == "\\" then validationError("Unexpected backslash in RELATIVE_SLASH_STATE")
 		end
 
 		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
