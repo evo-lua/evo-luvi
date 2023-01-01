@@ -35,14 +35,12 @@ URL.__call = URL.Construct
 setmetatable(URL, URL)
 
 -- This implementation is a direct translation of https://url.spec.whatwg.org/#concept-basic-url-parser
-function URL:Parse(input, base, encoding, url, stateOverride)
-	if not url then
-		url = URL()
-		if hasLeadingControlZeroOrSpace(input) or hasTrailingControlZeroOrSpace(input) then
-			validationError(input, base)
-			removeLeadingControlZeroOrSpace(input)
-			removeTrailingControlZeroOrSpace(input)
-		end
+function URL:Parse(input, base)
+	local url = URL()
+	if hasLeadingControlZeroOrSpace(input) or hasTrailingControlZeroOrSpace(input) then
+		validationError(input, base)
+		removeLeadingControlZeroOrSpace(input)
+		removeTrailingControlZeroOrSpace(input)
 	end
 
 	if containsAsciiTabOrNewLine(input) then
