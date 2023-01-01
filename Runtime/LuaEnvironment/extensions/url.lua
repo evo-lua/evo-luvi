@@ -286,7 +286,7 @@ function URL:QUERY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:FRAGMENT_STATE(input, base) DEBUG(self.state, input, base) end
 
 local function isNormalizedWindowsDriveLetter()
-	error("Usage of isNormalizedWindowsDriveLetter makes no sense, spec may be wrong or misleading?")
+	error("Usage of isNormalizedWindowsDriveLetter makes no sense, unless path is an object?")
 end
 
 function URL:ShortenPath()
@@ -294,7 +294,7 @@ function URL:ShortenPath()
 	assert(not hasOpaquePath, "URL must not have an opaque path")
 
 	local path = self.path
-	-- TBD this doesn't make any sense; a normalized drive letter needs to have at least two characters (letter and colon) !?
+	-- TBD when can this even happen? Path must not be a string? Don't think we'll ever see this here?
 	if self.scheme == "file" and #path == 1 and isNormalizedWindowsDriveLetter(self.c) then return end
 
 	self.path = string.sub(self.path, 1, #path-1) -- or "" ?
