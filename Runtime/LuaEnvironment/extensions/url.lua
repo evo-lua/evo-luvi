@@ -296,7 +296,46 @@ function URL:RELATIVE_STATE(input, base) DEBUG(self.state, input, base)
 	end
 end
 
-function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+	if c == "@" then
+		validationError("Unexpected @ in AUTHORITY_STATE")
+		if self.atSignSeen then
+			self.buffer = "%40" .. self.buffer
+		end
+		self.atSignSeen = true
+		for i=1, #self.buffer, 1 do
+			:: continue ::
+			local character = string.sub(self.buffer, i, i + 1) -- TBD codePoint?
+			if character == ":" and not self.passwordTokenSeen then
+				self.passwordTokenSeen = true
+				i = i + 1
+				goto continue
+			end
+
+			-- Let encodedCodePoints be the result of running UTF-8 percent-encode codePoint using the userinfo percent-encode set.
+			-- If passwordTokenSeen is true, then append encodedCodePoints to url’s password.
+				-- Otherwise, append encodedCodePoints to url’s username.
+
+		end
+		self.buffer = ""
+	-- elseif
+		-- if one of the following is true:
+
+    	-- c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
+
+    	-- url is special and c is U+005C (\)
+		-- then:
+
+			-- If atSignSeen is true and buffer is the empty string, validation error, return failure.
+
+			-- Decrease pointer by the number of code points in buffer plus one, set buffer to the empty string, and set state to host state.
+
+	else
+		self.buffer = self.buffer .. c
+	end
+end
+
 function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
 function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
