@@ -215,6 +215,7 @@ local PATH_STATE = "PATH_STATE"
 local RELATIVE_SLASH_STATE = "RELATIVE_SLASH_STATE"
 local QUERY_STATE = "QUERY_STATE"
 local FRAGMENT_STATE = "FRAGMENT_STATE"
+local HOST_STATE = "HOST_STATE"
 
 function URL:NO_SCHEME_STATE(input, base) DEBUG(self.state, input, base) end
 
@@ -319,32 +320,25 @@ function URL:AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
 				error("Percent-encoding shenanigans are NYI")
 			end
 			self.buffer = ""
-			-- elseif
-			-- if one of the following is true:
-
-			-- c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
-
-			-- url is special and c is U+005C (\)
-			-- then:
-
-				-- If atSignSeen is true and buffer is the empty string, validation error, return failure.
-
-				-- Decrease pointer by the number of code points in buffer plus one, set buffer to the empty string, and set state to host state.
-				error("at sign shenanigans NYI")
-
+		elseif (c == nil or c == "/" or c == "?" or c == "#") or (self:IsSpecial() and c == "\\") then
+			if self.atSignSeen and self.buffer == "" then
+				validationError("Buffer is empty, but @ was seen")
+				-- return nil, "Failure" -- Makes no sense... we won't reach the HOST state if we return here?
+				self.pointer = self.pointer - #self.buffer - 1
+				self.buffer = ""
+				self.state = HOST_STATE
 			else
 				self.buffer = self.buffer .. c
 			end
 		end
+	end
 
-		function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:PATH_STATE(input, base) DEBUG(self.state, input, base) end
 
-		function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
-			local c = self.c
-			if self:IsSpecial() and c == "/" or c == "\\" then
-				if c == "\\" then validationError("Unexpected backslash in RELATIVE_SLASH_STATE")
-		end
-
+function URL:RELATIVE_SLASH_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+	if self:IsSpecial() and c == "/" or c == "\\" then
+		if c == "\\" then validationError("Unexpected backslash in RELATIVE_SLASH_STATE") end
 		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
 	elseif c == "/" then
 		self.state = AUTHORITY_STATE
@@ -362,6 +356,7 @@ end
 
 function URL:QUERY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:FRAGMENT_STATE(input, base) DEBUG(self.state, input, base) end
+function URL:HOST_STATE(input, base) DEBUG(self.state, input, base) end
 
 local function isNormalizedWindowsDriveLetter()
 	error("Usage of isNormalizedWindowsDriveLetter makes no sense, unless path is an object?")
