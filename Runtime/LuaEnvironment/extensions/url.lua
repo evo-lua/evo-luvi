@@ -117,7 +117,9 @@ function URL:Parse(input, base)
 		self.pointer = self.pointer + 1
 	end
 
-	return url
+	self:Dump() -- TODO Remove
+	return self
+	-- return url -- TBD
 end
 
 function URL:Dump()
