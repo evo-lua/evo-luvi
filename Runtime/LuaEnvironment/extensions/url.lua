@@ -231,7 +231,15 @@ function URL:SPECIAL_RELATIVE_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, 
 end
 
 function URL:SPECIAL_AUTHORITY_SLASHES_STATE(input, base) DEBUG(self.state, input, base)
-
+	local c = self.c
+	if c == "/" and self.remaining:startswith("/") then
+		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
+		self.pointer = self.pointer + 1
+	else
+		validationError("TBD")
+		self.state = SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE
+		self.pointer = self.pointer - 1
+	end
 end
 
 function URL:PATH_OR_AUTHORITY_STATE(input, base) DEBUG(self.state, input, base)
