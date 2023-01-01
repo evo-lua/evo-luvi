@@ -156,7 +156,7 @@ function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
 	end
 end
 
-function URL:SCHEME_STATE(input) DEBUG(self.state, input)
+function URL:SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 	local c = self.c
 	if isAsciiAlphaNumeric(c) or isPlus(c) or isMinus(c) or isDot(c) then
 		self.buffer = self.buffer .. string.lower(c)
