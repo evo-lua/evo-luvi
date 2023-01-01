@@ -7,7 +7,7 @@ describe("URL", function()
 	describe("create", function()
 
 local function bURL(url, base)
-  return base and URL:Parse(url, base)  or URL:Parse(url)
+  return base and URL:Parse(url, URL:Parse(base)) or URL:Parse(url)
 end
 
 local function runURLTests(urltests)
