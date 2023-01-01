@@ -122,6 +122,23 @@ function URL:Parse(input, base)
 	-- return url -- TBD
 end
 
+local specialSchemesWithDefaultPorts = {
+	ftp = 21,
+	file = 0, -- Technically, nil... but we can't use that in Lua since it would unset the key
+	http = 80,
+	https = 443,
+	ws = 80,
+	wss = 443,
+}
+
+local function isSpecialScheme(scheme)
+	return specialSchemesWithDefaultPorts[scheme] ~= nil
+end
+
+function URL:IsSpecial()
+	return isSpecialScheme(self.scheme)
+end
+
 function URL:Dump()
 	dump(self)
 end
@@ -155,6 +172,11 @@ function URL:SCHEME_START_STATE(input) DEBUG(self.state, input)
 		self.pointer = self.pointer - 1
 	end
 end
+
+local SPECIAL_RELATIVE_OR_AUTHORITY_STATE = "SPECIAL_RELATIVE_OR_AUTHORITY_STATE"
+local SPECIAL_AUTHORITY_SLASHES_STATE = "SPECIAL_AUTHORITY_SLASHES_STATE"
+local PATH_OR_AUTHORITY_STATE = "PATH_OR_AUTHORITY_STATE"
+local OPAQUE_PATH_STATE = "OPAQUE_PATH_STATE"
 
 function URL:SCHEME_STATE(input, base) DEBUG(self.state, input, base)
 	local c = self.c
