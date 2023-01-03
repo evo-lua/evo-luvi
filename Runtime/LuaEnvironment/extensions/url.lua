@@ -356,7 +356,38 @@ end
 
 function URL:QUERY_STATE(input, base) DEBUG(self.state, input, base) end
 function URL:FRAGMENT_STATE(input, base) DEBUG(self.state, input, base) end
-function URL:HOST_STATE(input, base) DEBUG(self.state, input, base) end
+
+function URL:HOST_STATE(input, base) DEBUG(self.state, input, base)
+	local c = self.c
+
+	if c == ":" and not self.insideBrackets then
+		-- f buffer is the empty string, validation error, return failure.
+
+		-- If state override is given and state override is hostname state, then return.
+
+		-- Let host be the result of host parsing buffer with url is not special.
+
+		-- If host is failure, then return failure.
+
+		-- Set url’s host to host, buffer to the empty string, and state to port state.
+
+	elseif (c == nil or c == "/" or c == "?" or c == "#") or (self:IsSpecial() and c == "\\") then
+		self.pointer = self.pointer - 1
+		if self:IsSpecial() and self.buffer == "" then return validationError("Unexpected empty buffer in HOST_STATE") end
+		-- Let host be the result of host parsing buffer with url is not special.
+
+		-- If host is failure, then return failure.
+
+		-- Set url’s host to host, buffer to the empty string, and state to path start state.
+
+		-- If state override is given, then return.
+
+	else
+		if c == "[" then self.insideBrackets = true end
+		if c == "]" then self.insideBrackets = false end
+		self.buffer = self.buffer .. c
+	end
+end
 
 local function isNormalizedWindowsDriveLetter()
 	error("Usage of isNormalizedWindowsDriveLetter makes no sense, unless path is an object?")
