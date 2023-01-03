@@ -23,7 +23,7 @@ local function runURLTests(urltests)
 
 				assertThrows(function()
 					bURL(expected.input, expected.base)
-				end, "TBD TypeError")
+				end, "TBD TypeError") -- Validation error?
 				return
 			end
 		-- end)
