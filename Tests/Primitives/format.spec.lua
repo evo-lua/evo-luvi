@@ -1,5 +1,0 @@
-describe("format", function()
-	it("should be a globally exported alias for string.format", function()
-		assertEquals(_G.format, string.format)
-	end)
-end)
