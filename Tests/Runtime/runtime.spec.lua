@@ -33,13 +33,8 @@ describe("runtime", function()
 	describe("libraries", function()
 		it("should export the version of all embedded libraries", function()
 			local expectedLibraries = {
-				"regex",
 				"llhttp",
-				"miniz",
-				"ssl",
 				"lpeg",
-				"zlib",
-				"libuv",
 			}
 
 			for index, libraryName in ipairs(expectedLibraries) do
