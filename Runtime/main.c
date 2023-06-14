@@ -100,9 +100,6 @@ static lua_State* vm_acquire()
 	lua_pushcfunction(L, luaopen_lpeg);
 	lua_setfield(L, -2, "lpeg");
 
-	lua_pushcfunction(L, luaopen_rex_pcre2);
-	lua_setfield(L, -2, "regex");
-
 	// Store luvi module definition at preload.luvi
 	lua_pushcfunction(L, luaopen_runtime);
 	lua_setfield(L, -2, "runtime");
